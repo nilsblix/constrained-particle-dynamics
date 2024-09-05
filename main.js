@@ -27,4 +27,12 @@ class units {
     static sim_canv_x(pos) {
         return canvas.width * pos.x / this.WIDTH;
     }
+
+    static sim_canv_y(pos) {
+        return canvas.height * (this.WIDTH - pos.y) / this.WIDTH;
+    }
+
+    static sim_canv(pos) {
+        return new Vector2(sim_canv_x(pos), sim_canv_y(pos));
+    }
 }

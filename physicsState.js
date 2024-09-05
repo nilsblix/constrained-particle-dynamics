@@ -12,6 +12,14 @@ class physicsState {
 
     }
 
+    addObject(obj) {
+        this.#m_objects.push(obj);
+    }
+
+    removeObject(obj) {
+        this.#m_objects.removeObject(obj);
+    }
+
     simulationStep(dt) {
 
     }
