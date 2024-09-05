@@ -7,20 +7,22 @@ import {Vector2} from "./linear_algebra.js";
 */
 
 export class Gravity {
-    static g_GRAVITY = 6;
-
-    constructor() {}
+    constructor() {
+        this.gravity = 2;
+    }
 
     apply(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
-            m_objects[i].force = Vector2.addVectors(m_objects[i].force, new Vector2(0, - this.g_GRAVITY));
+            // m_objects[i].force = Vector2.addVectors(m_objects[i].force, new Vector2(0, - this.g_GRAVITY));
+            m_objects[i].force = new Vector2(0, -this.gravity);
         }
     }
 
     getEnergyApplied(m_objects) {
         let energy = 0;
+
         for (let i = 0; i < m_objects.length; i++) {
-            energy += m_objects[i].mass * m_objects[i].pos.y * g_GRAVITY;
+            energy += m_objects[i].mass * m_objects[i].pos.y * this.gravity;
         }
         return energy;
     }
@@ -28,13 +30,13 @@ export class Gravity {
 }
 
 export class LinearDamping {
-    static g_MU = 0.9;
-
-    constructor() {}
+    constructor() {
+        this.MU = 0.0001;
+    }
 
     apply(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
-            m_objects[i].force = Vector2.subtractVectors(Vector2.scaleVector(m_objects[i].vel, g_MU));
+            m_objects[i].force = Vector2.subtractVectors(m_objects[i].force, Vector2.scaleVector(m_objects[i].vel, this.MU));
         }
     }
 

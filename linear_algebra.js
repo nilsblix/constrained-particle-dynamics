@@ -56,15 +56,9 @@ export class Vector2 {
     }
 }
 
-class Vector {
-    constructor(elements) {
-        this.elements = elements;
-    }
+export class Vector {
     constructor(num_elements) {
         this.elements = new Float32Array(num_elements);
-    }
-    constructor() {
-        this.elements = new Float32Array(0);
     }
 
     static add_vectors(a, b) {
@@ -89,7 +83,7 @@ class Vector {
         return vec;
     }
 
-    static elem_by_elem_mult_vectors(a, b) {
+    static elem_by_elem_mult_vec(a, b) {
         if (a.elements.length != b.elements.length) {
             throw new Error("Vector add: lengths are not the same");
         }
@@ -102,7 +96,6 @@ class Vector {
 
     static scale_vector(s, x) {
         let vec = new Vector(x.elements.length);
-        vec.zeroVector();
         for (let i = 0; i < vec.elements.length; i++) {
             vec.elements[i] = s * x.elements[i];
         }
@@ -114,7 +107,7 @@ class Vector {
             throw new Error("Vector add: lengths are not the same");
         }
         let sum = 0;
-        for (let i = 0; i < vec.elements.length; i++) {
+        for (let i = 0; i < a.elements.length; i++) {
             sum += a.elements[i] * b.elements[i];
         }
         return sum;
@@ -132,24 +125,20 @@ class Vector {
         return sum;
     }
 
-    zeroVector() {
-        for (let i = 0; i < this.elements.length; i++) {
-            this.elements[i] = 0;
-        }
-    }
-
-    negate() {
-        for (let i = 0; i < this.elements.length; i++) {
-            this.elements[i] *= -1;
-        }
-    }
-
     static get_negated(x) {
         let b = new Vector(x.elements.length);
         for (let i = 0; i < b.elements.length; i++) {
             b.elements[i] = - x.elements[i];
         }
         return b;
+    }
+
+    static set_zero_vector(v) {
+        let vec = new Vector(v.elements.length);
+        for (let i = 0; i < v.elements.length; i++) {
+            vec.elements[i] = 0;
+        }
+        return vec;
     }
 
 }
@@ -163,20 +152,10 @@ export class SparseMatrixBlock {
 }
 
 export class SparseMatrix {
-    constructor(i, j, elements) {
-        this.elements = elements;
-        this.i_length = i;
-        this.j_length = j;
-    }
     constructor(i, j) {
         this.elements = [];
         this.i_length = i;
         this.j_length = j;
-    }
-    constructor() {
-        this.elements = [];
-        this.i_length = 0;
-        this.j_length = 0;
     }
 
     static mat_mult_vec(A, x) {
@@ -185,7 +164,7 @@ export class SparseMatrix {
         }
 
         let b = new Vector(A.i_length);
-        b.zeroVector();
+        b = Vector.set_zero_vector(b);
         for (let idx = 0; idx < A.elements.length; i++) {
             let j_index = A.elements[idx].j;
             let i_index = A.elements[idx].i;
@@ -196,12 +175,12 @@ export class SparseMatrix {
     }
 
     static matT_mult_vec(A, x) {
-        if (A.j_length != x.elements.length) {
+        if (A.i_length != x.elements.length) {
             throw new Error("matT_mult_vec: lengths are not the same");
         }
 
-        let b = new Vector(A.i_length);
-        b.zeroVector();
+        let b = new Vector(A.j_length);
+        b = Vector.set_zero_vector(b);
         for (let idx = 0; idx < A.elements.length; i++) {
             let j_index = A.elements[idx].j;
             let i_index = A.elements[idx].i;

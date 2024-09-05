@@ -21,38 +21,37 @@ export class ConstraintManager {
 
     A(x) {
         let Ax = SparseMatrix.matT_mult_vec(this.J, x);
-        Ax = SparseMatrix.mat_mult_vec(this.W, Ax);
+        Ax = Vector.elem_by_elem_mult_vec(this.W, Ax);
         Ax = SparseMatrix.mat_mult_vec(this.J, Ax);
         return Ax;
     }
 
     getB() {
-        let first = (SparseMatrix.mat_mult_vec(this.J_dot, q_dot)).negate();
-        let second = SparseMatrix.mat_mult_vec(this.J, SparseMatrix.mat_mult_vec(W, Q));
-        let third = Vector.scale_vector(k_s, this.C);
-        let fourth = Vector.scale_vector(k_d, this.C_dot);
+        const first = Vector.get_negated(SparseMatrix.mat_mult_vec(this.J_dot, this.q_dot));
+        const second = SparseMatrix.mat_mult_vec(this.J, Vector.elem_by_elem_mult_vec(this.W, this.Q));
+        const third = Vector.scale_vector(this.#k_s, this.C);
+        const fourth = Vector.scale_vector(this.#k_d, this.C_dot);
 
-        let one_two = Vector.sub_vectors(first, second);
-        let three_four = Vector.add(third, fourth);
+        const one_two = Vector.sub_vectors(first, second);
+        const three_four = (Vector.add_vectors(third, fourth));
         return Vector.sub_vectors(one_two, three_four);
     }
 }
 
 export class ConstraintForceSolver {
-    static m_minError = 1e-7;
+    #m_minError = 1e-7;
     #upped_iteration_count = 128;
 
     constructor() {}
 
     CGM(CM, iterations = 64) {
-        let n = CM.b.elements.length;
         let max_iter = iterations;
 
         let x = CM.lambda;
-        let r = Vector.sub_vectors(CH.b, CH.A(x));
+        let r = Vector.sub_vectors(CM.b, CM.A(x));
         let rk_mag2 = r.sqr_magnitude();
 
-        if (rk_mag2 < m_minError) {
+        if (rk_mag2 < this.#m_minError) {
             console.log("Premature lambda found on iteration: 0 (before iterating)");
             return x;
         } else if (rk_mag2 > 1) {
@@ -67,11 +66,11 @@ export class ConstraintForceSolver {
 
             const alpha = rk_mag2 / Vector.dot(p, Ap); // p dot Ap is such that p is conjugate to itself wrt A
             x = Vector.add_vectors(x, Vector.scale_vector(alpha, p));
-            r = Vector.sub_vectors(CH.b, CH.A(x));
+            r = Vector.sub_vectors(CM.b, CM.A(x));
 
             const rk1_mag2 = r.sqr_magnitude();
 
-            if (rk1_mag2 < m_minError) {
+            if (rk1_mag2 < this.#m_minError) {
                 console.log("Premature lambda found on iteration: " + k + " (while iterating)");
                 break;
             }

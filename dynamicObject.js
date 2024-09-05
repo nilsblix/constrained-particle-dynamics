@@ -10,8 +10,18 @@ export class DynamicObject {
         this.drawing_radius = drawing_radius;
     }
 
+    test_integrate(dt) {
+        const acc = Vector2.scaleVector(this.force, this.wass);
+        console.log("force: " + this.force.toString());
+
+        this.pos.x = acc.x;
+        this.pos.y = acc.y;
+
+        this.force = new Vector2(0,0);
+    }
+
     symplecticEuler(dt) {
-        const acc = Vector2.scaleVector(this.force, wass);
+        const acc = Vector2.scaleVector(this.force, this.wass);
 
         this.vel = Vector2.addVectors(this.vel, Vector2.scaleVector(acc, dt));
         this.pos = Vector2.addVectors(this.pos, Vector2.scaleVector(this.vel, dt));
@@ -19,7 +29,7 @@ export class DynamicObject {
     }
 
     RK4(dt) {
-        const acc = Vector2.scaleVectors(this.force, wass);
+        const acc = Vector2.scaleVector(this.force, this.wass);
 
         // RK4 method
         const k1 = this.vel;
@@ -50,8 +60,7 @@ export class DynamicObject {
     }
 
     calculateKineticEnergy() {
-        const vel_mag = this.vel.magnitude();
-        return 0.5 * this.mass * vel_mag * vel_mag;
+        return 0.5 * this.mass * this.vel.sqr_magnitude();
     }
 
 }

@@ -1,6 +1,8 @@
 import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
 import {ConstraintManager, ConstraintForceSolver} from "./constraints.js";
 import {Gravity, LinearDamping} from "./forceGenerators.js";
+// import {DynamicObject} from "./dynamicObject.js";
+import {Units} from "./main.js";
 
 /* TODO
     make constraints
@@ -10,7 +12,7 @@ import {Gravity, LinearDamping} from "./forceGenerators.js";
 */
 
 
-export class physicsState {
+export class PhysicsState {
     static g_EPSILON = 1e-5;
 
     #m_objects = [];
@@ -35,7 +37,7 @@ export class physicsState {
         this.C_dot_value = 0;
 
         // init functions:
-        this.#initConstraintManager();
+        this.initConstraintManager();
     }
 
     #updateDebugValues() {
@@ -43,23 +45,6 @@ export class physicsState {
         this.system_energy = this.#getSystemEnergy();
         this.C_value = this.#CM.C.magnitude();
         this.C_dot_value = this.#CM.C_dot.magnitude();
-    }
-
-    #initConstraintManager() {
-        this.#CM = new ConstraintManager();
-
-        this.#CM.q =        new Vector(2 * this.#m_objects.length);
-        this.#CM.q_dot =    new Vector(2 * this.#m_objects.length);
-        this.#CM.Q =        new Vector(2 * this.#m_objects.length);
-        this.#CM.W =        new Vector(2 * this.#m_objects.length);
-        this.#CM.lambda =   new Vector(this.#m_constraints.length);
-        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
-        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
-        this.#CM.accumulated_error = 0;
-        this.#CM.C =        new Vector(this.#m_constraints.length);
-        this.#CM.C_dot =    new Vector(this.#m_constraints.length);
-
-        this.#CM.lambda.zeroVector();
     }
 
     #updateConstraintManager() {
@@ -104,6 +89,23 @@ export class physicsState {
 
     }
 
+    initConstraintManager() {
+        this.#CM = new ConstraintManager();
+
+        this.#CM.q =        new Vector(2 * this.#m_objects.length);
+        this.#CM.q_dot =    new Vector(2 * this.#m_objects.length);
+        this.#CM.Q =        new Vector(2 * this.#m_objects.length);
+        this.#CM.W =        new Vector(2 * this.#m_objects.length);
+        this.#CM.lambda =   new Vector(this.#m_constraints.length);
+        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
+        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
+        this.#CM.accumulated_error = 0;
+        this.#CM.C =        new Vector(this.#m_constraints.length);
+        this.#CM.C_dot =    new Vector(this.#m_constraints.length);
+
+        this.#CM.lambda = Vector.set_zero_vector(this.#CM.lambda);
+    }
+
     step_simulation(dt, steps = 1) {
         for (let s = 0; s < steps; s++) {
             const sub_dt = dt / steps;
@@ -118,7 +120,7 @@ export class physicsState {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
-                this.#CM.lambda = this.#CFS.CGM(this.#CM, 64) // last int is iteration-count
+                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 64) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.CFS_ms = CFS_et - CFS_st;
 
@@ -133,11 +135,29 @@ export class physicsState {
             for (let i = 0; i < this.#m_objects.length; i++) {
                 this.#m_objects[i].RK4(sub_dt);
             }
+            // console.log("obj len: " + this.#m_objects.length);
 
             // not really part of physics_step, more for debugging and data displayed
             this.#updateDebugValues();
 
         }
+    }
+
+    render(canvas, c) { // c is the canvas context
+
+        // render dynamicObjects
+        for (let i = 0; i < this.#m_objects.length; i++) {
+            const pos = this.#m_objects[i].pos;
+            const canv_pos = Units.sim_canv(pos);
+            const radius = this.#m_objects[i].drawing_radius * Units.scale_s_c;
+
+            c.beginPath();
+            c.fillStyle = "#FF0000";
+            c.arc(canv_pos.x, canv_pos.y, radius, 0, 2 * Math.PI);
+            c.fill();
+            c.closePath();
+        }
+
     }
 
     addObject(obj) {
@@ -168,14 +188,18 @@ export class physicsState {
         let energy = 0;
 
         // dynamicObjects kinetic energy
+
         for (let i = 0; i < this.#m_objects.length; i++) {
             energy += this.#m_objects[i].calculateKineticEnergy();
         }
+        
 
         // work done against forceGenerators forces
         for (let i = 0; i < this.#m_forceGenerators.length; i++) {
-            energy += this.#m_forceGenerators.getEnergyApplied(this.#m_objects);
+            energy += this.#m_forceGenerators[i].getEnergyApplied(this.#m_objects);
         }
+
+        return energy;
 
     }
 
