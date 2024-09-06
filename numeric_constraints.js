@@ -1,5 +1,14 @@
 import {SparseMatrixBlock} from "./linear_algebra.js";
 
+/*
+    When adding a new constraint, 
+    these functions must be in them spelled correctly and be returning these specific things:
+        --> C_i (the constraint value), return: scalar
+        --> C_dot (the time D of C), return: scalar
+        --> J_i (the jacobian of C wrt position vectors (q)), return: list of SparseMatrixBlocks
+        --> J_i_dot (time D of J_i), return: list of SparseMatrixBlocks
+*/
+
 export class FixedYConstraint {
     constructor(id, height) {
         this.p_id = id;

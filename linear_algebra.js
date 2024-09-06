@@ -47,6 +47,10 @@ export class Vector2 {
         return this.x * v.x + this.y * v.y;
     }
 
+    static distance(a, b) {
+        return (this.subtractVectors(a, b)).magnitude();
+    }
+
     toString() {
         return "x: " + this.x + " y: " + this.y;
     }
@@ -61,11 +65,19 @@ export class Vector {
         this.elements = new Float32Array(num_elements);
     }
 
+    clone() {
+        const clonedVector = new Vector(this.elements.length);
+        for (let i = 0; i < this.elements.length; i++) {
+            clonedVector.elements[i] = this.elements[i];
+        }
+        return clonedVector;
+    }
+
     static add_vectors(a, b) {
         if (a.elements.length != b.elements.length) {
-            throw new Error("Vector add: lengths are not the same");
+            throw new Error("Vector add_vectors: lengths are not the same");
         }
-        let vec = new Vector(a.elements);
+        let vec = new Vector(a.elements.length);
         for (let i = 0; i < vec.elements.length; i++) {
             vec.elements[i] = a.elements[i] + b.elements[i];
         }
@@ -74,9 +86,9 @@ export class Vector {
 
     static sub_vectors(a, b) {
         if (a.elements.length != b.elements.length) {
-            throw new Error("Vector add: lengths are not the same");
+            throw new Error("Vector sub_vectors: lengths are not the same");
         }
-        let vec = new Vector(a.elements);
+        let vec = new Vector(a.elements.length);
         for (let i = 0; i < vec.elements.length; i++) {
             vec.elements[i] = a.elements[i] - b.elements[i];
         }
@@ -85,9 +97,9 @@ export class Vector {
 
     static elem_by_elem_mult_vec(a, b) {
         if (a.elements.length != b.elements.length) {
-            throw new Error("Vector add: lengths are not the same");
+            throw new Error("Vector elem_by_elem_mult: lengths are not the same");
         }
-        let vec = new Vector(a.elements);
+        let vec = new Vector(a.elements.length);
         for (let i = 0; i < vec.elements.length; i++) {
             vec.elements[i] = a.elements[i] * b.elements[i];
         }
@@ -104,7 +116,7 @@ export class Vector {
 
     static dot(a, b) {
         if (a.elements.length != b.elements.length) {
-            throw new Error("Vector add: lengths are not the same");
+            throw new Error("Vector dot: lengths are not the same");
         }
         let sum = 0;
         for (let i = 0; i < a.elements.length; i++) {
@@ -158,6 +170,14 @@ export class SparseMatrix {
         this.j_length = j;
     }
 
+    clone() {
+        const clonedMatrix = new SparseMatrix(this.i_length, this.j_length);
+        clonedMatrix.elements = this.elements.map(block => {
+            return new SparseMatrixBlock(block.i, block.j, block.data);
+        });
+        return clonedMatrix;
+    }
+
     static mat_mult_vec(A, x) {
         if (A.j_length != x.elements.length) {
             throw new Error("mat_mult_vec: lengths are not the same");
@@ -165,7 +185,7 @@ export class SparseMatrix {
 
         let b = new Vector(A.i_length);
         b = Vector.set_zero_vector(b);
-        for (let idx = 0; idx < A.elements.length; i++) {
+        for (let idx = 0; idx < A.elements.length; idx++) {
             let j_index = A.elements[idx].j;
             let i_index = A.elements[idx].i;
 
@@ -181,7 +201,7 @@ export class SparseMatrix {
 
         let b = new Vector(A.j_length);
         b = Vector.set_zero_vector(b);
-        for (let idx = 0; idx < A.elements.length; i++) {
+        for (let idx = 0; idx < A.elements.length; idx++) {
             let j_index = A.elements[idx].j;
             let i_index = A.elements[idx].i;
 

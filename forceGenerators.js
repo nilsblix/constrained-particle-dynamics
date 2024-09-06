@@ -8,13 +8,13 @@ import {Vector2} from "./linear_algebra.js";
 
 export class Gravity {
     constructor() {
-        this.gravity = 2;
+        this.gravity = 1.8;
     }
 
     apply(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
             // m_objects[i].force = Vector2.addVectors(m_objects[i].force, new Vector2(0, - this.g_GRAVITY));
-            m_objects[i].force = new Vector2(0, -this.gravity);
+            m_objects[i].force = Vector2.addVectors(m_objects[i].force, Vector2.scaleVector(new Vector2(0, -this.gravity), m_objects[i].mass));
         }
     }
 
@@ -31,7 +31,7 @@ export class Gravity {
 
 export class LinearDamping {
     constructor() {
-        this.MU = 0.0001;
+        this.MU = 4.5e-3;
     }
 
     apply(m_objects) {

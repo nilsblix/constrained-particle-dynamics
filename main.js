@@ -35,7 +35,7 @@ export class Units {
     }
 
     static sim_canv_y(pos) {
-        return canvas.height * (this.WIDTH - pos.y) / this.WIDTH;
+        return canvas.height * (this.HEIGHT - pos.y) / this.HEIGHT;
     }
 
     static sim_canv(pos) {
@@ -51,7 +51,7 @@ export class Units {
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 60,
-    sim_steps: 8,
+    sim_steps: 16,
     simulating: false,
     physics_frame_time: -1,
     render_frame_time: -1,
@@ -73,15 +73,27 @@ function updateDisplayedDebugs() {
 function setupScene(version) {
     switch (version) {
         case 1:
-            const id_0 = new DynamicObject(new Vector2(5, 5), 1, 0.5);
-            const id_1 = new DynamicObject(new Vector2(2, 5), 1, 0.5);
-            const id_2 = new DynamicObject(new Vector2(8, 5), 1, 0.5);
+            const h = Units.HEIGHT / 2 + 0.02;
+
+            const id_0 = new DynamicObject(new Vector2(5, h), 1, 0.3);
+            const id_1 = new DynamicObject(new Vector2(3.5, h), 1, 0.3);
+            const id_2 = new DynamicObject(new Vector2(3.5, h + 1.5), 2, 0.3);
 
             physicsState.addObject(id_0);
             physicsState.addObject(id_1);
             physicsState.addObject(id_2);
 
             physicsState.addConstraint(new FixedYConstraint(0, id_0.pos.y));
+            physicsState.addConstraint(new FixedXConstraint(0, id_0.pos.x));
+
+            // physicsState.addConstraint(new FixedXConstraint(1, id_1.pos.x));
+
+            // physicsState.addConstraint(new FixedYConstraint(2, id_2.pos.y));
+            // physicsState.addConstraint(new FixedXConstraint(2, id_2.pos.x));
+
+            physicsState.addConstraint(new LineConstraint(0, 1, Vector2.distance(id_0.pos, id_1.pos)));
+            physicsState.addConstraint(new LineConstraint(1, 2, Vector2.distance(id_1.pos, id_2.pos)));
+
 
             break;
     }
@@ -89,6 +101,7 @@ function setupScene(version) {
 
 function start() {
     setupScene(1);
+    solver.simulating = false;
     physicsState.initConstraintManager();
 }
 
@@ -125,7 +138,7 @@ document.addEventListener("keydown", function(event) {
     }
     if (event.key == "ArrowRight" && !solver.simulating) {
         let p_st = performance.now();
-            physicsState.step_simulation(solver.dt, solver.sim_steps);
+            physicsState.step_simulation(solver.dt / solver.sim_steps, 1);
         let p_et = performance.now();
         solver.physics_frame_time = p_et - p_st;
     }

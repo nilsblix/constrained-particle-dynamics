@@ -4,29 +4,29 @@ export class ConstraintManager {
     #k_s = 300;
     #k_d = 40;
     constructor() {
-        this.q = new Vector();
-        this.q_dot = new Vector();
-        this.Q = new Vector();
-        this.W = new Vector();
-        this.lambda = new Vector();
-        this.J = new SparseMatrix();
-        this.J_dot = new SparseMatrix();
+        this.q = new Vector(0);
+        this.q_dot = new Vector(0);
+        this.Q = new Vector(0);
+        this.W = new Vector(0);
+        this.lambda = new Vector(0);
+        this.J = new SparseMatrix(0, 0);
+        this.J_dot = new SparseMatrix(0, 0);
 
         this.accumulated_error = 0;
-        this.C = new Vector();
-        this.C_dot = new Vector();
+        this.C = new Vector(0);
+        this.C_dot = new Vector(0);
 
-        this.b = new Vector();
+        this.b = new Vector(0);
     }
 
-    A(x) {
+    A(x) { // return JWJ_T * x
         let Ax = SparseMatrix.matT_mult_vec(this.J, x);
         Ax = Vector.elem_by_elem_mult_vec(this.W, Ax);
         Ax = SparseMatrix.mat_mult_vec(this.J, Ax);
         return Ax;
     }
 
-    getB() {
+    getB() { // return - J_dot * Q_dot -  JWQ - k_s * C - k_d * C
         const first = Vector.get_negated(SparseMatrix.mat_mult_vec(this.J_dot, this.q_dot));
         const second = SparseMatrix.mat_mult_vec(this.J, Vector.elem_by_elem_mult_vec(this.W, this.Q));
         const third = Vector.scale_vector(this.#k_s, this.C);
@@ -39,7 +39,7 @@ export class ConstraintManager {
 }
 
 export class ConstraintForceSolver {
-    #m_minError = 1e-7;
+    #m_minError = 1e-4;
     #upped_iteration_count = 128;
 
     constructor() {}
@@ -47,11 +47,11 @@ export class ConstraintForceSolver {
     CGM(CM, iterations = 64) {
         let max_iter = iterations;
 
-        let x = CM.lambda;
+        let x = CM.lambda.clone();
         let r = Vector.sub_vectors(CM.b, CM.A(x));
         let rk_mag2 = r.sqr_magnitude();
 
-        if (rk_mag2 < this.#m_minError) {
+        if (rk_mag2 < this.#m_minError * this.#m_minError) {
             console.log("Premature lambda found on iteration: 0 (before iterating)");
             return x;
         } else if (rk_mag2 > 1) {
@@ -59,7 +59,7 @@ export class ConstraintForceSolver {
             max_iter = this.#upped_iteration_count;
         }
 
-        let p = r;
+        let p = r.clone();
 
         for (let k = 0; k < max_iter; k++) {
             let Ap = CM.A(p);
@@ -70,7 +70,7 @@ export class ConstraintForceSolver {
 
             const rk1_mag2 = r.sqr_magnitude();
 
-            if (rk1_mag2 < this.#m_minError) {
+            if (rk1_mag2 < this.#m_minError * this.#m_minError) {
                 console.log("Premature lambda found on iteration: " + k + " (while iterating)");
                 break;
             }

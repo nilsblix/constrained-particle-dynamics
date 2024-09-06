@@ -4,14 +4,6 @@ import {Gravity, LinearDamping} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 import {Units} from "./main.js";
 
-/* TODO
-    make constraints
-    render all the shit in main
-    update html file
-    setup scene
-*/
-
-
 export class PhysicsState {
     static g_EPSILON = 1e-5;
 
@@ -76,12 +68,12 @@ export class PhysicsState {
             this.#CM.C.elements[ith_row] = this.#m_constraints[ith_row].C_i(this.#CM.q);
             this.#CM.C_dot.elements[ith_row] = this.#m_constraints[ith_row].C_i_dot(this.#CM.q, this.#CM.q_dot);
 
-            this.#CM.J.elements.concat(
-                this.#m_constraints[ith_row].J_i(this.#CM.q, ith_row)
+            this.#CM.J.elements.push(
+                ...this.#m_constraints[ith_row].J_i(this.#CM.q, ith_row)
             );
-
-            this.#CM.J_dot.elements.concat(
-                this.#m_constraints[ith_row].J_i_dot(this.#CM.q, this.#CM.q_dot, ith_row)
+            
+            this.#CM.J_dot.elements.push(
+                ...this.#m_constraints[ith_row].J_i_dot(this.#CM.q, this.#CM.q_dot, ith_row)
             );
         }
 
@@ -126,14 +118,14 @@ export class PhysicsState {
 
                 const Q_hat = SparseMatrix.matT_mult_vec(this.#CM.J, this.#CM.lambda);
                 for (let i = 0; i < this.#m_objects.length; i++) {
-                    const d_force = new Vector2(Q_hat.elements[2 * 1], Q_hat.elements[2 * i + 1]);
+                    const d_force = new Vector2(Q_hat.elements[2 * i], Q_hat.elements[2 * i + 1]);
                     this.#m_objects[i].force = Vector2.addVectors(this.#m_objects[i].force, d_force);
                 }
             }
 
             // integrate
             for (let i = 0; i < this.#m_objects.length; i++) {
-                this.#m_objects[i].RK4(sub_dt);
+                this.#m_objects[i].symplecticEuler(sub_dt);
             }
             // console.log("obj len: " + this.#m_objects.length);
 
