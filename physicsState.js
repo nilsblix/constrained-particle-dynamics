@@ -1,5 +1,5 @@
 import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
-import {ConstraintManager, ConstraintForceSolver} from "./constraints.js";
+import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js";
 import {Gravity, LinearDamping} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 import {Units} from "./main.js";
@@ -78,6 +78,7 @@ export class PhysicsState {
         }
 
         this.#CM.b = this.#CM.getB();
+        this.#CM.A = this.#CM.getA();
 
     }
 
@@ -112,7 +113,7 @@ export class PhysicsState {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
-                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 64) // last int is iteration-count
+                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 128) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.CFS_ms = CFS_et - CFS_st;
 

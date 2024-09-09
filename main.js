@@ -51,7 +51,7 @@ export class Units {
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 60,
-    sim_steps: 16,
+    sim_steps: 8,
     simulating: false,
     physics_frame_time: -1,
     render_frame_time: -1,
@@ -77,7 +77,7 @@ function setupScene(version) {
 
             const id_0 = new DynamicObject(new Vector2(5, h), 1, 0.3);
             const id_1 = new DynamicObject(new Vector2(3.5, h), 1, 0.3);
-            const id_2 = new DynamicObject(new Vector2(3.5, h + 1.5), 2, 0.3);
+            const id_2 = new DynamicObject(new Vector2(3.5, h + 1.5), 1, 0.3);
 
             physicsState.addObject(id_0);
             physicsState.addObject(id_1);

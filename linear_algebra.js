@@ -132,7 +132,7 @@ export class Vector {
     sqr_magnitude() {
         let sum = 0;
         for (let i = 0; i < this.elements.length; i++) {
-            sum += this.elements[i] * this.elements[i];
+            sum += this.elements[i] ** 2;
         }
         return sum;
     }
@@ -153,6 +153,14 @@ export class Vector {
         return vec;
     }
 
+    static inv(v) {
+        let c = new Vector(v.elements.length);
+        for (let i = 0; i < c.elements.length; i++) {
+            c.elements[i] = 1 / v.elements[i];
+        }
+        return c;
+    }
+ 
 }
 
 export class SparseMatrixBlock {
@@ -180,33 +188,106 @@ export class SparseMatrix {
 
     static mat_mult_vec(A, x) {
         if (A.j_length != x.elements.length) {
-            throw new Error("mat_mult_vec: lengths are not the same");
+            const s = A.j_length > x.elements.length ? 
+                "A.j_length greater   x.elements.length" : 
+                "A.j_length less than x.elements.length";
+
+            const s_a_i = " A.lengths: " + "(" + A.i_length + "," + A.j_length + ")";
+            const s_x_l = " x.el_length: " + x.elements.length;
+
+            throw new Error("mat_mult_vec: lengths are not the same. exp: " + s + s_a_i + s_x_l);
         }
 
-        let b = new Vector(A.i_length);
-        b = Vector.set_zero_vector(b);
+        const b = new Vector(A.i_length);
         for (let idx = 0; idx < A.elements.length; idx++) {
-            let j_index = A.elements[idx].j;
-            let i_index = A.elements[idx].i;
-
-            b.elements[i_index] += A.elements[idx].data * x.elements[j_index];
+            const {i, j, data} = A.elements[idx];
+            b.elements[i] += data * x.elements[j];
         }
         return b;
     }
 
     static matT_mult_vec(A, x) {
-        if (A.i_length != x.elements.length) {
+        if (A.i_length !== x.elements.length) {
             throw new Error("matT_mult_vec: lengths are not the same");
         }
 
-        let b = new Vector(A.j_length);
-        b = Vector.set_zero_vector(b);
+        const b = new Vector(A.j_length);
         for (let idx = 0; idx < A.elements.length; idx++) {
-            let j_index = A.elements[idx].j;
-            let i_index = A.elements[idx].i;
-
-            b.elements[j_index] += A.elements[idx].data * x.elements[i_index];
+            const {i, j, data} = A.elements[idx];
+            b.elements[j] += data * x.elements[i];
         }
         return b;
+    }
+
+    static transpose(A) {
+        const C = A.clone();
+        for (let idx = 0; idx < C.elements.length; idx++) {
+            const i = C.elements[idx].i;
+            C.elements[idx].i = C.elements[idx].j;
+            C.elements[idx].j = i;
+        }
+        const i_length = C.i_length;
+        C.i_length = C.j_length;
+        C.j_length = i_length;
+
+        return C;
+    }
+
+    static mat_mult(A, B) {
+        if (A.j_length != B.j_length) {
+            throw new Error("mat_mult: dimensions do not match");
+        }
+
+        const C = new SparseMatrix(A.i_length, A.j_length);
+
+
+        const BMap = new Map();
+        for (const block of B.elements) {
+            if (!BMap.has(block.j)) {
+                BMap.set(block.j, []);
+            }
+            BMap.get(block.j).push(block);
+        }
+
+        for (const block_a of A.elements) {
+            const {a_i, a_j, a_data} = block_a;
+            if (BMap.has(a_j)) {
+                let this_data = 0;
+                for (const block_b of BMap.get(a_j)) {
+                    this_data += a_data * block_b.data;
+                }
+                if (!this_data == 0)
+                    C.elements.push(new SparseMatrixBlock(a_i, a_j, this_data));
+            }
+        }
+
+        return C;
+
+        // for (const blockA of A.elements) {
+        //     const {i, j, dataA} = blockA;
+        //     if (BMap.has(j)) {
+        //         for (const blockB of BMap.get(j)) {
+        //             const {i: k, data: dataB} = blockB;
+        //             const existingBlock = C.elements.find(block => block.i === i && block.j === k);
+        //             if (existingBlock) {
+        //                 existingBlock.data += dataA * dataB;
+        //             } else {
+        //                 C.elements.push(new SparseMatrixBlock(i, k, dataA * dataB));
+        //             }
+        //         }
+        //     }
+        // }
+        // return C;
+    }
+
+    get_diagonal() {
+        const diagonal = new Vector(this.i_length);
+        // get only the diag elements
+        for (let idx = 0; idx < this.elements.length; idx++) {
+            const {i, j, data} = this.elements[idx];
+            if (i == j)
+                diagonal.elements[i] = data;
+        }
+        return diagonal;
     }
 }

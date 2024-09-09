@@ -8,7 +8,7 @@ import {Vector2} from "./linear_algebra.js";
 
 export class Gravity {
     constructor() {
-        this.gravity = 1.8;
+        this.gravity = 2;
     }
 
     apply(m_objects) {
@@ -31,7 +31,7 @@ export class Gravity {
 
 export class LinearDamping {
     constructor() {
-        this.MU = 4.5e-3;
+        this.MU = 9e-4;
     }
 
     apply(m_objects) {
