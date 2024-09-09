@@ -1,4 +1,5 @@
 import {SparseMatrixBlock} from "./linear_algebra.js";
+import {Units} from "./main.js";
 
 /*
     When adding a new constraint, 
@@ -7,6 +8,7 @@ import {SparseMatrixBlock} from "./linear_algebra.js";
         --> C_dot (the time D of C), return: scalar
         --> J_i (the jacobian of C wrt position vectors (q)), return: list of SparseMatrixBlocks
         --> J_i_dot (time D of J_i), return: list of SparseMatrixBlocks
+        --> render(c, m_objects) (self-explanatory)
 */
 
 export class FixedYConstraint {
@@ -31,6 +33,10 @@ export class FixedYConstraint {
     J_i_dot(q, q_dot, ith_row) {
         return [new SparseMatrixBlock(ith_row, 2 * this.p_id + 1, 0)];
     }
+
+    render(c, m_objects) {
+    
+    }
 }
 
 export class FixedXConstraint {
@@ -53,6 +59,10 @@ export class FixedXConstraint {
 
     J_i_dot(q, q_dot, ith_row) {
         return [new SparseMatrixBlock(ith_row, 2 * this.p_id, 0)];
+    }
+
+    render(c, m_objects) {
+
     }
 }
 
@@ -91,5 +101,33 @@ export class LineConstraint {
         const wrt_x2 = new SparseMatrixBlock(ith_row, 2 * this.id2,     1 * (q_dot.elements[2 * this.id2] - q_dot.elements[2 * this.id1]));
         const wrt_y2 = new SparseMatrixBlock(ith_row, 2 * this.id2 + 1, 1 * (q_dot.elements[2 * this.id2 + 1] - q_dot.elements[2 * this.id1 + 1]));
         return [wrt_x1, wrt_y1, wrt_x2, wrt_y2];
+    }
+
+    render(c, m_objects) {
+        const lineWidth = 10;
+        const borderWidth = 3;     
+        c.lineCap = 'round';       
+
+        const pos1 = Units.sim_canv(m_objects[this.id1].pos);
+        const pos2 = Units.sim_canv(m_objects[this.id2].pos);
+
+        c.beginPath();
+
+        // border
+        c.lineWidth = lineWidth;
+        c.strokeStyle = "#000000";
+        c.moveTo(pos1.x, pos1.y);
+        c.lineTo(pos2.x, pos2.y);
+        c.stroke();
+
+        // interiour
+        c.lineWidth = lineWidth - borderWidth;
+        c.strokeStyle = "#FFFFFF";
+        c.moveTo(pos1.x, pos1.y);
+        c.lineTo(pos2.x, pos2.y);
+        c.stroke();
+
+        c.closePath();
+    
     }
 }

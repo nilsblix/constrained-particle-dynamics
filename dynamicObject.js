@@ -1,4 +1,5 @@
 import {Vector2} from "./linear_algebra.js";
+import {Units} from "./main.js";
 
 export class DynamicObject {
     constructor(pos, mass, drawing_radius = 0.5) {
@@ -61,6 +62,21 @@ export class DynamicObject {
 
     calculateKineticEnergy() {
         return 0.5 * this.mass * this.vel.sqr_magnitude();
+    }
+
+    render(c) {
+        const canv_pos = Units.sim_canv(this.pos);
+        const radius = this.drawing_radius * Units.scale_s_c;
+
+        c.fillStyle = "rgba(250, 201, 67, 1)";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 2;
+        
+        c.beginPath();
+        c.arc(canv_pos.x, canv_pos.y, radius, 0, 2 * Math.PI);
+        c.fill();
+        c.stroke();
+        c.closePath();
     }
 
 }
