@@ -51,6 +51,11 @@ export class Vector2 {
         return (this.subtractVectors(a, b)).magnitude();
     }
 
+    normalized() {
+        const dist = this.magnitude();
+        return Vector2.scaleVector(this, 1 / dist);
+    }
+
     toString() {
         return "x: " + this.x + " y: " + this.y;
     }
@@ -188,14 +193,7 @@ export class SparseMatrix {
 
     static mat_mult_vec(A, x) {
         if (A.j_length != x.elements.length) {
-            const s = A.j_length > x.elements.length ? 
-                "A.j_length greater   x.elements.length" : 
-                "A.j_length less than x.elements.length";
-
-            const s_a_i = " A.lengths: " + "(" + A.i_length + "," + A.j_length + ")";
-            const s_x_l = " x.el_length: " + x.elements.length;
-
-            throw new Error("mat_mult_vec: lengths are not the same. exp: " + s + s_a_i + s_x_l);
+            throw new Error("mat_mult_vec: lengths are not the same");
         }
 
         const b = new Vector(A.i_length);

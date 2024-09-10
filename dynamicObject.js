@@ -2,23 +2,13 @@ import {Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
 
 export class DynamicObject {
-    constructor(pos, mass, drawing_radius = 0.5) {
+    constructor(pos, mass, drawing_radius = 0.05) {
         this.pos = pos;
         this.vel = new Vector2(0,0);
         this.force = new Vector2(0,0);
         this.mass = mass;
         this.wass = 1 / mass;
         this.drawing_radius = drawing_radius;
-    }
-
-    test_integrate(dt) {
-        const acc = Vector2.scaleVector(this.force, this.wass);
-        console.log("force: " + this.force.toString());
-
-        this.pos.x = acc.x;
-        this.pos.y = acc.y;
-
-        this.force = new Vector2(0,0);
     }
 
     symplecticEuler(dt) {
