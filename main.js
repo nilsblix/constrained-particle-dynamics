@@ -1,13 +1,13 @@
 import {Vector2} from "./linear_algebra.js";
 import {PhysicsState} from "./physicsState.js";
 import {DynamicObject} from "./dynamicObject.js"
-import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./numeric_constraints.js";
+import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constraints.js";
 
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 
 const x_offset = 30;
-const y_offset = 50;
+const y_offset = 20;
 canvas.width = window.innerWidth - x_offset;
 // canvas.height = window.innerHeight - y_offset;
 
@@ -166,8 +166,10 @@ function setupScene(version) {
         
         case "pratt truss":
 
-            const pratt_truss_radius = 0.07;
+            const pratt_truss_radius = 0.05;
             const height_pratt_truss = Units.HEIGHT / 2;
+
+            const pratt_p_delta = 0.3;
 
             const t0 = new DynamicObject(new Vector2(2, height_pratt_truss), 1, pratt_truss_radius);
             const t1 = new DynamicObject(new Vector2(3, height_pratt_truss), 1, pratt_truss_radius);
@@ -182,11 +184,14 @@ function setupScene(version) {
             const t10 = new DynamicObject(new Vector2(7, 1 + height_pratt_truss), 1, pratt_truss_radius);
             const t11 = new DynamicObject(new Vector2(8, height_pratt_truss), 1, pratt_truss_radius);
 
-            // const t12 = new DynamicObject(new Vector2(8.3, height_truss), 1, case_truss_radius);
-            // const t13 = new DynamicObject(new Vector2(8.6, height_truss), 1, case_truss_radius);
-            // const t14 = new DynamicObject(new Vector2(8.9, height_truss), 1, case_truss_radius);
-            // const t15 = new DynamicObject(new Vector2(9.2, height_truss), 1, case_truss_radius);
-            // const t16 = new DynamicObject(new Vector2(9.8, height_truss), 1, 3 * case_truss_radius);
+            const t12 = new DynamicObject(new Vector2(5, -pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            const t13 = new DynamicObject(new Vector2(5, -2*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            const t14 = new DynamicObject(new Vector2(4.75, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            const t15 = new DynamicObject(new Vector2(5.25, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            
+            const t16 = new DynamicObject(new Vector2(2, 2+height_pratt_truss), 1, pratt_truss_radius);
+            const t17 = new DynamicObject(new Vector2(8, 2+height_pratt_truss), 5, 2*pratt_truss_radius);
+
 
 
             physicsState.addObject(t0);
@@ -201,46 +206,55 @@ function setupScene(version) {
             physicsState.addObject(t9);
             physicsState.addObject(t10);
             physicsState.addObject(t11);
-            // physicsState.addObject(t12);
-            // physicsState.addObject(t13);
-            // physicsState.addObject(t14);
-            // physicsState.addObject(t15);
-            // physicsState.addObject(t16);
 
-            // physicsState.addConstraint(new FixedXConstraint(0, t0.pos.x));
-            physicsState.addConstraint(new FixedYConstraint(0, t0.pos.y));
-            // physicsState.addConstraint(new FixedYConstraint(11, t11.pos.y));
+            physicsState.addObject(t12);
+            physicsState.addObject(t13);
+            physicsState.addObject(t14);
+            physicsState.addObject(t15);
+
+            physicsState.addObject(t16);
+            physicsState.addObject(t17);
+
+            physicsState.addFixedPosConstraint(16);
+            physicsState.addFixedYConstraint(17);
+
+            // physicsState.addFixedPosConstraint(0);
+            // physicsState.addFixedYConstraint(11);
+
+            physicsState.addLineConstraint(0, 2);
+            physicsState.addLineConstraint(2, 4);
+            physicsState.addLineConstraint(4, 6);
+            physicsState.addLineConstraint(6, 8);
+            physicsState.addLineConstraint(8, 10);
+            physicsState.addLineConstraint(10, 11);
+            physicsState.addLineConstraint(2, 3);
+            physicsState.addLineConstraint(4, 5);
+            physicsState.addLineConstraint(5, 8);
+            physicsState.addLineConstraint(7, 10);
+            
+            physicsState.addLineConstraint(1, 2);
+            physicsState.addLineConstraint(3, 4);
+            physicsState.addLineConstraint(5, 6);
+            physicsState.addLineConstraint(7, 8);
+            physicsState.addLineConstraint(9, 10);
+            physicsState.addLineConstraint(0, 1);
+            physicsState.addLineConstraint(1, 3);
+            physicsState.addLineConstraint(3, 5);
+            physicsState.addLineConstraint(5, 7);
+            physicsState.addLineConstraint(7, 9);
+            physicsState.addLineConstraint(9, 11);
 
             
+            
+            physicsState.addLineConstraint(5, 12);
+            physicsState.addLineConstraint(12, 13);
+            physicsState.addLineConstraint(13, 14);
+            physicsState.addLineConstraint(13, 15);
+            physicsState.addLineConstraint(14, 15);
 
-            physicsState.addConstraint(new LineConstraint(0, 2, Vector2.distance(t0.pos, t2.pos)));
-            physicsState.addConstraint(new LineConstraint(2, 4, Vector2.distance(t2.pos, t4.pos)));
-            physicsState.addConstraint(new LineConstraint(4, 6, Vector2.distance(t4.pos, t6.pos)));
-            physicsState.addConstraint(new LineConstraint(6, 8, Vector2.distance(t6.pos, t8.pos)));
-            physicsState.addConstraint(new LineConstraint(8, 10, Vector2.distance(t8.pos, t10.pos)));
-            physicsState.addConstraint(new LineConstraint(10, 11, Vector2.distance(t10.pos, t11.pos)));
-            physicsState.addConstraint(new LineConstraint(2, 3, Vector2.distance(t2.pos, t3.pos)));
-            physicsState.addConstraint(new LineConstraint(4, 5, Vector2.distance(t4.pos, t5.pos)));
-            physicsState.addConstraint(new LineConstraint(5, 8, Vector2.distance(t5.pos, t8.pos)));
-            physicsState.addConstraint(new LineConstraint(7, 10, Vector2.distance(t7.pos, t10.pos)));
-            
-            physicsState.addConstraint(new LineConstraint(1, 2, Vector2.distance(t1.pos, t2.pos)));
-            physicsState.addConstraint(new LineConstraint(3, 4, Vector2.distance(t3.pos, t4.pos)));
-            physicsState.addConstraint(new LineConstraint(5, 6, Vector2.distance(t5.pos, t6.pos)));
-            physicsState.addConstraint(new LineConstraint(7, 8, Vector2.distance(t7.pos, t8.pos)));
-            physicsState.addConstraint(new LineConstraint(9, 10, Vector2.distance(t9.pos, t10.pos)));
-            physicsState.addConstraint(new LineConstraint(0, 1, Vector2.distance(t0.pos, t1.pos)));
-            physicsState.addConstraint(new LineConstraint(1, 3, Vector2.distance(t1.pos, t3.pos)));
-            physicsState.addConstraint(new LineConstraint(3, 5, Vector2.distance(t3.pos, t5.pos)));
-            physicsState.addConstraint(new LineConstraint(5, 7, Vector2.distance(t5.pos, t7.pos)));
-            physicsState.addConstraint(new LineConstraint(7, 9, Vector2.distance(t7.pos, t9.pos)));
-            physicsState.addConstraint(new LineConstraint(9, 11, Vector2.distance(t9.pos, t11.pos)));
-            
-            // physicsState.addConstraint(new LineConstraint(11, 12, Vector2.distance(t11.pos, t12.pos)));
-            // physicsState.addConstraint(new LineConstraint(12, 13, Vector2.distance(t12.pos, t13.pos)));
-            // physicsState.addConstraint(new LineConstraint(13, 14, Vector2.distance(t13.pos, t14.pos)));
-            // physicsState.addConstraint(new LineConstraint(14, 15, Vector2.distance(t14.pos, t15.pos)));
-            // physicsState.addConstraint(new LineConstraint(15, 16, Vector2.distance(t15.pos, t16.pos)));
+            physicsState.addLineConstraint(0, 16);
+            physicsState.addLineConstraint(11, 17);
+
 
             break;
 
@@ -283,7 +297,7 @@ function setupScene(version) {
             physicsState.addFixedYConstraint(0);
             physicsState.addFixedXConstraint(0);
             // physicsState.addFixedPosConstraint(0);
-            // physicsState.addConstraint(new FixedYConstraint(4, kp4.pos.y));
+            physicsState.addConstraint(new FixedYConstraint(4, kp4.pos.y));
 
             physicsState.addLineConstraint(0, 1);
             physicsState.addLineConstraint(1, 2);
@@ -319,6 +333,8 @@ function setupScene(version) {
             physicsState.addObject(test_1);
 
             physicsState.addFixedPosConstraint(0);
+
+            // physicsState.addFixedXConstraint(0);
             physicsState.addFixedXConstraint(1);
             physicsState.addFixedYConstraint(1);
             break;

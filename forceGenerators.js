@@ -37,7 +37,7 @@ export class Gravity {
 
 export class LinearDamping {
     constructor() {
-        this.MU = 5e-2;
+        this.MU = 1e-1;
     }
 
     apply(m_objects) {
@@ -58,7 +58,7 @@ export class LinearDamping {
 
 export class MouseSpring {
     #rest_length = 0;
-    #stiffness_const = 15;
+    #stiffness_const = 9;
 
     constructor(id) {
         this.particle_id = id;
@@ -96,14 +96,32 @@ export class MouseSpring {
         return false;
     }
 
+    getEnergyApplied(m_objects) {
+        if (!this.active)
+            return 0;
+
+        let energy = 0;
+
+        const obj = m_objects[this.particle_id];
+
+        const dist = Vector2.distance(this.mouse_pos, obj.pos);
+        const displacement = dist - this.#rest_length;
+
+        energy += 0.5 * obj.mass * displacement * displacement;
+        return energy;
+    }
+
     render(c, m_objects) {
-        const num_segments = 20;
+        const obj = m_objects[this.particle_id];
+
+        const num_segments = 16;
         const width = 0.2;
 
         const draw_thickness = 5;
         const border_width = 2;
 
-        const obj = m_objects[this.particle_id];
+        const outer_holding_circle_width = obj.drawing_radius * 1;
+        const mouse_radius = 0.1;
 
         let segments = [];
 
@@ -112,18 +130,78 @@ export class MouseSpring {
         const dir = Vector2.scaleVector(Vector2.subtractVectors(obj.pos, this.mouse_pos), 1 / dist);
         const dirT = new Vector2(-dir.y, dir.x);
 
-        const seg_length = dist / num_segments;
+        const spring_end_delta = Vector2.scaleVector(dir.negated(), outer_holding_circle_width);
+        const spring_end = Vector2.addVectors(obj.pos, spring_end_delta);
+        const spring_start_delta = Vector2.scaleVector(dir, mouse_radius);
+        const spring_start = Vector2.addVectors(this.mouse_pos, spring_start_delta);
+
+        const spring_length = Vector2.distance(spring_start, spring_end);
+
+        const seg_length = spring_length / num_segments;
         for (let i = 0; i < num_segments; i++) {
             const length_along_dir = seg_length * i;
             const length_along_dirT = width * ((i % 2)  - 0.5);
-            const A = Vector2.addVectors(this.mouse_pos, Vector2.scaleVector(dir, length_along_dir));
+            const A = Vector2.addVectors(spring_start, Vector2.scaleVector(dir, length_along_dir));
             const B = Vector2.scaleVector(dirT, length_along_dirT);
             segments.push(Vector2.addVectors(A, B));
         }
 
+        // connection to object:
+        // constants:
+        const connection_obj_radius = Math.sqrt(2 * obj.drawing_radius * Units.scale_s_c);
+        const connection_obj_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj_radius);
+        const connection_obj_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj_delta));
+        const connection_obj_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj_delta.negated()));
+        const connection_obj_pos_3 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta));
+        const connection_obj_pos_4 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta.negated()));
+        // init settings
+        c.fillStyle = "#FFFFFF";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 2;
+        // draw rectangle:
+        c.beginPath();
+
+        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), connection_obj_radius, 0, 2 * Math.PI);
+
+        c.moveTo(connection_obj_pos_1.x, connection_obj_pos_1.y);
+        c.lineTo(connection_obj_pos_3.x, connection_obj_pos_3.y);
+        c.lineTo(connection_obj_pos_4.x, connection_obj_pos_4.y);
+        c.lineTo(connection_obj_pos_2.x, connection_obj_pos_2.y);
+
+        
+        c.stroke();
+        c.fill();
+        c.closePath();
+        // draw circle at connection to object
+        // init settings
+        c.fillStyle = "#FFFFFF";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 1;
+        
+        c.beginPath();
+        c.fillStyle = c.strokeStyle;
+        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), 0.3 * connection_obj_radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        // mouse circle:
+        // constants
+        const mouse_canvas_pos = Units.sim_canv(this.mouse_pos);
+        // init settings
+        c.fillStyle = "rgba(156, 58, 58, 1)";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 2;
+        // draw circle at mouse
+        c.beginPath();
+        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
+        c.fill();
+        c.stroke();
+        c.closePath();
+
         for (let i = 0; i < num_segments; i++) {
             const start = Units.sim_canv(segments[i]);
-            const end = i < num_segments - 1 ? Units.sim_canv(segments[i + 1]) : Units.sim_canv(Vector2.addVectors(obj.pos, Vector2.scaleVector(dirT, - 0.5* width)));
+            const end = i < num_segments - 1 ? Units.sim_canv(segments[i + 1]) : Units.sim_canv(Vector2.addVectors(spring_end, Vector2.scaleVector(dirT, - 0.5* width)));
 
             c.beginPath();
 
@@ -145,24 +223,25 @@ export class MouseSpring {
             c.closePath();
         }
 
-        // endline, border:
-        const start = Units.sim_canv(Vector2.addVectors(obj.pos, Vector2.scaleVector(dirT, 0.5* width)));
-        const end = Units.sim_canv(Vector2.addVectors(obj.pos, Vector2.scaleVector(dirT, - 0.5* width)));
+        // endline:
+        // border 1:
+        const border1_start = Units.sim_canv(Vector2.addVectors(spring_start, Vector2.scaleVector(dirT, 0.5* width)));
+        const border1_end = Units.sim_canv(Vector2.addVectors(spring_start, Vector2.scaleVector(dirT, - 0.5* width)));
 
         c.beginPath();
 
         c.lineWidth = draw_thickness + 2;
         c.lineCap = "round";
         c.strokeStyle = "#000000";
-        c.moveTo(start.x, start.y);
-        c.lineTo(end.x, end.y);
+        c.moveTo(border1_start.x, border1_start.y);
+        c.lineTo(border1_end.x, border1_end.y);
         c.stroke();
 
         // interiour
         c.lineWidth = draw_thickness + 2 - border_width;
         c.strokeStyle = "#FFFFFF";
-        c.moveTo(start.x, start.y);
-        c.lineTo(end.x, end.y);
+        c.moveTo(border1_start.x, border1_start.y);
+        c.lineTo(border1_end.x, border1_end.y);
         c.stroke();
 
         c.closePath();
@@ -170,14 +249,27 @@ export class MouseSpring {
         c.fillStyle = "rgba(156, 58, 58, 1)";
         c.strokeStyle = "#000000";
         c.lineWidth = 2;
-        
-        const mouse_canvas_pos = Units.sim_canv(this.mouse_pos);
-        const radius = 10;
+
+        // border 2
+        const border2_start = Units.sim_canv(Vector2.addVectors(spring_end, Vector2.scaleVector(dirT, 0.5* width)));
+        const border2_end = Units.sim_canv(Vector2.addVectors(spring_end, Vector2.scaleVector(dirT, - 0.5* width)));
 
         c.beginPath();
-        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, radius, 0, 2 * Math.PI);
-        c.fill();
+
+        c.lineWidth = draw_thickness + 2;
+        c.lineCap = "round";
+        c.strokeStyle = "#000000";
+        c.moveTo(border2_start.x, border2_start.y);
+        c.lineTo(border2_end.x, border2_end.y);
         c.stroke();
+
+        // interiour
+        c.lineWidth = draw_thickness + 2 - border_width;
+        c.strokeStyle = "#FFFFFF";
+        c.moveTo(border2_start.x, border2_start.y);
+        c.lineTo(border2_end.x, border2_end.y);
+        c.stroke();
+
         c.closePath();
 
     }

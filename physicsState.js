@@ -3,20 +3,25 @@ import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js"
 import {Gravity, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 // import {Units} from "./main.js"; 
-import {FixedXConstraint, FixedYConstraint, FixedPosConstraint, LineConstraint} from "./numeric_constraints.js";
+import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constraints.js";
+import {FixedPosConstraint} from "./extended_constraints.js";
 
 export class PhysicsState {
    
+    // physics depend on these:
     #m_objects = [];
     #m_constraints = [];
     #m_forceGenerators = [];
-
+    // ¿optional? physics
     #m_mouseSpring = new MouseSpring(0);
 
     // constraintManager
     #CM = new ConstraintManager();
     // constraintForceSolver
     #CFS = new ConstraintForceSolver();
+
+    // rendering depend on these:
+    #m_renderedConstraints = [];
 
     constructor() {
         this.mouseSpringActive = false;
@@ -131,7 +136,7 @@ export class PhysicsState {
                 this.#m_mouseSpring.apply(this.#m_objects);
 
             // resolve constraints
-            if (this.#m_constraints != 0) {
+            if (this.#m_constraints.length != 0) {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
@@ -160,25 +165,27 @@ export class PhysicsState {
 
     render(c) { // c is the canvas context
 
-        // line constraints
-        for (let i = 0; i < this.#m_constraints.length; i++) {
-            if (this.#m_constraints[i] instanceof LineConstraint)
-                this.#m_constraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[i]);
-        }
-
-        // fixed pos constraints
-        for (let i = 0; i < this.#m_constraints.length; i++) {
-            if (this.#m_constraints[i] instanceof FixedYConstraint)
-                this.#m_constraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[i]);
-            if (this.#m_constraints[i] instanceof FixedPosConstraint)
-                this.#m_constraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[i]);
+        // constraints
+        let index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            if (this.#m_renderedConstraints[i] instanceof LineConstraint) {
+                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (this.#m_renderedConstraints[i] instanceof FixedYConstraint) {
+                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
+                index_phys_const++;
+                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (this.#m_renderedConstraints[i] instanceof FixedXConstraint) {
+                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            }
+            index_phys_const++;
         }
 
  
         // objects
-        for (let i = 0; i < this.#m_objects.length; i++) {
-            this.#m_objects[i].render(c);
-        }
+        // for (let i = 0; i < this.#m_objects.length; i++) {
+        //     this.#m_objects[i].render(c);
+        // }
 
         // force generators
         for (let i = 0; i < this.#m_forceGenerators.length; i++) {
@@ -216,6 +223,14 @@ export class PhysicsState {
         this.#m_constraints.remove(con);
     }
 
+    addRenderedConstraint(con) {
+        this.#m_renderedConstraints.push(con);
+    }
+
+    removeRenderedConstraint(con) {
+        this.#m_renderedConstraints.remove(con);
+    }
+
     #getSystemEnergy() {
         let energy = 0;
 
@@ -231,6 +246,8 @@ export class PhysicsState {
             energy += this.#m_forceGenerators[i].getEnergyApplied(this.#m_objects);
         }
 
+        energy += this.#m_mouseSpring.getEnergyApplied(this.#m_objects);
+
         return energy;
 
     }
@@ -240,20 +257,28 @@ export class PhysicsState {
     }
 
     addFixedXConstraint(id) {
-        this.addConstraint(new FixedXConstraint(id, this.#m_objects[id].pos.x));
+        const con = new FixedXConstraint(id, this.#m_objects[id].pos.x);
+        this.addConstraint(con);
+        this.addRenderedConstraint(con);
     }
 
     addFixedYConstraint(id) {
-        this.addConstraint(new FixedYConstraint(id, this.#m_objects[id].pos.y));
+        const con = new FixedYConstraint(id, this.#m_objects[id].pos.y);
+        this.addConstraint(con);
+        this.addRenderedConstraint(con);
     }
 
     addFixedPosConstraint(id) {
-        this.addConstraint(new FixedPosConstraint(id, this.#m_objects[id].pos));
+        this.addConstraint(new FixedXConstraint(id, this.#m_objects[id].pos.x));
+        this.addConstraint(new FixedYConstraint(id, this.#m_objects[id].pos.y));
+        this.addRenderedConstraint(new FixedPosConstraint(id, this.#m_objects[id].pos));
     }
 
     addLineConstraint(id1, id2) {
         const dist = Vector2.distance(this.#m_objects[id1].pos, this.#m_objects[id2].pos);
-        this.addConstraint(new LineConstraint(id1, id2, dist));
+        const con = new LineConstraint(id1, id2, dist)
+        this.addConstraint(con);
+        this.addRenderedConstraint(con);
     }
 
 }

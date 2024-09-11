@@ -51,6 +51,10 @@ export class Vector2 {
         return (this.subtractVectors(a, b)).magnitude();
     }
 
+    negated() {
+        return new Vector2(-this.x, -this.y);
+    }
+
     normalized() {
         const dist = this.magnitude();
         return Vector2.scaleVector(this, 1 / dist);
