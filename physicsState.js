@@ -170,7 +170,17 @@ export class PhysicsState {
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
             if (this.#m_renderedConstraints[i] instanceof LineConstraint) {
                 this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            } else if (this.#m_renderedConstraints[i] instanceof FixedYConstraint) {
+            } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
+                index_phys_const++;
+                // this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            }
+            index_phys_const++;
+        }
+
+        // constraints 2
+        index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            if (this.#m_renderedConstraints[i] instanceof FixedYConstraint) {
                 this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
             } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
                 index_phys_const++;
@@ -180,7 +190,6 @@ export class PhysicsState {
             }
             index_phys_const++;
         }
-
  
         // objects
         // for (let i = 0; i < this.#m_objects.length; i++) {

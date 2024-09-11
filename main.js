@@ -189,8 +189,8 @@ function setupScene(version) {
             const t14 = new DynamicObject(new Vector2(4.75, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
             const t15 = new DynamicObject(new Vector2(5.25, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
             
-            const t16 = new DynamicObject(new Vector2(2, 2+height_pratt_truss), 1, pratt_truss_radius);
-            const t17 = new DynamicObject(new Vector2(8, 2+height_pratt_truss), 5, 2*pratt_truss_radius);
+            const t16 = new DynamicObject(new Vector2(2, 2+height_pratt_truss), 1, 2*pratt_truss_radius);
+            const t17 = new DynamicObject(new Vector2(8, 2+height_pratt_truss), 5, 3*pratt_truss_radius);
 
 
 
@@ -217,6 +217,7 @@ function setupScene(version) {
 
             physicsState.addFixedPosConstraint(16);
             physicsState.addFixedYConstraint(17);
+            // physicsState.addFixedYConstraint(14);
 
             // physicsState.addFixedPosConstraint(0);
             // physicsState.addFixedYConstraint(11);
@@ -251,6 +252,9 @@ function setupScene(version) {
             physicsState.addLineConstraint(13, 14);
             physicsState.addLineConstraint(13, 15);
             physicsState.addLineConstraint(14, 15);
+
+            physicsState.addLineConstraint(3, 12);
+            physicsState.addLineConstraint(7, 12);
 
             physicsState.addLineConstraint(0, 16);
             physicsState.addLineConstraint(11, 17);

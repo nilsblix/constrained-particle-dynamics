@@ -35,61 +35,190 @@ export class FixedYConstraint {
     }
 
     render(c, m_objects, lagrange_mult) {
-        const canv_pos = Units.sim_canv(m_objects[this.p_id].pos);
-        const radius = m_objects[this.p_id].drawing_radius * Units.scale_s_c;
 
-        const lineWidth = 5;
-        const borderWidth = 2;     
-        c.lineCap = "square";       
+        const obj = m_objects[this.p_id];
 
-        const pos1 = Vector2.addVectors(canv_pos, new Vector2(- 2.0 * radius, 1.2 * radius));
-        const pos2 = Vector2.addVectors(canv_pos, new Vector2(  2.0 * radius, 1.2 * radius));
+        const line_thickness = 3;
+        const border_thickness = 2;
+        const obj_rad = obj.drawing_radius;
 
-        c.beginPath();
+        const small_circle_rad = obj_rad / 4;
+        const connection_circle_rad = Math.sqrt(2 * obj_rad * Units.scale_s_c);
 
-        // border
-        c.lineWidth = lineWidth;
-        c.strokeStyle = "#000000";
-        c.moveTo(pos1.x, pos1.y);
-        c.lineTo(pos2.x, pos2.y);
-        c.stroke();
+        const correction_edges = Units.scale_c_s * (0.5*line_thickness + border_thickness);
 
-        // int
-        c.lineWidth = lineWidth - borderWidth;
-        c.strokeStyle = "#FFFFFF";
-        c.moveTo(pos1.x, pos1.y);
-        c.lineTo(pos2.x, pos2.y);
-        c.stroke();
+        const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad));
+        const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.3 * obj_rad, 0));
+        const horizontal_pos3 = Vector2.addVectors(horizontal_pos2, new Vector2( 1.3 * obj_rad, 0));
 
-        c.closePath();
+        const c1 = Vector2.addVectors(horizontal_pos1, new Vector2(0.2 * obj_rad, - correction_edges - small_circle_rad));
+        const c2 = Vector2.addVectors(horizontal_pos2, new Vector2(0, - correction_edges - small_circle_rad));
+        const c3 = Vector2.addVectors(horizontal_pos3, new Vector2(- 0.2 * obj_rad, - correction_edges - small_circle_rad));
 
-        // circles
+        const connection_obj_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(- Units.scale_c_s * connection_circle_rad, 0));
+        const connection_obj_pos2 = Vector2.addVectors(obj.pos, new Vector2(- Units.scale_c_s * connection_circle_rad, 0));
+        const connection_obj_pos3 = Vector2.addVectors(obj.pos, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
+        const connection_obj_pos4 = Vector2.addVectors(horizontal_pos2, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
+        
+        // draw the connecting things
+        // settings
         c.fillStyle = "#FFFFFF";
         c.strokeStyle = "#000000";
-        c.lineWidth = 1;
-        const c_radius = Math.sqrt(2 * radius);
-        const c1 = Vector2.addVectors(pos1, new Vector2(  0.8 * c_radius, 1.4 * c_radius));
-        const c2 = Vector2.addVectors(pos2, new Vector2(- 0.8 * c_radius, 1.4 * c_radius));
-        const middle_line_pos = Vector2.scaleVector(Vector2.addVectors(pos1, pos2), 1/2);
-        const c3 = Vector2.addVectors(middle_line_pos, new Vector2(0, 1.4 * c_radius));
-
+        // non adjustable settings:
+        c.lineWidth = border_thickness;
+        c.lineCap = "butt";
+        // drawing
         c.beginPath();
-        c.arc(c1.x, c1.y, c_radius, 0, 2 * Math.PI);
-        c.fill();
+        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), connection_circle_rad, 0, 2 * Math.PI);
+        c.moveTo(Units.sim_canv_x(connection_obj_pos1), Units.sim_canv_y(connection_obj_pos1));
+        c.lineTo(Units.sim_canv_x(connection_obj_pos2), Units.sim_canv_y(connection_obj_pos2));
+        c.lineTo(Units.sim_canv_x(connection_obj_pos3), Units.sim_canv_y(connection_obj_pos3));
+        c.lineTo(Units.sim_canv_x(connection_obj_pos4), Units.sim_canv_y(connection_obj_pos4));
         c.stroke();
+        c.fill();
+        c.closePath();
+        // draw the small inner circle
+        c.lineWidth = 0;
+        c.beginPath();
+        c.fillStyle = c.strokeStyle;
+        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), 0.3 * connection_circle_rad, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
         c.closePath();
 
+        // draw the horizontal line:
+        // settings:
+        c.strokeStyle = "#000000";
+        c.lineCap = "round";
+        // non adjustable settings
+        c.lineWidth = line_thickness + border_thickness;
+        // draw commands
+        // border
         c.beginPath();
-        c.arc(c2.x, c2.y, c_radius, 0, 2 * Math.PI);
-        c.fill();
+        c.moveTo(Units.sim_canv_x(horizontal_pos1), Units.sim_canv_y(horizontal_pos1));
+        c.lineTo(Units.sim_canv_x(horizontal_pos3), Units.sim_canv_y(horizontal_pos3));
         c.stroke();
+        // c.fill();
+        c.closePath();
+        // fill (inner)
+        c.lineWidth = line_thickness;
+        c.strokeStyle = "#FFFFFF";
+        c.beginPath();
+        c.moveTo(Units.sim_canv_x(horizontal_pos1), Units.sim_canv_y(horizontal_pos1));
+        c.lineTo(Units.sim_canv_x(horizontal_pos3), Units.sim_canv_y(horizontal_pos3));
+        c.stroke();
+        // c.fill();
         c.closePath();
 
+        // draw the three small circles
+        // settings:
+        c.fillStyle = "#FFFFFF";
+        c.strokeStyle = "#000000";
+        // non adjustable settings:
+        c.lineWidth = border_thickness;
+        // draw commands:
         c.beginPath();
-        c.arc(c3.x, c3.y, c_radius, 0, 2 * Math.PI);
-        c.fill();
+        c.arc(Units.sim_canv_x(c1), Units.sim_canv_y(c1), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
         c.stroke();
+        c.fill();
         c.closePath();
+        c.beginPath();
+        c.arc(Units.sim_canv_x(c2), Units.sim_canv_y(c2), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+        c.beginPath();
+        c.arc(Units.sim_canv_x(c3), Units.sim_canv_y(c3), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();        
+
+        // draw the three small circles
+        
+        // const obj = m_objects[this.p_id];
+
+        // const canv_pos = Units.sim_canv(obj.pos);
+        // const radius = obj.drawing_radius // * Units.scale_s_c;
+
+        // const lineWidth = 5;
+        // const borderWidth = 2;     
+        // c.lineCap = "square";       
+
+        // const middle_line_pos = Vector2.addVectors(obj.pos, 1.2 * radius)
+        // const pos1 = Vector2.addVectors(middle_line_pos, new Vector2(- 2.0 * radius, 0));
+        // const pos2 = Vector2.addVectors(middle_line_pos, new Vector2(  2.0 * radius, 0));
+
+
+        // c.beginPath();
+
+        // // border
+        // c.lineWidth = lineWidth;
+        // c.strokeStyle = "#000000";
+        // c.moveTo(pos1.x, pos1.y);
+        // c.lineTo(pos2.x, pos2.y);
+        // c.stroke();
+
+        // // int
+        // c.lineWidth = lineWidth - borderWidth;
+        // c.strokeStyle = "#FFFFFF";
+        // c.moveTo(pos1.x, pos1.y);
+        // c.lineTo(pos2.x, pos2.y);
+        // c.stroke();
+
+        // c.closePath();
+
+        // // circles
+        // c.fillStyle = "#FFFFFF";
+        // c.strokeStyle = "#000000";
+        // c.lineWidth = 1;
+        // const c_radius = Math.sqrt(2 * radius);
+        // const c1 = Units.sim_canv(Vector2.addVectors(pos1, new Vector2(  0.8 * c_radius, 1.4 * c_radius)));
+        // const c2 = Units.sim_canv(Vector2.addVectors(pos2, new Vector2(- 0.8 * c_radius, 1.4 * c_radius)));
+        // const c3 = Units.sim_canv(Vector2.addVectors(middle_line_pos, new Vector2(0, 1.4 * c_radius)));
+
+        // c.beginPath();
+        // c.arc(c1.x, c1.y, c_radius, 0, 2 * Math.PI);
+        // c.fill();
+        // c.stroke();
+        // c.closePath();
+
+        // c.beginPath();
+        // c.arc(c2.x, c2.y, c_radius, 0, 2 * Math.PI);
+        // c.fill();
+        // c.stroke();
+        // c.closePath();
+
+        // c.beginPath();
+        // c.arc(c3.x, c3.y, c_radius, 0, 2 * Math.PI);
+        // c.fill();
+        // c.stroke();
+        // c.closePath();
+
+        // // connection to object:
+        // // constants:
+        // const connection_obj_radius = Math.sqrt(2 * obj.drawing_radius )// * Units.scale_s_c);
+        // const connection_obj_delta = new Vector2(connection_obj_radius, 0);
+        // const connection_obj_pos_1 = Units.sim_canv(Vector2.addVectors(middle_line_pos, connection_obj_delta));
+        // const connection_obj_pos_2 = Units.sim_canv(Vector2.addVectors(middle_line_pos, connection_obj_delta.negated()));
+        // const connection_obj_pos_3 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta));
+        // const connection_obj_pos_4 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta.negated()));
+        // // init settings
+        // c.fillStyle = "#FFFFFF";
+        // c.strokeStyle = "#000000";
+        // c.lineWidth = 2;
+        // // draw rectangle:
+        // c.beginPath();
+
+        // c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), connection_obj_radius, 0, 2 * Math.PI);
+
+        // c.moveTo(connection_obj_pos_1.x, connection_obj_pos_1.y);
+        // c.lineTo(connection_obj_pos_3.x, connection_obj_pos_3.y);
+        // c.lineTo(connection_obj_pos_4.x, connection_obj_pos_4.y);
+        // c.lineTo(connection_obj_pos_2.x, connection_obj_pos_2.y);
+        
+        // c.stroke();
+        // c.fill();
+        // c.closePath();
     }
 }
 

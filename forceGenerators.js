@@ -167,7 +167,6 @@ export class MouseSpring {
         c.lineTo(connection_obj_pos_3.x, connection_obj_pos_3.y);
         c.lineTo(connection_obj_pos_4.x, connection_obj_pos_4.y);
         c.lineTo(connection_obj_pos_2.x, connection_obj_pos_2.y);
-
         
         c.stroke();
         c.fill();
