@@ -35,6 +35,36 @@ export class Gravity {
 
 }
 
+export class Wind {
+    constructor() {
+        this.wind = 1;
+    }
+
+    apply(m_objects) {
+        for (let i = 0; i < m_objects.length; i++) {
+            m_objects[i].force = Vector2.addVectors(m_objects[i].force, Vector2.scaleVector(new Vector2(this.wind, 0), m_objects[i].mass));
+
+        }
+    }
+
+    getEnergyApplied(m_objects) {
+        let energy = 0;
+
+        for (let i = 0; i < m_objects.length; i++) {
+            if (this.wind > 0)
+                energy += m_objects[i].mass * (Units.WIDTH - m_objects[i].pos.x) * this.wind;
+            else 
+                energy += m_objects[i].mass * m_objects[i].pos.x * this.wind;   
+        }
+        return energy;
+    }
+
+    render(c) {
+
+    }
+
+}
+
 export class LinearDamping {
     constructor() {
         this.MU = 1e-1;
@@ -193,9 +223,47 @@ export class MouseSpring {
         c.lineWidth = 2;
         // draw circle at mouse
         c.beginPath();
-        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
+        // c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
         c.fill();
         c.stroke();
+        c.closePath();
+
+        // connection to mouse:
+        // constants:
+        const connection_mouse_radius = Math.sqrt(2 * obj.drawing_radius * Units.scale_s_c);
+        const connection_mouse_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_mouse_radius);
+        const connection_mouse_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta));
+        const connection_mouse_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta.negated()));
+        const connection_mouse_pos_3 = Units.sim_canv(Vector2.addVectors(this.mouse_pos, connection_mouse_delta));
+        const connection_mouse_pos_4 = Units.sim_canv(Vector2.addVectors(this.mouse_pos, connection_mouse_delta.negated()));
+        // init settings
+        c.fillStyle = "#FFFFFF";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 2;
+        // draw rectangle:
+        c.beginPath();
+
+        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, connection_mouse_radius, 0, 2 * Math.PI);
+
+        c.moveTo(connection_mouse_pos_2.x, connection_mouse_pos_2.y);
+        c.lineTo(connection_mouse_pos_4.x, connection_mouse_pos_4.y);
+        c.lineTo(connection_mouse_pos_3.x, connection_mouse_pos_3.y);
+        c.lineTo(connection_mouse_pos_1.x, connection_mouse_pos_1.y);
+
+        c.stroke();
+        c.fill();
+        c.closePath();
+        // draw circle at connection to object
+        // init settings
+        c.fillStyle = "#FFFFFF";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 1;
+        
+        c.beginPath();
+        c.fillStyle = c.strokeStyle;
+        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, 0.3 * connection_mouse_radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
         c.closePath();
 
         for (let i = 0; i < num_segments; i++) {

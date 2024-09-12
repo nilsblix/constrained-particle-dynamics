@@ -7,7 +7,7 @@ const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 
 const x_offset = 30;
-const y_offset = 20;
+const y_offset = 50;
 canvas.width = window.innerWidth - x_offset;
 // canvas.height = window.innerHeight - y_offset;
 
@@ -184,13 +184,17 @@ function setupScene(version) {
             const t10 = new DynamicObject(new Vector2(7, 1 + height_pratt_truss), 1, pratt_truss_radius);
             const t11 = new DynamicObject(new Vector2(8, height_pratt_truss), 1, pratt_truss_radius);
 
-            const t12 = new DynamicObject(new Vector2(5, -pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
-            const t13 = new DynamicObject(new Vector2(5, -2*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
-            const t14 = new DynamicObject(new Vector2(4.75, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
-            const t15 = new DynamicObject(new Vector2(5.25, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            // const t12 = new DynamicObject(new Vector2(5, -pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            // const t13 = new DynamicObject(new Vector2(5, -2*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            // const t14 = new DynamicObject(new Vector2(4.75, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
+            // const t15 = new DynamicObject(new Vector2(5.25, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
             
             const t16 = new DynamicObject(new Vector2(2, 2+height_pratt_truss), 1, 2*pratt_truss_radius);
             const t17 = new DynamicObject(new Vector2(8, 2+height_pratt_truss), 5, 3*pratt_truss_radius);
+
+            const t18 = new DynamicObject(new Vector2(2, 1+height_pratt_truss), 1, pratt_truss_radius);
+            const t19 = new DynamicObject(new Vector2(8, 1+height_pratt_truss), 1, pratt_truss_radius);
+
 
 
 
@@ -207,16 +211,19 @@ function setupScene(version) {
             physicsState.addObject(t10);
             physicsState.addObject(t11);
 
-            physicsState.addObject(t12);
-            physicsState.addObject(t13);
-            physicsState.addObject(t14);
-            physicsState.addObject(t15);
+            // physicsState.addObject(t12);
+            // physicsState.addObject(t13);
+            // physicsState.addObject(t14);
+            // physicsState.addObject(t15);
 
             physicsState.addObject(t16);
             physicsState.addObject(t17);
 
-            physicsState.addFixedPosConstraint(16);
-            physicsState.addFixedYConstraint(17);
+            physicsState.addObject(t18);
+            physicsState.addObject(t19);
+
+            physicsState.addFixedPosConstraint(12);
+            physicsState.addFixedYConstraint(13);
             // physicsState.addFixedYConstraint(14);
 
             // physicsState.addFixedPosConstraint(0);
@@ -247,17 +254,20 @@ function setupScene(version) {
 
             
             
-            physicsState.addLineConstraint(5, 12);
-            physicsState.addLineConstraint(12, 13);
-            physicsState.addLineConstraint(13, 14);
-            physicsState.addLineConstraint(13, 15);
-            physicsState.addLineConstraint(14, 15);
+            // physicsState.addLineConstraint(5, 12);
+            // physicsState.addLineConstraint(12, 13);
+            // physicsState.addLineConstraint(13, 14);
+            // physicsState.addLineConstraint(13, 15);
+            // physicsState.addLineConstraint(14, 15);
 
-            physicsState.addLineConstraint(3, 12);
-            physicsState.addLineConstraint(7, 12);
+            // physicsState.addLineConstraint(3, 12);
+            // physicsState.addLineConstraint(7, 12);
 
-            physicsState.addLineConstraint(0, 16);
-            physicsState.addLineConstraint(11, 17);
+            physicsState.addLineConstraint(0, 14);
+            physicsState.addLineConstraint(14, 12);
+
+            physicsState.addLineConstraint(11, 15);
+            physicsState.addLineConstraint(15, 13);
 
 
             break;
@@ -348,7 +358,7 @@ function setupScene(version) {
 function renderBackground() {
     // colors
     const backgroundColor = "rgba(30, 30, 30, 1)";
-    const big_line_color = "rgba(50, 50, 50, 1)"
+    const big_line_color = "rgba(90, 90, 90, 1)"
     const small_line_color = "rgba(40, 40, 40, 1)"
     // vars
     const lines_x = 20;

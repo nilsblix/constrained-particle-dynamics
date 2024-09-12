@@ -1,6 +1,6 @@
 import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
 import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js";
-import {Gravity, LinearDamping, MouseSpring} from "./forceGenerators.js";
+import {Gravity, Wind, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 // import {Units} from "./main.js"; 
 import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constraints.js";
@@ -26,6 +26,7 @@ export class PhysicsState {
     constructor() {
         this.mouseSpringActive = false;
         this.addForceGenerator(new Gravity());
+        // this.addForceGenerator(new Wind());
         this.addForceGenerator(new LinearDamping());
 
         // debugs:
@@ -165,6 +166,11 @@ export class PhysicsState {
 
     render(c) { // c is the canvas context
 
+        // objects
+        for (let i = 0; i < this.#m_objects.length; i++) {
+            this.#m_objects[i].render(c);
+        }
+
         // constraints
         let index_phys_const = 0;
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
@@ -190,11 +196,6 @@ export class PhysicsState {
             }
             index_phys_const++;
         }
- 
-        // objects
-        // for (let i = 0; i < this.#m_objects.length; i++) {
-        //     this.#m_objects[i].render(c);
-        // }
 
         // force generators
         for (let i = 0; i < this.#m_forceGenerators.length; i++) {
