@@ -67,7 +67,7 @@ export class Wind {
 
 export class LinearDamping {
     constructor() {
-        this.MU = 1e-1;
+        this.MU = 5e-1;
     }
 
     apply(m_objects) {
@@ -88,7 +88,7 @@ export class LinearDamping {
 
 export class MouseSpring {
     #rest_length = 0;
-    #stiffness_const = 9;
+    #stiffness_const = 10;
 
     constructor(id) {
         this.particle_id = id;
@@ -96,8 +96,13 @@ export class MouseSpring {
         this.active = false;
     }
 
+    setStiffness(value) {
+        this.#stiffness_const = value;
+    }
+
     apply(m_objects) {
         const obj = m_objects[this.particle_id];
+        this.#rest_length = obj.drawing_radius;
 
         const dist = Vector2.distance(this.mouse_pos, obj.pos);
         const displacement = dist - this.#rest_length;

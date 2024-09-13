@@ -19,6 +19,9 @@ export class Units {
     static scale_c_s = this.WIDTH / canvas.width;
     static scale_s_c = canvas.width / this.WIDTH;
 
+    static render_num_lines_x = 20;
+    static render_num_lines_y = this.render_num_lines_x / Units.RATIO;
+
     static canv_sim_x(pos) {
         return this.WIDTH * pos.x / canvas.width;
     }
@@ -42,6 +45,20 @@ export class Units {
     static sim_canv(pos) {
         return new Vector2(this.sim_canv_x(pos), this.sim_canv_y(pos));
     }
+
+    static snap_to_grid_x(pos) {
+        const x = pos.x + 0.5 * this.WIDTH / this.render_num_lines_x;
+        return this.WIDTH / this.render_num_lines_x * Math.floor(this.render_num_lines_x / this.WIDTH * x);
+    }
+
+    static snap_to_grid_y(pos) {
+        const y = pos.y + 0.5 * this.HEIGHT / this.render_num_lines_y;
+        return this.HEIGHT / this.render_num_lines_y * Math.floor(this.render_num_lines_y / this.HEIGHT * y);
+    }
+
+    static snap_to_grid(pos) {
+        return new Vector2(this.snap_to_grid_x(pos), this.snap_to_grid_y(pos));
+    }
 }
 
 canvas.height = Units.scale_s_c * (Units.HEIGHT) - y_offset;
@@ -56,11 +73,35 @@ int main() {
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 60,
-    sim_steps: 16,
+    sim_steps: 8,
     simulating: false,
     physics_frame_time: -1,
     render_frame_time: -1,
+    standard_radius: 0.05,
 };
+
+let add_to_physics = {
+    active: false,
+    snap_to_grid: false,
+
+    dynamicObject() {
+        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
+        const pos = this.snap_to_grid ? Units.snap_to_grid(mouse_sim_pos) : mouse_sim_pos;
+        physicsState.addObject(new DynamicObject(pos, 1, solver.standard_radius));
+    },
+
+    fixedXConstraint() {
+        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        physicsState.addFixedXConstraint(id);
+    },
+
+    fixedYConstraint() {
+        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        physicsState.addFixedYConstraint(id);
+    },
+}
 
 let mouse = {
     canv_pos: new Vector2(0,0),
@@ -89,87 +130,28 @@ function updateDisplayedDebugs() {
     document.getElementById("C_dot_value").innerHTML = physicsState.C_dot_value.toFixed(5);
 }
 
+function updateSliderValues() {
+    const options = document.getElementById("option");
+    const slider = document.getElementById("rangeSlider");
+
+    const selected = options.value;
+    if (selected == "gravity") {
+        physicsState.setGravity(slider.value);
+    } else if (selected == "linear damping") {
+        physicsState.setLinearDampingMU(slider.value);
+    } else if (selected == "mouse spring") {
+        physicsState.setMouseSpringStiffness(slider.value);
+    }
+}
+
 function setupScene(version) {
     switch (version) {
-        case "test 1":
-
-            const d_radius = 0.1;
-
-            const h = Units.HEIGHT / 2 + 0.02;
-
-            const l0 = 0.4;
-                
-            const id_0 = new DynamicObject(new Vector2(5, h), 1, d_radius);
-            const id_1 = new DynamicObject(new Vector2(5 - l0, h), 1, d_radius);
-            const id_2 = new DynamicObject(new Vector2(5 - l0, h + l0), 1, d_radius);
-            const id_3 = new DynamicObject(new Vector2(5 - 2 * l0, h + l0), 1, d_radius);
-
-            physicsState.addObject(id_0);
-            physicsState.addObject(id_1);
-            physicsState.addObject(id_2);
-            physicsState.addObject(id_3);
-
-            physicsState.addConstraint(new FixedYConstraint(0, id_0.pos.y));
-            physicsState.addConstraint(new FixedXConstraint(0, id_0.pos.x));
-
-            // physicsState.addConstraint(new FixedXConstraint(3, id_3.pos.x));
-
-            // physicsState.addConstraint(new FixedXConstraint(1, id_1.pos.x));
-
-            // physicsState.addConstraint(new FixedYConstraint(2, id_2.pos.y));
-            // physicsState.addConstraint(new FixedXConstraint(2, id_2.pos.x));
-
-            physicsState.addConstraint(new LineConstraint(0, 1, Vector2.distance(id_0.pos, id_1.pos)));
-            physicsState.addConstraint(new LineConstraint(1, 2, Vector2.distance(id_1.pos, id_2.pos)));
-            physicsState.addConstraint(new LineConstraint(2, 3, Vector2.distance(id_2.pos, id_3.pos)));
-
-            break;
-    
-        case "test 2":
-
-            const d_radius_2 = 0.08;
-            const height = Units.HEIGHT / 2;
-            const l0_2 = 0.8;
-
-            const d0 = new DynamicObject(new Vector2(4, height), 1);
-            const d1 = new DynamicObject(new Vector2(6, height), 1);
-            const d2 = new DynamicObject(new Vector2(5, height + 1), 1);
-            const d3 = new DynamicObject(new Vector2(5 + 0.5, height + 1 + l0_2), 1);
-            const d4 = new DynamicObject(new Vector2(5 + 2 * 0.03, height + 1 + 2 * l0_2), 5, 0.14+d_radius_2);
-
-            physicsState.addObject(d0);
-            physicsState.addObject(d1);
-            physicsState.addObject(d2);
-            physicsState.addObject(d3);
-            physicsState.addObject(d4);
-
-            physicsState.addFixedPosConstraint(0);
-            // physicsState.addFixedXConstraint(0);
-            // physicsState.addFixedYConstraint(0);
-            // physicsState.addConstraint(new FixedYConstraint(0, d0.pos.y));
-            // physicsState.addConstraint(new FixedXConstraint(0, d0.pos.x));
-
-            physicsState.addConstraint(new LineConstraint(0, 1, Vector2.distance(d0.pos, d1.pos)));
-            physicsState.addConstraint(new LineConstraint(0, 2, Vector2.distance(d0.pos, d2.pos)));
-            physicsState.addConstraint(new LineConstraint(1, 2, Vector2.distance(d1.pos, d2.pos)));
-            physicsState.addConstraint(new LineConstraint(2, 3, Vector2.distance(d2.pos, d3.pos)));
-            physicsState.addConstraint(new LineConstraint(3, 4, Vector2.distance(d3.pos, d4.pos)));
-
-            // physicsState.addLineConstraint(0, 1);
-            // physicsState.addLineConstraint(0, 2);
-            // physicsState.addLineConstraint(1, 2);
-            // physicsState.addLineConstraint(2, 3);
-            // physicsState.addLineConstraint(3, 4);
-
-
-            break;
-        
         case "pratt truss":
 
             const pratt_truss_radius = 0.05;
             const height_pratt_truss = Units.HEIGHT / 2;
 
-            const pratt_p_delta = 0.3;
+            const pratt_p_delta = 0.6;
 
             const t0 = new DynamicObject(new Vector2(2, height_pratt_truss), 1, pratt_truss_radius);
             const t1 = new DynamicObject(new Vector2(3, height_pratt_truss), 1, pratt_truss_radius);
@@ -183,17 +165,15 @@ function setupScene(version) {
             const t9 = new DynamicObject(new Vector2(7, height_pratt_truss), 1, pratt_truss_radius);
             const t10 = new DynamicObject(new Vector2(7, 1 + height_pratt_truss), 1, pratt_truss_radius);
             const t11 = new DynamicObject(new Vector2(8, height_pratt_truss), 1, pratt_truss_radius);
-
-            // const t12 = new DynamicObject(new Vector2(5, -pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
-            // const t13 = new DynamicObject(new Vector2(5, -2*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
-            // const t14 = new DynamicObject(new Vector2(4.75, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
-            // const t15 = new DynamicObject(new Vector2(5.25, -3*pratt_p_delta+height_pratt_truss), 1, pratt_truss_radius);
             
-            const t16 = new DynamicObject(new Vector2(2, 2+height_pratt_truss), 1, 2*pratt_truss_radius);
-            const t17 = new DynamicObject(new Vector2(8, 2+height_pratt_truss), 5, 3*pratt_truss_radius);
+            const t12 = new DynamicObject(new Vector2(2, 2+height_pratt_truss), 1, 2*pratt_truss_radius);
+            const t13 = new DynamicObject(new Vector2(8, 2+height_pratt_truss), 5, 3*pratt_truss_radius);
 
-            const t18 = new DynamicObject(new Vector2(2, 1+height_pratt_truss), 1, pratt_truss_radius);
-            const t19 = new DynamicObject(new Vector2(8, 1+height_pratt_truss), 1, pratt_truss_radius);
+            const t14 = new DynamicObject(new Vector2(2, 1+height_pratt_truss), 1, pratt_truss_radius);
+            const t15 = new DynamicObject(new Vector2(8, 1+height_pratt_truss), 1, pratt_truss_radius);
+
+            const t16 = new DynamicObject(new Vector2(5, -pratt_p_delta+height_pratt_truss), 1, 1*pratt_truss_radius);
+            const t17 = new DynamicObject(new Vector2(5, -2*pratt_p_delta+height_pratt_truss), 5, 2.5*pratt_truss_radius);
 
 
 
@@ -211,23 +191,17 @@ function setupScene(version) {
             physicsState.addObject(t10);
             physicsState.addObject(t11);
 
-            // physicsState.addObject(t12);
-            // physicsState.addObject(t13);
-            // physicsState.addObject(t14);
-            // physicsState.addObject(t15);
+            physicsState.addObject(t12);
+            physicsState.addObject(t13);
+
+            physicsState.addObject(t14);
+            physicsState.addObject(t15);
 
             physicsState.addObject(t16);
             physicsState.addObject(t17);
 
-            physicsState.addObject(t18);
-            physicsState.addObject(t19);
-
             physicsState.addFixedPosConstraint(12);
             physicsState.addFixedYConstraint(13);
-            // physicsState.addFixedYConstraint(14);
-
-            // physicsState.addFixedPosConstraint(0);
-            // physicsState.addFixedYConstraint(11);
 
             physicsState.addLineConstraint(0, 2);
             physicsState.addLineConstraint(2, 4);
@@ -252,22 +226,13 @@ function setupScene(version) {
             physicsState.addLineConstraint(7, 9);
             physicsState.addLineConstraint(9, 11);
 
-            
-            
-            // physicsState.addLineConstraint(5, 12);
-            // physicsState.addLineConstraint(12, 13);
-            // physicsState.addLineConstraint(13, 14);
-            // physicsState.addLineConstraint(13, 15);
-            // physicsState.addLineConstraint(14, 15);
-
-            // physicsState.addLineConstraint(3, 12);
-            // physicsState.addLineConstraint(7, 12);
-
             physicsState.addLineConstraint(0, 14);
-            physicsState.addLineConstraint(14, 12);
-
+            physicsState.addLineConstraint(12, 14);
             physicsState.addLineConstraint(11, 15);
             physicsState.addLineConstraint(15, 13);
+
+            physicsState.addLineConstraint(5, 16);
+            physicsState.addLineConstraint(16, 17);
 
 
             break;
@@ -308,10 +273,9 @@ function setupScene(version) {
 
             // physicsState.addConstraint(new FixedXConstraint(0, kp0.pos.x));
             // physicsState.addConstraint(new FixedYConstraint(0, kp0.pos.y));
-            physicsState.addFixedYConstraint(0);
-            physicsState.addFixedXConstraint(0);
+            physicsState.addFixedPosConstraint(0);
             // physicsState.addFixedPosConstraint(0);
-            physicsState.addConstraint(new FixedYConstraint(4, kp4.pos.y));
+            physicsState.addFixedYConstraint(4);
 
             physicsState.addLineConstraint(0, 1);
             physicsState.addLineConstraint(1, 2);
@@ -339,20 +303,127 @@ function setupScene(version) {
 
             break;
         
-        case "hookes law":
-            const test_0 = new DynamicObject(new Vector2(5, 2), 1, 0.2);
-            const test_1 = new DynamicObject(new Vector2(2, 2), 1, 0.2);
+        case "large bridge structure":
 
-            physicsState.addObject(test_0);
-            physicsState.addObject(test_1);
+            const lbs_radius = 0.05;
+
+            const p = [
+            new DynamicObject(new Vector2(3.4, 1),   1, lbs_radius),
+            new DynamicObject(new Vector2(3, 1.6),   1, lbs_radius),
+            new DynamicObject(new Vector2(3.8, 1.6), 1, lbs_radius),
+            new DynamicObject(new Vector2(3, 2.4),   1, lbs_radius),
+            new DynamicObject(new Vector2(3.8, 2.4),   1, lbs_radius),
+            new DynamicObject(new Vector2(3, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(3.8, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(3, 4),   1, lbs_radius),
+            new DynamicObject(new Vector2(3.8, 4),   1, lbs_radius),
+            new DynamicObject(new Vector2(4.6, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(4.6, 4),   1, lbs_radius),
+            new DynamicObject(new Vector2(5.4, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(5.4, 4),   1, lbs_radius),
+            new DynamicObject(new Vector2(6.2, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(6.2, 4),   1, lbs_radius),
+            new DynamicObject(new Vector2(7, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(7, 4),   1, lbs_radius),
+            new DynamicObject(new Vector2(7, 2.4),   1, lbs_radius),
+            new DynamicObject(new Vector2(6.2, 2.4),   1, lbs_radius),
+            new DynamicObject(new Vector2(7, 1.6),   1, lbs_radius),
+            new DynamicObject(new Vector2(6.2, 1.6),   1, lbs_radius),
+            new DynamicObject(new Vector2(6.6, 1),   1, lbs_radius),
+            new DynamicObject(new Vector2(3.4, 4.8),   1, lbs_radius),
+            new DynamicObject(new Vector2(6.6, 4.8),   1, lbs_radius),
+            new DynamicObject(new Vector2(1.6, 3.6),   1, lbs_radius),
+            new DynamicObject(new Vector2(1.6, 3.2),   1, lbs_radius),
+            new DynamicObject(new Vector2(1.6, 2.8),   1, lbs_radius),
+            new DynamicObject(new Vector2(1.6, 2.4),   10, 4*lbs_radius)
+            ]    
+
+            for (let i = 0; i < p.length; i++) {
+                physicsState.addObject(p[i]);
+            }
 
             physicsState.addFixedPosConstraint(0);
+            physicsState.addFixedYConstraint(21);
 
-            // physicsState.addFixedXConstraint(0);
-            physicsState.addFixedXConstraint(1);
-            physicsState.addFixedYConstraint(1);
+            physicsState.addLineConstraint(0, 1);
+            physicsState.addLineConstraint(0, 2);
+            physicsState.addLineConstraint(1, 2);
+            //
+            physicsState.addLineConstraint(1, 3);
+            physicsState.addLineConstraint(1, 4);
+            physicsState.addLineConstraint(2, 3);
+            physicsState.addLineConstraint(2, 4);
+            physicsState.addLineConstraint(3, 4);
+            //
+            physicsState.addLineConstraint(3, 5);
+            physicsState.addLineConstraint(3, 6);
+            physicsState.addLineConstraint(4, 5);
+            physicsState.addLineConstraint(4, 6);
+            physicsState.addLineConstraint(5, 6);
+            //
+            physicsState.addLineConstraint(5, 7);
+            physicsState.addLineConstraint(5, 8);
+            physicsState.addLineConstraint(6, 7);
+            physicsState.addLineConstraint(6, 8);
+            physicsState.addLineConstraint(7, 8);
+            //
+            physicsState.addLineConstraint(6, 10);
+            physicsState.addLineConstraint(6, 9);
+            physicsState.addLineConstraint(8, 9);
+            physicsState.addLineConstraint(8, 10);
+            physicsState.addLineConstraint(9, 10);
+            //
+            physicsState.addLineConstraint(9, 11);
+            physicsState.addLineConstraint(9, 12);
+            physicsState.addLineConstraint(10, 11);
+            physicsState.addLineConstraint(10, 12);
+            physicsState.addLineConstraint(11, 12);
+            //
+            physicsState.addLineConstraint(11, 13);
+            physicsState.addLineConstraint(11, 14);
+            physicsState.addLineConstraint(12, 13);
+            physicsState.addLineConstraint(12, 14);
+            physicsState.addLineConstraint(13, 14);
+            //
+            physicsState.addLineConstraint(13, 15);
+            physicsState.addLineConstraint(13, 16);
+            physicsState.addLineConstraint(14, 15);
+            physicsState.addLineConstraint(14, 16);
+            physicsState.addLineConstraint(15, 16);
+            //
+            physicsState.addLineConstraint(17, 13);
+            physicsState.addLineConstraint(17, 15);
+            physicsState.addLineConstraint(18, 13);
+            physicsState.addLineConstraint(18, 15);
+            physicsState.addLineConstraint(17, 18);
+            //
+            physicsState.addLineConstraint(19, 17);
+            physicsState.addLineConstraint(19, 18);
+            physicsState.addLineConstraint(20, 17);
+            physicsState.addLineConstraint(20, 18);
+            physicsState.addLineConstraint(19, 20);
+            //
+            physicsState.addLineConstraint(19, 21);
+            physicsState.addLineConstraint(20, 21);
+            //
+            physicsState.addLineConstraint(7, 22);
+            physicsState.addLineConstraint(8, 22);
+            //
+            physicsState.addLineConstraint(14, 23);
+            physicsState.addLineConstraint(16, 23);
+            //
+            physicsState.addLineConstraint(5, 24);
+            physicsState.addLineConstraint(7, 24);
+            //
+            physicsState.addLineConstraint(24, 25);
+            physicsState.addLineConstraint(25, 26);
+            physicsState.addLineConstraint(26, 27);
+
+
+
             break;
-        }
+    
+    }
 }
 
 function renderBackground() {
@@ -361,8 +432,8 @@ function renderBackground() {
     const big_line_color = "rgba(90, 90, 90, 1)"
     const small_line_color = "rgba(40, 40, 40, 1)"
     // vars
-    const lines_x = 20;
-    const lines_y = Math.floor(lines_x / Units.RATIO);
+    const lines_x = Units.render_num_lines_x;
+    const lines_y = Units.render_num_lines_y;
 
     c.beginPath();
     c.fillStyle = backgroundColor;
@@ -383,7 +454,7 @@ function renderBackground() {
         c.closePath();
     }
 
-    for (let i = 0; i < lines_y; i++) {
+    for (let i = lines_y; i > 0; i--) {
         const clip_space = i / lines_y;
         const delta = 0.5 * 1 / lines_y;
         c.beginPath();
@@ -405,7 +476,7 @@ function renderBackground() {
         c.closePath();
     }
 
-    for (let i = 0; i < lines_y; i++) {
+    for (let i = lines_y; i > 0; i--) {
         const clip_space = i / lines_y;
         c.beginPath();
         c.moveTo(0, clip_space * canvas.height);
@@ -414,18 +485,51 @@ function renderBackground() {
         c.closePath();
     }
 
+    // draw when adding objects etc to the physics engine
+    if (!add_to_physics.active)
+        return;
+    // settings:
+    c.fillStyle = "rgba(156, 58, 58, 1)";
+    c.strokeStyle = "#000000";
+    c.lineWidth = 3;
+    // constants
+    const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
+    if (add_to_physics.snap_to_grid) {
+        const c_pos = Units.sim_canv(Units.snap_to_grid(mouse_sim_pos));
+        c.beginPath();
+        c.arc(c_pos.x, c_pos.y, 10, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+    } else {
+        c.beginPath();
+        c.arc(mouse.canv_pos.x, mouse.canv_pos.y, 10, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+    }
+
+    // c.beginPath();
+    // c.fillStyle = "#ff0000";
+    // const c_pos_2 = Units.sim_canv(new Vector2(1,2));
+    // c.arc(c_pos_2.x, c_pos_2.y, 10, 0, 2 * Math.PI);
+    // c.fill();
+    // c.closePath();
+
 }
 
 function start() {
-    setupScene("pratt truss");
+    setupScene("large bridge structure");
     solver.simulating = false;
     physicsState.initConstraintManager();
 }
 
 function update() {
 
+    updateSliderValues();
+
     // console.log(mouse.toString());
-    if (mouse.on_canvas)
+    if (mouse.on_canvas && !add_to_physics.active)
         physicsState.updateMouse(Units.canv_sim(mouse.canv_pos), mouse.left_down)
 
     // physics
@@ -469,6 +573,23 @@ document.addEventListener("keydown", function(event) {
     if (event.key == "ArrowUp" && !solver.simulating) {
         keyboard.arrow_up = true;
     }
+    // add to physics manager
+    if (event.key == "i") {
+        add_to_physics.active = !add_to_physics.active;
+    }
+    if (event.key == "I") {
+        add_to_physics.snap_to_grid = !add_to_physics.snap_to_grid;
+    }
+    if (event.key == "1" && add_to_physics.active) {
+        add_to_physics.dynamicObject();
+    }
+    if (event.key == "x" && add_to_physics.active) {
+        add_to_physics.fixedXConstraint();
+    }
+    if (event.key == "y" && add_to_physics.active) {
+        add_to_physics.fixedYConstraint();
+    }
+
 });
 
 document.addEventListener("keyup", function(event) {

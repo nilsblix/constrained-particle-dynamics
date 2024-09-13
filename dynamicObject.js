@@ -59,6 +59,8 @@ export class DynamicObject {
         const radius = this.drawing_radius * Units.scale_s_c;
 
         c.fillStyle = "rgba(250, 201, 67, 1)";
+        // c.fillStyle = "#FFFFFF";
+        // c.fillStyle = "#e3a88a";
         c.strokeStyle = "#000000";
         c.lineWidth = 2;
         

@@ -60,6 +60,8 @@ export class FixedYConstraint {
         const connection_obj_pos3 = Vector2.addVectors(obj.pos, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos4 = Vector2.addVectors(horizontal_pos2, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         
+        obj.render(c);
+
         // draw the connecting things
         // settings
         c.fillStyle = "#FFFFFF";
@@ -294,8 +296,8 @@ export class LineConstraint {
 
         const c_value = 5 * Math.abs(lagrange_mult); // Math.abs(dot);
         const color = lagrange_mult < 0
-            ? "rgba(" + (255 - c_value) + ", " + (255 - 1 * c_value) + ", 255, 1)" :
-              "rgba(255, " + (255 - c_value) + ", " + (255 - c_value) + ", " + (255 - 0.02 * c_value) + ")";
+            ? "rgba("     + (255 - c_value) + ", " + 255             + ", " + (255 - c_value) + ", 1)" :
+              "rgba(255," + (255 - c_value) + ", " + (255 - c_value) + ", " + 255             + ")";
 
 
         c.lineWidth = lineWidth - borderWidth;

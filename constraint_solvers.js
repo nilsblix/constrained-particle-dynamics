@@ -40,7 +40,7 @@ export class ConstraintManager {
 
 export class ConstraintForceSolver {
     #m_minError = 1e-2;
-    #upped_iteration_count = 512;
+    #upped_iteration_count = 128;
 
     constructor() {}
 

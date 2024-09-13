@@ -23,6 +23,10 @@ export class PhysicsState {
     // rendering depend on these:
     #m_renderedConstraints = [];
 
+    // simulation constants:
+    #m_gravity = 1.4;
+    #m_linear_damping_MU = 0.5;
+
     constructor() {
         this.mouseSpringActive = false;
         this.addForceGenerator(new Gravity());
@@ -46,6 +50,11 @@ export class PhysicsState {
         this.system_energy = this.#getSystemEnergy();
         this.C_value = this.#CM.C.magnitude();
         this.C_dot_value = this.#CM.C_dot.magnitude();
+    }
+
+    #updateSimulationConstants() {
+        this.#m_forceGenerators[0].gravity = this.#m_gravity;
+        this.#m_forceGenerators[1].MU = this.#m_linear_damping_MU;
     }
 
     #updateConstraintManager() {
@@ -89,6 +98,18 @@ export class PhysicsState {
         this.#CM.b = this.#CM.getB();
         // this.#CM.A = this.#CM.getA();
 
+        // check if lambda's length is correct
+            // should only change when main.add_to_physics is active is applying its functions
+        if (       this.#CM.lambda.elements.length < this.#m_constraints.length) {
+            while (this.#CM.lambda.elements.length < this.#m_constraints.length) {
+                this.#CM.lambda.extend(0);
+            }
+        } else if (this.#CM.lambda.elements.length > this.#m_constraints.length) {
+            while (this.#CM.lambda.elements.length > this.#m_constraints.length) {
+                this.#CM.lambda.truncate();
+            }
+        }
+
     }
 
     initConstraintManager() {
@@ -125,6 +146,8 @@ export class PhysicsState {
     }
 
     step_simulation(dt, steps = 1) {
+        this.#updateSimulationConstants();
+
         for (let s = 0; s < steps; s++) {
             const sub_dt = dt / steps;
 
@@ -262,8 +285,27 @@ export class PhysicsState {
 
     }
 
-    getConstraintLength() {
-        return this.#m_constraints.length;
+    setGravity(g) {
+        this.#m_gravity = g;
+    }
+
+    setLinearDampingMU(mu) {
+        this.#m_linear_damping_MU = mu;
+    }
+
+    setMouseSpringStiffness(value) {
+        this.#m_mouseSpring.setStiffness(value);
+    }
+
+    getObjIndexContainingPos(pos) {
+        for (let i = 0; i < this.#m_objects.length; i++) {
+            const v = Vector2.subtractVectors(this.#m_objects[i].pos, pos);
+            const dist2 = v.x * v.x + v.y * v.y;
+            const rad = this.#m_objects[i].drawing_radius;
+            if (dist2 < rad * rad) 
+                return i;
+        }
+        return -1;
     }
 
     addFixedXConstraint(id) {

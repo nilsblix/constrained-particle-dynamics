@@ -169,6 +169,23 @@ export class Vector {
         }
         return c;
     }
+
+    extend(data) {
+        const new_elements = new Float32Array(this.elements.length + 1);
+        for (let i = 0; i < this.elements.length; i++) {
+            new_elements[i] = this.elements[i];
+        }
+        new_elements[this.elements.length] = data;
+        this.elements = new_elements;
+    }
+
+    truncate() {
+        const new_elements = new Float32Array(this.elements.length - 1);
+        for (let i = 0; i < new_elements.length; i++) {
+            new_elements[i] = this.elements[i];
+        }
+        this.elements = new_elements;
+    }
  
 }
 
