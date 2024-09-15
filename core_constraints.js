@@ -43,7 +43,7 @@ export class FixedYConstraint {
         const obj_rad = obj.drawing_radius;
 
         const small_circle_rad = obj_rad / 4;
-        const connection_circle_rad = Math.sqrt(2 * obj_rad * Units.scale_s_c);
+        const connection_circle_rad = obj_rad * Units.scale_s_c / 3; // Math.sqrt(2 * obj_rad * Units.scale_s_c);
 
         const correction_edges = Units.scale_c_s * (0.5*line_thickness + border_thickness);
 
@@ -161,16 +161,18 @@ export class FixedXConstraint {
     }
 
     render(c, m_objects, lagrange_mult) {
-        const canv_pos = Units.sim_canv(m_objects[this.p_id].pos);
-        const radius = m_objects[this.p_id].drawing_radius * Units.scale_s_c;
+        const obj = m_objects[this.p_id];
+        const canv_pos = Units.sim_canv(obj.pos);
+        const rad = obj.drawing_radius;
+        const canvas_rad = rad * Units.scale_s_c;
 
         const lineWidth = 5;
         const borderWidth = 2;     
         c.lineCap = "round";  
         
         // vertical
-        const ver_pos1 = Vector2.addVectors(canv_pos, new Vector2(0, - 2.6 * radius));
-        const ver_pos2 = Vector2.addVectors(canv_pos, new Vector2(0,   2.6 * radius));
+        const ver_pos1 = Vector2.addVectors(canv_pos, new Vector2(0, - 2.6 * canvas_rad));
+        const ver_pos2 = Vector2.addVectors(canv_pos, new Vector2(0,   2.6 * canvas_rad));
 
         c.beginPath();
 
@@ -194,8 +196,8 @@ export class FixedXConstraint {
 
 
         // horizontal
-        const hor_pos1 = Vector2.addVectors(canv_pos, new Vector2(- 0.97 * radius, 0));
-        const hor_pos2 = Vector2.addVectors(canv_pos, new Vector2(  0.97 * radius, 0));
+        const hor_pos1 = Vector2.addVectors(canv_pos, new Vector2(- 0.97 * canvas_rad, canvas_rad));
+        const hor_pos2 = Vector2.addVectors(canv_pos, new Vector2(  0.97 * canvas_rad, canvas_rad));
 
         c.beginPath();
 

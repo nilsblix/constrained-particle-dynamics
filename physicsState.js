@@ -308,6 +308,35 @@ export class PhysicsState {
         return -1;
     }
 
+    getDynamicObjectsLength() {
+        return this.#m_objects.length;
+    }
+
+    getForceGeneratorsLength() {
+        return this.#m_forceGenerators.length;
+    }
+
+    getConstraintLength() {
+        return this.#m_constraints.length;
+    }
+
+    removeByIdDynamicObject(id) {
+        this.#m_objects.splice(id, 1);
+    }
+
+    removeByIdForceGenerator(id) {
+        this.#m_forceGenerators.splice(id, 1);
+    }
+
+    removeByIdConstraint(id) {
+        const constraint = this.#m_constraints[id];
+        // remove from the rendering pipeline
+        const render_index = this.#m_renderedConstraints.indexOf(constraint, id);
+        this.#m_renderedConstraints.splice(render_index, 1);
+        // remove from the physics pipeline
+        this.#m_constraints.splice(id, 1);
+    }
+
     addFixedXConstraint(id) {
         const con = new FixedXConstraint(id, this.#m_objects[id].pos.x);
         this.addConstraint(con);

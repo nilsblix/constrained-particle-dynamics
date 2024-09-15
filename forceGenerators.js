@@ -67,7 +67,7 @@ export class Wind {
 
 export class LinearDamping {
     constructor() {
-        this.MU = 5e-1;
+        this.MU = 3e-1;
     }
 
     apply(m_objects) {
@@ -122,7 +122,7 @@ export class MouseSpring {
         for (let i = 0; i < m_objects.length; i++) {
             const v = Vector2.subtractVectors(m_objects[i].pos, this.mouse_pos);
             const dist2 = v.x * v.x + v.y * v.y;
-            const rad = m_objects[i].drawing_radius + 0.15;
+            const rad = m_objects[i].drawing_radius + 0.08;
             if (dist2 < rad * rad) {
                 this.particle_id = i;
                 return true;
@@ -149,7 +149,7 @@ export class MouseSpring {
     render(c, m_objects) {
         const obj = m_objects[this.particle_id];
 
-        const num_segments = 16;
+        const num_segments = 18;
         const width = 0.2;
 
         const draw_thickness = 5;
