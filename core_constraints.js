@@ -296,7 +296,8 @@ export class LineConstraint {
 
         // interiour
 
-        const c_value = 5 * Math.abs(lagrange_mult); // Math.abs(dot);
+        const c_value = lagrange_mult ? 3 * Math.abs(lagrange_mult) : 0; // Math.abs(dot);
+        // const c_value = 0;
         const color = lagrange_mult < 0
             ? "rgba("     + (255 - c_value) + ", " + 255             + ", " + (255 - c_value) + ", 1)" :
               "rgba(255," + (255 - c_value) + ", " + (255 - c_value) + ", " + 255             + ")";

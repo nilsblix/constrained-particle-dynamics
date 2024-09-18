@@ -6,8 +6,8 @@ import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constra
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 
-const x_offset = 30;
-const y_offset = 70;
+const x_offset = 20;
+const y_offset = 100;
 canvas.width = window.innerWidth - x_offset;
 // canvas.height = window.innerHeight - y_offset;
 
@@ -75,9 +75,10 @@ int main() {
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 60,
-    sim_steps: 8,
+    sim_steps: 4,
     simulating: false,
     physics_frame_time: -1,
+    averaged_physics_frame_time: -1,
     render_frame_time: -1,
     standard_radius: 0.05,
 };
@@ -101,7 +102,7 @@ let physic_entites_manager = {
         const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
         const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
         physicsState.addFixedXConstraint(id);
-        const length = physicsState.getConstraintLength();
+        const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
     },
 
@@ -109,7 +110,7 @@ let physic_entites_manager = {
         const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
         const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
         physicsState.addFixedYConstraint(id);
-        const length = physicsState.getConstraintLength();
+        const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
     },
 
@@ -117,7 +118,7 @@ let physic_entites_manager = {
         const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
         const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
         physicsState.addFixedPosConstraint(id);
-        const length = physicsState.getConstraintLength();
+        const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
     },
 
@@ -132,7 +133,7 @@ let physic_entites_manager = {
         if (last_entity.type == "ForceGenerator")
             physicsState.removeByIdForceGenerator(last_entity.id);
         if (last_entity.type == "Constraint")
-            physicsState.removeByIdConstraint(last_entity.id);
+            physicsState.removeLastConstraint();
 
     }
 }
@@ -155,10 +156,10 @@ function updateDisplayedDebugs() {
     if (!solver.simulating)
         solver.physics_frame_time = -1;
 
-    document.getElementById("physics_frame_time").innerHTML = solver.physics_frame_time.toFixed(1);
-    document.getElementById("render_frame_time").innerHTML = solver.render_frame_time.toFixed(3);
-    document.getElementById("CFS_ms").innerHTML = physicsState.CFS_ms.toFixed(3);
-    document.getElementById("CFS_accumulated_error").innerHTML = physicsState.CFS_accumulated_error.toFixed(3);
+    document.getElementById("physics_frame_time").innerHTML = solver.averaged_physics_frame_time.toFixed(1);
+    document.getElementById("render_frame_time").innerHTML = solver.render_frame_time.toFixed(1);
+    document.getElementById("CFS_ms").innerHTML = physicsState.CFS_ms.toFixed(1);
+    document.getElementById("CFS_accumulated_error").innerHTML = physicsState.CFS_accumulated_error.toFixed(2);
     document.getElementById("system_energy").innerHTML = physicsState.system_energy.toFixed(3);
     document.getElementById("C_value").innerHTML = physicsState.C_value.toFixed(5);
     document.getElementById("C_dot_value").innerHTML = physicsState.C_dot_value.toFixed(5);
@@ -460,6 +461,110 @@ function setupScene(version) {
 
             break;
     
+        case "crane structure" :
+            const c0 = new DynamicObject(new Vector2(3, 0.5), 1, solver.standard_radius);
+            const c1 = new DynamicObject(new Vector2(4, 0.5), 1, solver.standard_radius);
+            const c2 = new DynamicObject(new Vector2(3, 1.5), 1, solver.standard_radius);
+            const c3 = new DynamicObject(new Vector2(4, 1.5), 1, solver.standard_radius);
+            const c4 = new DynamicObject(new Vector2(3, 2.5), 1, solver.standard_radius);
+            const c5 = new DynamicObject(new Vector2(4, 2.5), 1, solver.standard_radius);
+            const c6 = new DynamicObject(new Vector2(3, 3.5), 1, solver.standard_radius);
+            const c7 = new DynamicObject(new Vector2(4, 3.5), 1, solver.standard_radius);
+            const c8 = new DynamicObject(new Vector2(3, 4.5), 1, solver.standard_radius);
+            const c9 = new DynamicObject(new Vector2(4, 4.5), 1, solver.standard_radius);
+            const c10 = new DynamicObject(new Vector2(5, 3.5), 1, solver.standard_radius);
+            const c11 = new DynamicObject(new Vector2(6, 3.5), 1, solver.standard_radius);
+            const c12 = new DynamicObject(new Vector2(7, 3.5), 1, solver.standard_radius);
+            const c13 = new DynamicObject(new Vector2(7, 4), 1, solver.standard_radius);
+            const c14 = new DynamicObject(new Vector2(6, 4 + 1/6), 1, solver.standard_radius);
+            const c15 = new DynamicObject(new Vector2(5, 4 + 1/3), 1, solver.standard_radius);
+            const c16 = new DynamicObject(new Vector2(2, 3.5), 1, solver.standard_radius);
+            const c17 = new DynamicObject(new Vector2(7, 3.2), 1, solver.standard_radius);
+            const c18 = new DynamicObject(new Vector2(7, 2.9), 1, solver.standard_radius);
+            const c19 = new DynamicObject(new Vector2(7, 2.6), 5, 3*solver.standard_radius);
+
+            physicsState.addObject(c0);
+            physicsState.addObject(c1);
+            physicsState.addObject(c2);
+            physicsState.addObject(c3);
+            physicsState.addObject(c4);
+            physicsState.addObject(c5);
+            physicsState.addObject(c6);
+            physicsState.addObject(c7);
+            physicsState.addObject(c8);
+            physicsState.addObject(c9);
+            physicsState.addObject(c10);
+            physicsState.addObject(c11);
+            physicsState.addObject(c12);
+            physicsState.addObject(c13);
+            physicsState.addObject(c14);
+            physicsState.addObject(c15);
+            physicsState.addObject(c16);
+            physicsState.addObject(c17);
+            physicsState.addObject(c18);
+            physicsState.addObject(c19);
+
+            physicsState.addFixedPosConstraint(0);
+            physicsState.addFixedYConstraint(1);
+
+            //
+            physicsState.addLineConstraint(0, 1);
+            //
+            physicsState.addLineConstraint(0, 2);
+            physicsState.addLineConstraint(1, 3);
+            physicsState.addLineConstraint(0, 3);
+            physicsState.addLineConstraint(2, 3);
+            //
+            physicsState.addLineConstraint(2, 4);
+            physicsState.addLineConstraint(3, 5);
+            physicsState.addLineConstraint(3, 4);
+            physicsState.addLineConstraint(4, 5);
+            //
+            physicsState.addLineConstraint(4, 6);
+            physicsState.addLineConstraint(5, 7);
+            physicsState.addLineConstraint(4, 7);
+            physicsState.addLineConstraint(6, 7);
+            //
+            physicsState.addLineConstraint(6, 8);
+            physicsState.addLineConstraint(7, 9);
+            physicsState.addLineConstraint(7, 8);
+            physicsState.addLineConstraint(8, 9);
+            // outer line on attachment
+            physicsState.addLineConstraint(7, 10);
+            physicsState.addLineConstraint(10, 11);
+            physicsState.addLineConstraint(11, 12);
+            physicsState.addLineConstraint(12, 13); // is vertical, also outer line
+            physicsState.addLineConstraint(13, 14);
+            physicsState.addLineConstraint(14, 15);
+            physicsState.addLineConstraint(9, 15);
+            // inner diagonals
+            physicsState.addLineConstraint(7, 15);
+            physicsState.addLineConstraint(11, 15);
+            physicsState.addLineConstraint(11, 13);
+            // inner verticals
+            physicsState.addLineConstraint(10, 15);
+            physicsState.addLineConstraint(11, 14);
+            // left triangle
+            physicsState.addLineConstraint(6, 16);
+            physicsState.addLineConstraint(8, 16);
+            // right, weight
+            physicsState.addLineConstraint(12, 17);
+            physicsState.addLineConstraint(17, 18);
+            physicsState.addLineConstraint(18, 19);
+            // left, weight
+
+
+
+
+
+
+
+
+
+
+
+
+            break;
     }
 }
 
@@ -556,13 +661,16 @@ function renderBackground() {
 }
 
 function start() {
-    setupScene("large bridge structure");
+    setupScene("crane structure");
     solver.simulating = false;
     physicsState.initConstraintManager();
 
     // stp is snap to grid
-    console.log("Keybinds: Simulate: s, Step sim: LArr, SloMo: UpArr, Reset: r, Mousespring: LM, Interact Mode: i, STP: I, (while i) DO: 1, ConstX: x, ConstY: y, ConstP, p, ConstLine: l + LM")
+    console.log("Keybinds: Simulate: s, Step sim: LArr, SloMo: UpArr, Full Reset: R, Reset: r, Mousespring: LM, Interact Mode: i, STP: I, (while i) DO: 1, ConstX: x, ConstY: y, ConstP, p, ConstLine: l + LM")
 }
+
+let time_sum = 0;
+let time_frames = 0;
 
 function update() {
 
@@ -577,7 +685,16 @@ function update() {
         let p_st = performance.now();
             physicsState.step_simulation(solver.dt, solver.sim_steps);
         let p_et = performance.now();
-        solver.physics_frame_time = p_et - p_st;
+        // solver.physics_frame_time = p_et - p_st;
+        time_sum += p_et - p_st;
+        time_frames++;
+
+        if (time_frames > 10) {
+            time_sum /= time_frames;
+            solver.averaged_physics_frame_time = time_sum;
+            time_sum = 0;
+            time_frames = 0;
+        }
     } else if (keyboard.arrow_up) {
         physicsState.step_simulation(solver.dt / solver.sim_steps, 1);
     }
@@ -603,6 +720,12 @@ document.addEventListener("keydown", function(event) {
     if (event.key == "r") {
         physicsState = new PhysicsState();
         start();
+    }
+    if (event.key == "R") {
+        physicsState = new PhysicsState();
+        solver.simulating = false;
+        physicsState.initConstraintManager();
+        setupScene("null");
     }
     if (event.key == "ArrowRight" && !solver.simulating) {
         let p_st = performance.now();

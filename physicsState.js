@@ -320,6 +320,10 @@ export class PhysicsState {
         return this.#m_constraints.length;
     }
 
+    getRenderedConstraintLength() {
+        return this.#m_renderedConstraints.length;
+    }
+
     removeByIdDynamicObject(id) {
         this.#m_objects.splice(id, 1);
     }
@@ -329,12 +333,17 @@ export class PhysicsState {
     }
 
     removeByIdConstraint(id) {
-        const constraint = this.#m_constraints[id];
-        // remove from the rendering pipeline
-        const render_index = this.#m_renderedConstraints.indexOf(constraint, id);
-        this.#m_renderedConstraints.splice(render_index, 1);
-        // remove from the physics pipeline
-        this.#m_constraints.splice(id, 1);
+        // TODO
+    }
+
+    removeLastConstraint() {
+        const constraint = this.#m_renderedConstraints.pop();
+        if (constraint instanceof FixedPosConstraint) {
+            this.#m_constraints.pop();
+            this.#m_constraints.pop();
+        } else {
+            this.#m_constraints.pop();
+        }
     }
 
     addFixedXConstraint(id) {

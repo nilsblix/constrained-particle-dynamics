@@ -6,9 +6,42 @@ export class DynamicObject {
         this.pos = pos;
         this.vel = new Vector2(0,0);
         this.force = new Vector2(0,0);
+        this.prev_force = new Vector2(0,0);
         this.mass = mass;
         this.wass = 1 / mass;
         this.drawing_radius = drawing_radius;
+    }
+
+    backwardEuler(dt) {
+        const acc = Vector2.scaleVector(this.force, this.wass);
+
+        const delta_x = Vector2.scaleVector(this.vel, dt);
+        this.pos = Vector2.addVectors(this.pos, delta_x);
+
+        const delta_v = Vector2.scaleVector(acc, dt);
+        this.vel = Vector2.addVectors(this.vel, delta_v);
+
+        this.force = new Vector2(0,0);
+    }
+
+    velocityVerlet(dt) {
+        const curr_acc = Vector2.scaleVector(this.force, this.wass);
+        const prev_acc = Vector2.scaleVector(this.prev_force, this.wass);
+
+        const delta_x_1 = Vector2.scaleVector(this.vel, dt);
+        const delta_x_2 = Vector2.scaleVector(curr_acc, 0.5 * dt * dt);
+        const delta_x = Vector2.addVectors(delta_x_1, delta_x_2);
+
+        this.pos = Vector2.addVectors(this.pos, delta_x);
+
+        const delta_v_1 = Vector2.scaleVector(curr_acc, 0.5 * dt);
+        const delta_v_2 = Vector2.scaleVector(prev_acc, 0.5 * dt);
+        const delta_v = Vector2.addVectors(delta_v_1, delta_v_2);
+
+        this.vel = Vector2.addVectors(this.vel, delta_v);
+
+        this.prev_force = this.force;
+        this.force = new Vector2(0,0);
     }
 
     symplecticEuler(dt) {
