@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Constrained Particle Dynamics</title>
     <style>
+        body {
+            background-color: #0e1012;
+        }
+
+        #myCanvas {
+            display: block;
+            margin: 14px auto 0 auto;
+        }
+
         .container {
             display: flex;
             align-items: center;
@@ -12,11 +21,27 @@
             font-family: 'Courier New', Courier, monospace;
             height: 20px;
             font-size: 14px;
+            color: #ffffff;
         }
         .dropdown-container {
             margin-right: 20px;
+            /* background-color: aqua; */
             /* font-family: fantasy; */
         }  
+        #option {
+            appearance: none;
+            background-color: transparent;
+            width: 200px;
+            border: none;
+            color: #ffffff;
+            font-family: inherit;
+            border: 1px solid #50505f;
+            border-radius: 5px;
+
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+        }
 
         .slider-container {
             display: none;
@@ -28,43 +53,51 @@
             margin-left: 10px;
         }
 
-        .debug-slider {
+        .constants-slider {
             flex-direction: row;
             -webkit-appearance: none;
             appearance: none;
             /* font-size: 14px; */
             /* width: 90%; */
-            background: #ff0000;
+            /* background: #ff0000; */
             height: 10px;
-            background: #d3d3d3; 
-            opacity: 0.7; 
-            /* border-radius: 5px; */
-            outline: none;
+            background: none; 
+            opacity: 0.5; 
+            border-radius: 2px;
+            outline: double 1px #50505f;
             -webkit-transition: .2s; 
-            transition: opacity .2s;
+            transition: opacity .2s background .2s;
         }
-        .debug-slider:hover {
+        .constants-slider:hover {
             opacity: 1;
+            background: #c8c8c8;
         }
-        .debug-slider::-webkit-slider-thumb {
+        .constants-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             width: 3px;
             height: 10px;
             /* border-radius: 50%;  */
-            background: rgb(87, 87, 87);
+            background:rgb(255, 72, 72);
+            outline: double 1px #000000;
             cursor: pointer;
         }
-        .debug-slider::-moz-range-thumb {
+        .constants-slider::-moz-range-thumb {
             width: 3px;
             height: 10px;
             /* border-radius: 50%; */
             background: rgb(87, 87, 87);
             cursor: pointer;
+            text-align: center;
         }  
+
+        .debug-wrapper {
+            text-align: center;
+        }
 
         .debug-value, .debug-text {
             font-size: 14px;
+            color: #ffffff;
         }
 
         .debug-value {
@@ -82,7 +115,7 @@
     <div class="container">
         <!-- dropdown -->
         <div class="dropdown-container">
-            <label for="option">Simulation Constants: &nbsp</label>
+            <label for="option">Simulation Constants:&nbsp</label>
             <select id="option" onchange="showSlider()">
                 <option value="">--Select an option--</option>
                 <option value="gravity">Gravity</option>
@@ -95,8 +128,8 @@
         <div class="slider-container" id="slider-container">
             <label for="rangeSlider">Select value:&nbsp&nbsp</label>
             <div style="display: flex; align-items: center;">
-                <input class="debug-slider" type="range" id="rangeSlider" min="-1.5" max="1.5" step="0.01" value="1" oninput="updateSliderValue()">
-                <span class="slider-value" id="sliderValue">1</span>
+                <input class="constants-slider" type="range" id="rangeSlider" min="-1.5" max="1.5" step="0.01" value="1" oninput="updateSliderValue()">
+                <span class="slider-value" id="sliderValue">&nbsp;1</span>
             </div>
         </div>
     </div>
@@ -166,10 +199,11 @@
         }
     </script>
 
+    <div class="debug-wrapper">
     <span class="debug-value" id="physics_frame_time">0.000</span> 
-    <span class="debug-text"> physics ftime&nbsp; | &nbsp;</span>
+    <span class="debug-text"> Physics ftime&nbsp; | &nbsp;</span>
     <span class="debug-value" id="render_frame_time">0.000</span> 
-    <span class="debug-text"> render ftime&nbsp; | &nbsp;</span>
+    <span class="debug-text"> Render ftime&nbsp; | &nbsp;</span>
     <span class="debug-value" id="CFS_ms">0.000</span>
     <span class="debug-text"> ms CFS took&nbsp; | &nbsp;</span>
     <span class="debug-value" id="CFS_accumulated_error">0.000</span> 
@@ -180,7 +214,8 @@
     <span class="debug-text"> C value&nbsp; | &nbsp;</span>
     <span class="debug-value" id="C_dot_value">0.000</span> 
     <span class="debug-text"> C dot </span> 
-    <canvas id="myCanvas" style="border: 2px solid"></canvas>
+    </div>
+    <canvas id="myCanvas" style="border: 1px solid white"></canvas>
     <script src="./main.js" type="module"></script>
 </body>
 </html>

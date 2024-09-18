@@ -6,8 +6,8 @@ import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constra
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 
-const x_offset = 20;
-const y_offset = 100;
+const x_offset = 190;
+// const y_offset = 80;
 canvas.width = window.innerWidth - x_offset;
 // canvas.height = window.innerHeight - y_offset;
 
@@ -63,7 +63,8 @@ export class Units {
     }
 }
 
-canvas.height = Units.scale_s_c * (Units.HEIGHT) - y_offset;
+// canvas.height = Units.scale_s_c * (Units.HEIGHT) - y_offset;
+canvas.height = Units.scale_s_c * (Units.HEIGHT);
 
 
 /* 
@@ -570,7 +571,7 @@ function setupScene(version) {
 
 function renderBackground() {
     // colors
-    const backgroundColor = "rgba(30, 30, 30, 1)";
+    const backgroundColor = "#1a1e21";
     const big_line_color = "rgba(90, 90, 90, 1)"
     const small_line_color = "rgba(40, 40, 40, 1)"
     // vars
@@ -661,7 +662,7 @@ function renderBackground() {
 }
 
 function start() {
-    setupScene("crane structure");
+    setupScene("large bridge structure");
     solver.simulating = false;
     physicsState.initConstraintManager();
 
