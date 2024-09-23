@@ -1,6 +1,6 @@
 import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
 import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js";
-import {Gravity, Wind, LinearDamping, MouseSpring} from "./forceGenerators.js";
+import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 // import {Units} from "./main.js"; 
 import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constraints.js";
@@ -24,8 +24,9 @@ export class PhysicsState {
     #m_renderedConstraints = [];
 
     // simulation constants:
-    #m_gravity = 1.4;
+    #m_gravity = 1.6;
     #m_linear_damping_MU = 0.5;
+    #m_spring_joint_stiffness = 5;
 
     constructor() {
         this.mouseSpringActive = false;
@@ -55,6 +56,12 @@ export class PhysicsState {
     #updateSimulationConstants() {
         this.#m_forceGenerators[0].gravity = this.#m_gravity;
         this.#m_forceGenerators[1].MU = this.#m_linear_damping_MU;
+
+        for (let i = 0; i < this.#m_forceGenerators.length; i++) {
+            if (this.#m_forceGenerators[i] instanceof SpringJoint)
+                this.#m_forceGenerators[i].setStiffness(this.#m_spring_joint_stiffness);
+        }
+
     }
 
     #updateConstraintManager() {
@@ -293,6 +300,10 @@ export class PhysicsState {
         this.#m_linear_damping_MU = mu;
     }
 
+    setSpringJointStiffness(value) {
+        this.#m_spring_joint_stiffness = value;
+    }
+
     setMouseSpringStiffness(value) {
         this.#m_mouseSpring.setStiffness(value);
     }
@@ -344,6 +355,11 @@ export class PhysicsState {
         } else {
             this.#m_constraints.pop();
         }
+    }
+    
+    addSpringJoint(id1, id2) {
+        const gen = new SpringJoint(id1, id2, this.#m_objects);
+        this.addForceGenerator(gen);
     }
 
     addFixedXConstraint(id) {

@@ -1,12 +1,12 @@
 export const Colours = {
     INNER_DYNAMIC_OBJECT: "rgba(250, 201, 67, 1)",
     OUTER_DYNAMIC_OBJECT: "rgba(0,0,0,1)",
-    INNER_MOUSE_SPRING_ENDS: "#ffffff",
-    OUTER_MOUSE_SPRING_ENDS: "#000000",
+    INNER_SPRING_ENDS: "#ffffff",
+    OUTER_SPRING_ENDS: "#000000",
     INNER_MOUSE_SPRING_MOUSE_CIRCLE: "rgba(156, 58, 58, 1)",
     OUTER_MOUSE_SPRING_MOUSE_CIRCLE: "#000000",
-    INNER_MOUSE_SPRING_SEGMENTS: "#ffffff",
-    OUTER_MOUSE_SPRING_SEGMENTS: "#000000",
+    INNER_SPRING_SEGMENTS: "#ffffff",
+    OUTER_SPRING_SEGMENTS: "#000000",
     INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT: "#ffffff",
     OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT: "#000000",
     INNER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE: "#ffffff",
@@ -25,14 +25,14 @@ export const Colours = {
 
 export const LineWidths = {
     DYNAMIC_OBJECT: 2,
-    MOUSE_SPRING_ENDS: 2,
+    SPRING_ENDS: 2,
     // MOUSE_SPRING_ENDS_BORDER: 2,
     MOUSE_SPRING_MOUSE_CIRCLE: 2,
     // MOUSE_SPRING_MOUSE_CIRCLE_BORDER: 2,
-    MOUSE_SPRING_SEGMENTS: 3, 
-    MOUSE_SPRING_SEGMENTS_BORDER: 1, 
-    MOUSE_SPRING_EXTREME_SEGMENTS: 4, // by extreme it is the first or last segment (orthogonal to A - B)
-    MOUSE_SPRING_EXTREME_SEGMENTS_BORDER: 1, 
+    SPRING_SEGMENTS: 3, 
+    SPRING_SEGMENTS_BORDER: 1, 
+    SPRING_EXTREME_SEGMENTS: 4, // by extreme it is the first or last segment (orthogonal to A - B)
+    SPRING_EXTREME_SEGMENTS_BORDER: 1, 
     OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT: 2, // the outer border width
     INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT: 3, // inner width}
     OUTER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE: 5, // the outer border width
@@ -51,8 +51,8 @@ export const LineWidths = {
 
 
 export const Extras = {
-    MOUSE_SPRING_EXTREME_ENDCAPS: "round", // by extreme it is the first or last segment (orthogonal to A - B)
-    MOUSE_SPRING_SEGMENTS_ENDCAPS: "round", 
+    SPRING_EXTREME_ENDCAPS: "round", // by extreme it is the first or last segment (orthogonal to A - B)
+    SPRING_SEGMENTS_ENDCAPS: "round", 
     FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT_ENDCAPS: "butt",
     FIXEDPOSCONSTRAINT_HORIZONTAL_LINE_ENDCAPS: "round",
     FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT_ENDCAPS: "butt",

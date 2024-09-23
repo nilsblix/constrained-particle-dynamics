@@ -1,7 +1,6 @@
 import {Vector2} from "./linear_algebra.js";
 import {PhysicsState} from "./physicsState.js";
 import {DynamicObject} from "./dynamicObject.js"
-import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constraints.js";
 
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
@@ -76,7 +75,7 @@ int main() {
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 60,
-    sim_steps: 4,
+    sim_steps: 8,
     simulating: false,
     physics_frame_time: -1,
     averaged_physics_frame_time: -1,
@@ -89,6 +88,7 @@ let physic_entites_manager = {
     snap_to_grid: false,
     line_start_id: -1,
     drawing_line: false,
+    drawing_spring_joint: false,
     recent_entities: [],
 
     dynamicObject() {
@@ -177,6 +177,8 @@ function updateSliderValues() {
         physicsState.setLinearDampingMU(slider.value);
     } else if (selected == "mouse spring") {
         physicsState.setMouseSpringStiffness(slider.value);
+    } else if (selected == "spring joint") {
+        physicsState.setSpringJointStiffness(slider.value);
     }
 }
 
@@ -505,7 +507,7 @@ function setupScene(version) {
             physicsState.addObject(c18);
             physicsState.addObject(c19);
 
-            // physicsState.addFixedPosConstraint(0);
+            physicsState.addFixedPosConstraint(0);
             physicsState.addFixedYConstraint(1);
             // physicsState.addFixedPosConstraint(16);
 
@@ -663,9 +665,16 @@ function renderBackground() {
 }
 
 function start() {
-    setupScene("crane structure");
+    // setupScene("pratt truss");
+    setupScene("king post truss");
+    // setupScene("large bridge structure");
+    // setupScene("crane structure");
     solver.simulating = false;
     physicsState.initConstraintManager();
+
+    physicsState.setGravity(1.6);
+    physicsState.setLinearDampingMU(0.1);
+    physicsState.setMouseSpringStiffness(10);
 
     // stp is snap to grid
     console.log("Keybinds: Simulate: s, Step sim: LArr, SloMo: UpArr, Full Reset: R, Reset: r, Mousespring: LM, Interact Mode: i, STP: I, (while i) DO: 1, ConstX: x, ConstY: y, ConstP, p, ConstLine: l + LM")
@@ -767,6 +776,15 @@ document.addEventListener("keydown", function(event) {
 
         }
     }
+    if (event.key == "k" && physic_entites_manager.active) {
+        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const mouse_over_dynamicObject = (id != -1);
+        if (mouse_over_dynamicObject && !physic_entites_manager.drawing_spring_joint) {
+            physic_entites_manager.line_start_id = id;
+            physic_entites_manager.drawing_spring_joint = true;
+        }
+    }
     if (event.key == "d" && physic_entites_manager.active) {
         physic_entites_manager.removeMostRecentEntity();
     }
@@ -789,6 +807,17 @@ document.addEventListener("keyup", function(event) {
             }
             physic_entites_manager.drawing_line = false;
         }
+    }
+    if (event.key == "k" && physic_entites_manager.active) {
+        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const mouse_over_dynamicObject = (id != -1);
+        if (mouse_over_dynamicObject && physic_entites_manager.drawing_spring_joint) {
+            physicsState.addSpringJoint(physic_entites_manager.line_start_id, id);
+            const gen_length = physicsState.getForceGeneratorsLength();
+            physic_entites_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
+        }
+        physic_entites_manager.drawing_spring_joint = false;
     }
 });
 

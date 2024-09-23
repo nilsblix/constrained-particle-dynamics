@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Constrained Particle Dynamics</title>
     <style>
+        /* fonts: */
+        @font-face {
+            font-family: "OCR-A";
+            src: url("/assets/fonts/OCR-a___.woff") format("woff");
+        }
+
+        @font-face {
+            font-family: "basis33";
+            src: url("/assets/fonts/basis33.ttf") format("truetype");
+        }
+
+        @font-face {
+            font-family: "QuinqueFive";
+            src: url("/assets/fonts/QuinqueFive.ttf") format("truetype");
+        }
+
         body {
             background-color: #0e1012;
         }
@@ -18,9 +34,11 @@
             display: flex;
             align-items: center;
             margin: 5px;
-            font-family: 'Courier New', Courier, monospace;
+            /* font-family: 'Courier New', Courier, monospace; */
+            /* font-family: basis33; */
+            font-family: QuinqueFive;
             height: 20px;
-            font-size: 14px;
+            font-size: 8px;
             color: #ffffff;
         }
         .dropdown-container {
@@ -31,12 +49,14 @@
         #option {
             appearance: none;
             background-color: transparent;
-            width: 200px;
+            width: 220px;
+            height: 20px;
             border: none;
             color: #ffffff;
             font-family: inherit;
+            font-size: 8px;
             border: 1px solid #50505f;
-            border-radius: 5px;
+            border-radius: 2px;
 
             text-align: center;
             cursor: pointer;
@@ -45,7 +65,7 @@
 
         .slider-container {
             display: none;
-            font-size: 14px;
+            font-size: 8px;
         }
 
         .slider-value {
@@ -96,17 +116,21 @@
         }
 
         .debug-value, .debug-text {
-            font-size: 14px;
+            font-size: 8px;
             color: #ffffff;
         }
 
         .debug-value {
-            font-family: 'Courier New', Courier, monospace;
+            /* font-family: 'Courier New', Courier, monospace; */
+            /* font-family: basis33; */
+            font-family: QuinqueFive;
             font-variant-numeric: tabular-nums;
             
         }
         .debug-text {
-            font-family: 'Courier New', Courier, monospace;
+            /* font-family: 'Courier New', Courier, monospace; */
+            /* font-family: basis33; */
+            font-family: QuinqueFive;
         }
 
     </style>
@@ -115,18 +139,19 @@
     <div class="container">
         <!-- dropdown -->
         <div class="dropdown-container">
-            <label for="option">Simulation Constants:&nbsp</label>
+            <label for="option">SIMULATION CONSTANTS:&nbsp</label>
             <select id="option" onchange="showSlider()">
                 <option value="">--Select an option--</option>
                 <option value="gravity">Gravity</option>
                 <option value="linear damping">Linear Damping</option>
                 <option value="mouse spring">Mouse Spring Stiffness</option>
+                <option value="spring joint">Spring Joint Stiffness</option>
             </select>
         </div>
 
         <!-- slider -->
         <div class="slider-container" id="slider-container">
-            <label for="rangeSlider">Select value:&nbsp&nbsp</label>
+            <label for="rangeSlider">VALUE:&nbsp&nbsp</label>
             <div style="display: flex; align-items: center;">
                 <input class="constants-slider" type="range" id="rangeSlider" min="-1.5" max="1.5" step="0.01" value="1" oninput="updateSliderValue()">
                 <span class="slider-value" id="sliderValue">&nbsp;1</span>
@@ -136,9 +161,10 @@
 
     <script>
         let slider_values = {
-            gravity: 1.4,
+            gravity: 1.6,
             linear_damping: 0.1,
-            mouse_spring: 15
+            mouse_spring: 15,
+            spring_joint: 10,
         };
 
         // times_activated = {
@@ -166,6 +192,8 @@
                 } else if (option == "mouse spring") {
                     slider.value = slider_values.mouse_spring;
                     // times_activated.mouse_spring++;
+                } else if (option == "spring joint") {
+                    slider.value = slider_values.spring_joint;
                 }
 
             } else {
@@ -192,6 +220,10 @@
                 slider_values.mouse_spring = slider.value;
                 slider.min = 0;
                 slider.max = 30;
+            } else if (option == "spring joint") {
+                slider_values.spring_joint = slider.value;
+                slider.min = 0;
+                slider.max = 30;
             }
 
             const slider_value = document.getElementById("sliderValue");
@@ -201,19 +233,19 @@
 
     <div class="debug-wrapper">
     <span class="debug-value" id="physics_frame_time">0.000</span> 
-    <span class="debug-text"> Physics ftime&nbsp; | &nbsp;</span>
+    <span class="debug-text"> PDT &nbsp; | &nbsp;</span>
     <span class="debug-value" id="render_frame_time">0.000</span> 
-    <span class="debug-text"> Render ftime&nbsp; | &nbsp;</span>
+    <span class="debug-text"> RDT &nbsp; | &nbsp;</span>
     <span class="debug-value" id="CFS_ms">0.000</span>
-    <span class="debug-text"> ms CFS took&nbsp; | &nbsp;</span>
+    <span class="debug-text"> CFS-DT &nbsp; | &nbsp;</span>
     <span class="debug-value" id="CFS_accumulated_error">0.000</span> 
-    <span class="debug-text"> CFS accumulated error&nbsp; | &nbsp;</span>
+    <span class="debug-text"> CFS-ERR &nbsp; | &nbsp;</span>
     <span class="debug-value" id="system_energy">0.000</span> 
-    <span class="debug-text"> System Energy&nbsp; | &nbsp;</span>
+    <span class="debug-text"> ENERGY &nbsp; | &nbsp;</span>
     <span class="debug-value" id="C_value">0.000</span> 
-    <span class="debug-text"> C value&nbsp; | &nbsp;</span>
+    <span class="debug-text"> C-EVAL &nbsp; | &nbsp;</span>
     <span class="debug-value" id="C_dot_value">0.000</span> 
-    <span class="debug-text"> C dot </span> 
+    <span class="debug-text"> C-DOT-EVAL </span> 
     </div>
     <canvas id="myCanvas" style="border: 1px solid white"></canvas>
     <script src="./main.js" type="module"></script>
