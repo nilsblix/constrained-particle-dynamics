@@ -1,5 +1,6 @@
 import {Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
+import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 export class DynamicObject {
     constructor(pos, mass, drawing_radius = 0.05) {
@@ -91,11 +92,11 @@ export class DynamicObject {
         const canv_pos = Units.sim_canv(this.pos);
         const radius = this.drawing_radius * Units.scale_s_c;
 
-        c.fillStyle = "rgba(250, 201, 67, 1)";
+        c.fillStyle = Colours.INNER_DYNAMIC_OBJECT;
         // c.fillStyle = "#FFFFFF";
         // c.fillStyle = "#e3a88a";
-        c.strokeStyle = "#000000";
-        c.lineWidth = 2;
+        c.strokeStyle = Colours.OUTER_DYNAMIC_OBJECT; // do all right of this file
+        c.lineWidth = LineWidths.DYNAMIC_OBJECT;
         
         c.beginPath();
         c.arc(canv_pos.x, canv_pos.y, radius, 0, 2 * Math.PI);

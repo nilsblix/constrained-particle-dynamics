@@ -1,5 +1,6 @@
 import {SparseMatrixBlock, SparseMatrix, Vector, Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
+import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 /*
     When adding a new constraint, 
@@ -38,14 +39,13 @@ export class FixedYConstraint {
 
         const obj = m_objects[this.p_id];
 
-        const line_thickness = 3;
-        const border_thickness = 2;
         const obj_rad = obj.drawing_radius;
 
         const small_circle_rad = obj_rad / 4;
         const connection_circle_rad = obj_rad * Units.scale_s_c / 3; // Math.sqrt(2 * obj_rad * Units.scale_s_c);
 
-        const correction_edges = Units.scale_c_s * (0.5*line_thickness + border_thickness);
+        const correction_edges = Units.scale_c_s * (0.5*LineWidths.OUTER_FIXEDYCONSTRAINT_HORIZONTAL_LINE);
+        // const correction_edges = 0;
 
         const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad));
         const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.3 * obj_rad, 0));
@@ -64,11 +64,11 @@ export class FixedYConstraint {
 
         // draw the connecting things
         // settings
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
+        c.fillStyle = Colours.INNER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
+        c.strokeStyle = Colours.OUTER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
         // non adjustable settings:
-        c.lineWidth = border_thickness;
-        c.lineCap = "butt";
+        c.lineWidth = LineWidths.OUTER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
+        c.lineCap = Extras.FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT_ENDCAPS;
         // drawing
         c.beginPath();
         c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), connection_circle_rad, 0, 2 * Math.PI);
@@ -90,10 +90,10 @@ export class FixedYConstraint {
 
         // draw the horizontal line:
         // settings:
-        c.strokeStyle = "#000000";
+        c.strokeStyle = Colours.OUTER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
         c.lineCap = "round";
         // non adjustable settings
-        c.lineWidth = line_thickness + border_thickness;
+        c.lineWidth = LineWidths.OUTER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
         // draw commands
         // border
         c.beginPath();
@@ -103,8 +103,8 @@ export class FixedYConstraint {
         // c.fill();
         c.closePath();
         // fill (inner)
-        c.lineWidth = line_thickness;
-        c.strokeStyle = "#FFFFFF";
+        c.lineWidth = LineWidths.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
+        c.strokeStyle = Colours.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
         c.beginPath();
         c.moveTo(Units.sim_canv_x(horizontal_pos1), Units.sim_canv_y(horizontal_pos1));
         c.lineTo(Units.sim_canv_x(horizontal_pos3), Units.sim_canv_y(horizontal_pos3));
@@ -114,10 +114,10 @@ export class FixedYConstraint {
 
         // draw the three small circles
         // settings:
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
+        c.fillStyle = Colours.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
+        c.strokeStyle = Colours.OUTER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
         // non adjustable settings:
-        c.lineWidth = border_thickness;
+        c.lineWidth = LineWidths.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
         // draw commands:
         c.beginPath();
         c.arc(Units.sim_canv_x(c1), Units.sim_canv_y(c1), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
@@ -166,9 +166,7 @@ export class FixedXConstraint {
         const rad = obj.drawing_radius;
         const canvas_rad = rad * Units.scale_s_c;
 
-        const lineWidth = 5;
-        const borderWidth = 2;     
-        c.lineCap = "round";  
+        c.lineCap = Extras.FIXEDXCONSTRAINT_VERTICAL_LINE_ENDCAPS;  
         
         // vertical
         const ver_pos1 = Vector2.addVectors(canv_pos, new Vector2(0, - 2.6 * canvas_rad));
@@ -177,15 +175,15 @@ export class FixedXConstraint {
         c.beginPath();
 
         // border
-        c.lineWidth = lineWidth;
-        c.strokeStyle = "#000000";
+        c.lineWidth = LineWidths.OUTER_FIXEDXCONSTRAINT_VERTICAL_LINE;
+        c.strokeStyle = Colours.OUTER_FIXEDXCONSTRAINT_VERTICAL_LINE;
         c.moveTo(ver_pos1.x, ver_pos1.y);
         c.lineTo(ver_pos2.x, ver_pos2.y);
         c.stroke();
 
         // int
-        c.lineWidth = lineWidth - borderWidth;
-        c.strokeStyle = "#FFFFFF";
+        c.lineWidth = LineWidths.INNER_FIXEDXCONSTRAINT_VERTICAL_LINE;
+        c.strokeStyle = Colours.INNER_FIXEDXCONSTRAINT_VERTICAL_LINE;
         c.moveTo(ver_pos1.x, ver_pos1.y);
         c.lineTo(ver_pos2.x, ver_pos2.y);
         c.stroke();
@@ -196,21 +194,23 @@ export class FixedXConstraint {
 
 
         // horizontal
+        c.lineCap = Extras.FIXEDXCONSTRAINT_HORIZONTAL_LINE_ENDCAPS
+
         const hor_pos1 = Vector2.addVectors(canv_pos, new Vector2(- 0.97 * canvas_rad, canvas_rad));
         const hor_pos2 = Vector2.addVectors(canv_pos, new Vector2(  0.97 * canvas_rad, canvas_rad));
 
         c.beginPath();
 
         // border
-        c.lineWidth = lineWidth;
-        c.strokeStyle = "#000000";
+        c.lineWidth = LineWidths.OUTER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
+        c.strokeStyle = Colours.OUTER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
         c.moveTo(hor_pos1.x, hor_pos1.y);
         c.lineTo(hor_pos2.x, hor_pos2.y);
         c.stroke();
 
         // int
-        c.lineWidth = lineWidth - borderWidth;
-        c.strokeStyle = "#FFFFFF";
+        c.lineWidth = LineWidths.INNER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
+        c.strokeStyle = Colours.INNER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
         c.moveTo(hor_pos1.x, hor_pos1.y);
         c.lineTo(hor_pos2.x, hor_pos2.y);
         c.stroke();
@@ -276,34 +276,33 @@ export class LineConstraint {
         return [wrt_x1, wrt_y1, wrt_x2, wrt_y2];
     }
 
-    render(c, m_objects, lagrange_mult) {
-        const lineWidth = 10;
-        const borderWidth = 4;     
-        c.lineCap = 'round';       
+    render(c, m_objects, lagrange_mult) {  
+        c.lineCap = Extras.LINECONSTRAINT_ENDCAPS;       
 
         const pos1 = Units.sim_canv(m_objects[this.id1].pos);
         const pos2 = Units.sim_canv(m_objects[this.id2].pos);
-        const dir = (Vector2.subtractVectors(pos1, pos2)).normalized();
+        // const dir = (Vector2.subtractVectors(pos1, pos2)).normalized();
 
         c.beginPath();
 
         // border
-        c.lineWidth = lineWidth;
-        c.strokeStyle = "#000000";
+        c.lineWidth = LineWidths.OUTER_LINECONSTRAINT;
+        c.strokeStyle = Colours.OUTER_LINECONSTRAINT;
         c.moveTo(pos1.x, pos1.y);
         c.lineTo(pos2.x, pos2.y);
         c.stroke();
 
         // interiour
 
-        const c_value = lagrange_mult ? 3 * Math.abs(lagrange_mult) : 0; // Math.abs(dot);
+        const c_value =  Extras.LINECONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINECONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
+                                                           :  0
         // const c_value = 0;
         const color = lagrange_mult < 0
             ? "rgba("     + (255 - c_value) + ", " + 255             + ", " + (255 - c_value) + ", 1)" :
               "rgba(255," + (255 - c_value) + ", " + (255 - c_value) + ", " + 255             + ")";
 
 
-        c.lineWidth = lineWidth - borderWidth;
+        c.lineWidth = LineWidths.INNER_LINECONSTRAINT;
         c.strokeStyle = color;
         c.moveTo(pos1.x, pos1.y);
         c.lineTo(pos2.x, pos2.y);

@@ -1,5 +1,6 @@
 import {SparseMatrixBlock, SparseMatrix, Vector, Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
+import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 export class FixedPosConstraint {
     constructor(id, pos) {
@@ -11,13 +12,12 @@ export class FixedPosConstraint {
     render(c, m_objects, lagrange_mult) {
         const obj = m_objects[this.id];
 
-        const line_thickness = 3;
-        const border_thickness = 2;
         const obj_rad = obj.drawing_radius;
 
         const connection_circle_rad = Units.scale_s_c * obj_rad / 3;
 
-        const correction_edges = Units.scale_c_s * (0.5*line_thickness + border_thickness);
+        // const correction_edges = Units.scale_c_s * (0.5*Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT + Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT - Colours.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT);
+        const correction_edges = 0;
 
         const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad));
         const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.8 * obj_rad, 0));
@@ -32,10 +32,10 @@ export class FixedPosConstraint {
 
         // draw the connecting things
         // settings
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
+        c.fillStyle = Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT;
+        c.strokeStyle = Colours.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT;
         // non adjustable settings:
-        c.lineWidth = border_thickness;
+        c.lineWidth = LineWidths.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT;
         c.lineCap = "butt";
         // drawing
         c.beginPath();
@@ -58,10 +58,10 @@ export class FixedPosConstraint {
 
         // draw the horizontal line:
         // settings:
-        c.strokeStyle = "#000000";
-        c.lineCap = "round";
+        c.strokeStyle = Colours.OUTER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
+        c.lineCap = Extras.FIXEDPOSCONSTRAINT_HORIZONTAL_LINE_ENDCAPS;
         // non adjustable settings
-        c.lineWidth = line_thickness + border_thickness;
+        c.lineWidth = LineWidths.OUTER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
         // draw commands
         // border
         c.beginPath();
@@ -71,8 +71,8 @@ export class FixedPosConstraint {
         // c.fill();
         c.closePath();
         // fill (inner)
-        c.lineWidth = line_thickness;
-        c.strokeStyle = "#FFFFFF";
+        c.lineWidth = LineWidths.INNER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
+        c.strokeStyle = Colours.INNER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
         c.beginPath();
         c.moveTo(Units.sim_canv_x(horizontal_pos1), Units.sim_canv_y(horizontal_pos1));
         c.lineTo(Units.sim_canv_x(horizontal_pos3), Units.sim_canv_y(horizontal_pos3));

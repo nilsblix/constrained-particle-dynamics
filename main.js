@@ -505,8 +505,9 @@ function setupScene(version) {
             physicsState.addObject(c18);
             physicsState.addObject(c19);
 
-            physicsState.addFixedPosConstraint(0);
+            // physicsState.addFixedPosConstraint(0);
             physicsState.addFixedYConstraint(1);
+            // physicsState.addFixedPosConstraint(16);
 
             //
             physicsState.addLineConstraint(0, 1);
@@ -662,7 +663,7 @@ function renderBackground() {
 }
 
 function start() {
-    setupScene("large bridge structure");
+    setupScene("crane structure");
     solver.simulating = false;
     physicsState.initConstraintManager();
 

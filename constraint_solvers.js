@@ -1,7 +1,7 @@
 import {Vector2, Vector, SparseMatrix, SparseMatrixBlock} from "./linear_algebra.js";
 
 export class ConstraintManager {
-    #k_s = 30;
+    #k_s = 50;
     #k_d = 20;
     constructor() {
         this.q = new Vector(0);

@@ -1,5 +1,6 @@
 import {Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
+import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 /* 
     When adding a new force generator, these functions must be in them and spelled correctly
@@ -152,9 +153,6 @@ export class MouseSpring {
         const num_segments = 18;
         const width = 0.2;
 
-        const draw_thickness = 5;
-        const border_width = 2;
-
         const outer_holding_circle_width = obj.drawing_radius * 1;
         const mouse_radius = 0.1;
 
@@ -190,9 +188,9 @@ export class MouseSpring {
         const connection_obj_pos_3 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta));
         const connection_obj_pos_4 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta.negated()));
         // init settings
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
-        c.lineWidth = 2;
+        c.fillStyle = Colours.INNER_MOUSE_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_ENDS;
+        c.lineWidth = LineWidths.MOUSE_SPRING_ENDS;
         // draw rectangle:
         c.beginPath();
 
@@ -208,9 +206,9 @@ export class MouseSpring {
         c.closePath();
         // draw circle at connection to object
         // init settings
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
-        c.lineWidth = 1;
+        c.fillStyle = Colours.INNER_MOUSE_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_ENDS;
+        c.lineWidth = LineWidths.MOUSE_SPRING_ENDS;
         
         c.beginPath();
         c.fillStyle = c.strokeStyle;
@@ -223,12 +221,12 @@ export class MouseSpring {
         // constants
         const mouse_canvas_pos = Units.sim_canv(this.mouse_pos);
         // init settings
-        c.fillStyle = "rgba(156, 58, 58, 1)";
-        c.strokeStyle = "#000000";
-        c.lineWidth = 2;
+        c.fillStyle = Colours.INNER_MOUSE_SPRING_MOUSE_CIRCLE;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_MOUSE_CIRCLE;
+        c.lineWidth = LineWidths.MOUSE_SPRING_MOUSE_CIRCLE;
         // draw circle at mouse
         c.beginPath();
-        // c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
+        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
         c.fill();
         c.stroke();
         c.closePath();
@@ -242,9 +240,9 @@ export class MouseSpring {
         const connection_mouse_pos_3 = Units.sim_canv(Vector2.addVectors(this.mouse_pos, connection_mouse_delta));
         const connection_mouse_pos_4 = Units.sim_canv(Vector2.addVectors(this.mouse_pos, connection_mouse_delta.negated()));
         // init settings
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
-        c.lineWidth = 2;
+        c.fillStyle = Colours.INNER_MOUSE_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_ENDS;
+        c.lineWidth = LineWidths.MOUSE_SPRING_ENDS;
         // draw rectangle:
         c.beginPath();
 
@@ -260,9 +258,9 @@ export class MouseSpring {
         c.closePath();
         // draw circle at connection to object
         // init settings
-        c.fillStyle = "#FFFFFF";
-        c.strokeStyle = "#000000";
-        c.lineWidth = 1;
+        c.fillStyle = Colours.INNER_MOUSE_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_ENDS;
+        c.lineWidth = LineWidths.MOUSE_SPRING_ENDS;
         
         c.beginPath();
         c.fillStyle = c.strokeStyle;
@@ -278,16 +276,16 @@ export class MouseSpring {
             c.beginPath();
 
             // border
-            c.lineWidth = draw_thickness;
-            c.strokeStyle = "#000000";
-            c.lineCap = "round";
+            c.lineWidth = LineWidths.MOUSE_SPRING_SEGMENTS + LineWidths.MOUSE_SPRING_SEGMENTS_BORDER;
+            c.strokeStyle = Colours.OUTER_MOUSE_SPRING_SEGMENTS;
+            c.lineCap = Extras.MOUSE_SPRING_SEGMENTS_ENDCAPS;
             c.moveTo(start.x, start.y);
             c.lineTo(end.x, end.y);
             c.stroke();
 
             // interiour
-            c.lineWidth = draw_thickness - border_width;
-            c.strokeStyle = "#FFFFFF";
+            c.lineWidth = LineWidths.MOUSE_SPRING_SEGMENTS;
+            c.strokeStyle = Colours.INNER_MOUSE_SPRING_SEGMENTS;
             c.moveTo(start.x, start.y);
             c.lineTo(end.x, end.y);
             c.stroke();
@@ -296,22 +294,22 @@ export class MouseSpring {
         }
 
         // endline:
+        c.lineCap = Extras.MOUSE_SPRING_EXTREME_ENDCAPS;
         // border 1:
         const border1_start = Units.sim_canv(Vector2.addVectors(spring_start, Vector2.scaleVector(dirT, 0.5* width)));
         const border1_end = Units.sim_canv(Vector2.addVectors(spring_start, Vector2.scaleVector(dirT, - 0.5* width)));
 
         c.beginPath();
 
-        c.lineWidth = draw_thickness + 2;
-        c.lineCap = "round";
-        c.strokeStyle = "#000000";
+        c.lineWidth = LineWidths.MOUSE_SPRING_EXTREME_SEGMENTS + LineWidths.MOUSE_SPRING_EXTREME_SEGMENTS_BORDER;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_SEGMENTS;
         c.moveTo(border1_start.x, border1_start.y);
         c.lineTo(border1_end.x, border1_end.y);
         c.stroke();
 
         // interiour
-        c.lineWidth = draw_thickness + 2 - border_width;
-        c.strokeStyle = "#FFFFFF";
+        c.lineWidth = LineWidths.MOUSE_SPRING_EXTREME_SEGMENTS;
+        c.strokeStyle = Colours.INNER_MOUSE_SPRING_SEGMENTS;
         c.moveTo(border1_start.x, border1_start.y);
         c.lineTo(border1_end.x, border1_end.y);
         c.stroke();
@@ -328,16 +326,15 @@ export class MouseSpring {
 
         c.beginPath();
 
-        c.lineWidth = draw_thickness + 2;
-        c.lineCap = "round";
-        c.strokeStyle = "#000000";
+        c.lineWidth = LineWidths.MOUSE_SPRING_EXTREME_SEGMENTS + LineWidths.MOUSE_SPRING_EXTREME_SEGMENTS_BORDER;
+        c.strokeStyle = Colours.OUTER_MOUSE_SPRING_SEGMENTS;
         c.moveTo(border2_start.x, border2_start.y);
         c.lineTo(border2_end.x, border2_end.y);
         c.stroke();
 
         // interiour
-        c.lineWidth = draw_thickness + 2 - border_width;
-        c.strokeStyle = "#FFFFFF";
+        c.lineWidth = LineWidths.MOUSE_SPRING_EXTREME_SEGMENTS;
+        c.strokeStyle = Colours.INNER_MOUSE_SPRING_SEGMENTS;
         c.moveTo(border2_start.x, border2_start.y);
         c.lineTo(border2_end.x, border2_end.y);
         c.stroke();
