@@ -107,7 +107,7 @@ export class SpringJoint {
 
         const dist = Vector2.distance(obj1.pos, obj2.pos);
         const displacement = dist - this.rest_length;
-        const force = 2 * this.#stiffness_const * displacement;
+        const force = this.#stiffness_const * displacement;
         let dir = Vector2.subtractVectors(obj1.pos, obj2.pos);
         if (dir == 0) 
             dir = Vector2.scaleVector(dir, 1e-4);
@@ -134,7 +134,7 @@ export class SpringJoint {
         const obj1 = m_objects[this.id1];
         const obj2 = m_objects[this.id2];
 
-        const num_segments = 14;
+        const num_segments = Extras.SPRINGJOINT_NUM_SEGMENTS;
         const width = 0.2;
 
         const outer_holding_circle_width_1 = obj1.drawing_radius * 1;
@@ -376,7 +376,7 @@ export class MouseSpring {
     render(c, m_objects) {
         const obj = m_objects[this.particle_id];
 
-        const num_segments = 18;
+        const num_segments = Extras.MOUSESPRING_NUM_SEGMENTS;
         const width = 0.2;
 
         const outer_holding_circle_width = obj.drawing_radius * 1;

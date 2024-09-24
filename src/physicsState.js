@@ -141,13 +141,13 @@ export class PhysicsState {
 
         if (mouse_down && !this.#m_mouseSpring.active) {
             if (this.#m_mouseSpring.getClosestDynamicObject(this.#m_objects)) {
-                console.log("Mouse Spring Active");
+                // console.log("Mouse Spring Active");
                 this.#m_mouseSpring.active = true;
             }
         }
 
         if (!mouse_down && this.#m_mouseSpring.active) {
-            console.log("Mouse Spring Deactivated");
+            // console.log("Mouse Spring Deactivated");
             this.#m_mouseSpring.active = false;
         }
     }
