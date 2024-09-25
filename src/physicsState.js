@@ -3,7 +3,7 @@ import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js"
 import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 // import {Units} from "./main.js"; 
-import {FixedXConstraint, FixedYConstraint, LineConstraint} from "./core_constraints.js";
+import {FixedXConstraint, FixedYConstraint, LinkConstraint} from "./core_constraints.js";
 import {FixedPosConstraint} from "./extended_constraints.js";
 
 export class PhysicsState {
@@ -204,7 +204,7 @@ export class PhysicsState {
         // constraints
         let index_phys_const = 0;
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-            if (this.#m_renderedConstraints[i] instanceof LineConstraint) {
+            if (this.#m_renderedConstraints[i] instanceof LinkConstraint) {
                 this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
             } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
                 index_phys_const++;
@@ -380,9 +380,9 @@ export class PhysicsState {
         this.addRenderedConstraint(new FixedPosConstraint(id, this.#m_objects[id].pos));
     }
 
-    addLineConstraint(id1, id2) {
+    addLinkConstraint(id1, id2) {
         const dist = Vector2.distance(this.#m_objects[id1].pos, this.#m_objects[id2].pos);
-        const con = new LineConstraint(id1, id2, dist)
+        const con = new LinkConstraint(id1, id2, dist)
         this.addConstraint(con);
         this.addRenderedConstraint(con);
     }

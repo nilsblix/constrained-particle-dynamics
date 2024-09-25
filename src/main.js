@@ -82,6 +82,7 @@ let solver = {
     averaged_physics_frame_time: -1,
     render_frame_time: -1,
     standard_radius: 0.05,
+    physicsState_is_null: true,
 };
 
 let physic_entites_manager = {
@@ -277,24 +278,22 @@ function renderBackground() {
 }
 
 function start() {
-    // setupScene("pratt truss");
-    setupScene(physicsState, "king post truss");
-    // setupScene("large bridge structure");
-    // setupScene("crane structure");
     solver.simulating = false;
     physicsState.initConstraintManager();
 
     physicsState.setGravity(1.6);
     physicsState.setLinearDampingMU(0.1);
-    physicsState.setMouseSpringStiffness(10);
+    physicsState.setMouseSpringStiffness(15);
+    physicsState.setSpringJointStiffness(10);
 
     // stp is snap to grid
     // console.log("Keybinds: Simulate: s, Step sim: LArr, SloMo: UpArr, Full Reset: R, Reset: r, Mousespring: LM, Interact Mode: i, STP: I, (while i) DO: 1, ConstX: x, ConstY: y, ConstP, p, ConstLine: l + LM")
 
     console.log("General --> Simulate: s, Sim Step: LArr, SloMotion: UpArr, Full Reset: R, reset (demo) r");
+    console.log("Demo Scenes --> 1: Pratt Truss, 2: King Post Truss, 3: Large Bridge Structure, 4: Crane Structure");
     console.log("Mouse --> MouseSpring: LM");
     console.log("Editor --> Enable: i, Snap To Grid: I, Particle: 1, Draw SpringJoint: k");
-    console.log("Editor Constraints --> X: x, Y: y, Draw LineConstraint: l");
+    console.log("Editor Constraints --> X: x, Y: y, Draw LinkConstraint: l");
 
 }
 
@@ -346,15 +345,23 @@ document.addEventListener("keydown", function(event) {
     if (event.key == "s") {
         solver.simulating = !solver.simulating;
     }
-    if (event.key == "r") {
-        physicsState = new PhysicsState();
-        start();
-    }
     if (event.key == "R") {
         physicsState = new PhysicsState();
         solver.simulating = false;
+        solver.physicsState_is_null = true;
         physicsState.initConstraintManager();
-        setupScene("null");
+    }
+    if (event.key == "1" && solver.physicsState_is_null && !physic_entites_manager.active) {
+        setupScene(physicsState, solver, "pratt truss");
+    }
+    if (event.key == "2" && solver.physicsState_is_null && !physic_entites_manager.active) {
+        setupScene(physicsState, solver, "king post truss");
+    }
+    if (event.key == "3" && solver.physicsState_is_null && !physic_entites_manager.active) {
+        setupScene(physicsState, solver, "large bridge structure");
+    }
+    if (event.key == "4" && solver.physicsState_is_null && !physic_entites_manager.active) {
+        setupScene(physicsState, solver, "crane structure");
     }
     if (event.key == "ArrowRight" && !solver.simulating) {
         let p_st = performance.now();
@@ -368,6 +375,7 @@ document.addEventListener("keydown", function(event) {
     // add to physics manager
     if (event.key == "i") {
         physic_entites_manager.active = !physic_entites_manager.active;
+        solver.physicsState_is_null = false;
     }
     if (event.key == "I") {
         physic_entites_manager.snap_to_grid = !physic_entites_manager.snap_to_grid;
@@ -419,7 +427,7 @@ document.addEventListener("keyup", function(event) {
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && physic_entites_manager.drawing_line) {
             if (id != physic_entites_manager.line_start_id) {
-                physicsState.addLineConstraint(physic_entites_manager.line_start_id, id);
+                physicsState.addLinkConstraint(physic_entites_manager.line_start_id, id);
                 const c_length = physicsState.getConstraintLength();
                 physic_entites_manager.recent_entities.push({type: "Constraint", id: c_length - 1});
             }

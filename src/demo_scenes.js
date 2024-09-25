@@ -2,7 +2,7 @@ import {Units} from "./main.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {Vector2} from "./linear_algebra.js";
 
-export function setupScene(physicsState, version) {
+export function setupScene(physicsState, solver, version) {
     switch (version) {
         case "null":
             break;
@@ -64,36 +64,42 @@ export function setupScene(physicsState, version) {
             physicsState.addFixedPosConstraint(12);
             physicsState.addFixedYConstraint(13);
 
-            physicsState.addLineConstraint(0, 2);
-            physicsState.addLineConstraint(2, 4);
-            physicsState.addLineConstraint(4, 6);
-            physicsState.addLineConstraint(6, 8);
-            physicsState.addLineConstraint(8, 10);
-            physicsState.addLineConstraint(10, 11);
-            physicsState.addLineConstraint(2, 3);
-            physicsState.addLineConstraint(4, 5);
-            physicsState.addLineConstraint(5, 8);
-            physicsState.addLineConstraint(7, 10);
+            physicsState.addLinkConstraint(0, 2);
+            physicsState.addLinkConstraint(2, 4);
+            physicsState.addLinkConstraint(4, 6);
+            physicsState.addLinkConstraint(6, 8);
+            physicsState.addLinkConstraint(8, 10);
+            physicsState.addLinkConstraint(10, 11);
+            physicsState.addLinkConstraint(2, 3);
+            physicsState.addLinkConstraint(4, 5);
+            physicsState.addLinkConstraint(5, 8);
+            physicsState.addLinkConstraint(7, 10);
             
-            physicsState.addLineConstraint(1, 2);
-            physicsState.addLineConstraint(3, 4);
-            physicsState.addLineConstraint(5, 6);
-            physicsState.addLineConstraint(7, 8);
-            physicsState.addLineConstraint(9, 10);
-            physicsState.addLineConstraint(0, 1);
-            physicsState.addLineConstraint(1, 3);
-            physicsState.addLineConstraint(3, 5);
-            physicsState.addLineConstraint(5, 7);
-            physicsState.addLineConstraint(7, 9);
-            physicsState.addLineConstraint(9, 11);
+            physicsState.addLinkConstraint(1, 2);
+            physicsState.addLinkConstraint(3, 4);
+            physicsState.addLinkConstraint(5, 6);
+            physicsState.addLinkConstraint(7, 8);
+            physicsState.addLinkConstraint(9, 10);
+            physicsState.addLinkConstraint(0, 1);
+            physicsState.addLinkConstraint(1, 3);
+            physicsState.addLinkConstraint(3, 5);
+            physicsState.addLinkConstraint(5, 7);
+            physicsState.addLinkConstraint(7, 9);
+            physicsState.addLinkConstraint(9, 11);
 
-            physicsState.addLineConstraint(0, 14);
-            physicsState.addLineConstraint(12, 14);
-            physicsState.addLineConstraint(11, 15);
-            physicsState.addLineConstraint(15, 13);
+            // links
+            // physicsState.addLinkConstraint(0, 14);
+            physicsState.addLinkConstraint(12, 14);
+            // physicsState.addLinkConstraint(11, 15);
+            physicsState.addLinkConstraint(15, 13);
+            // springs
+            physicsState.addSpringJoint(0, 14);
+            // physicsState.addSpringJoint(12, 14);
+            physicsState.addSpringJoint(11, 15);
+            // physicsState.addSpringJoint(15, 13);
 
-            physicsState.addLineConstraint(5, 16);
-            physicsState.addLineConstraint(16, 17);
+            physicsState.addLinkConstraint(5, 16);
+            physicsState.addLinkConstraint(16, 17);
 
 
             break;
@@ -138,23 +144,23 @@ export function setupScene(physicsState, version) {
             // physicsState.addFixedPosConstraint(0);
             physicsState.addFixedYConstraint(4);
 
-            physicsState.addLineConstraint(0, 1);
-            physicsState.addLineConstraint(1, 2);
-            physicsState.addLineConstraint(2, 3);
-            physicsState.addLineConstraint(3, 4);
-            physicsState.addLineConstraint(0, 5);
-            physicsState.addLineConstraint(1, 5);
-            physicsState.addLineConstraint(2, 5);
-            physicsState.addLineConstraint(2, 6);
-            physicsState.addLineConstraint(3, 6);
-            physicsState.addLineConstraint(4, 6);
-            physicsState.addLineConstraint(5, 7);
-            physicsState.addLineConstraint(2, 7);
-            physicsState.addLineConstraint(6, 7);
+            physicsState.addLinkConstraint(0, 1);
+            physicsState.addLinkConstraint(1, 2);
+            physicsState.addLinkConstraint(2, 3);
+            physicsState.addLinkConstraint(3, 4);
+            physicsState.addLinkConstraint(0, 5);
+            physicsState.addLinkConstraint(1, 5);
+            physicsState.addLinkConstraint(2, 5);
+            physicsState.addLinkConstraint(2, 6);
+            physicsState.addLinkConstraint(3, 6);
+            physicsState.addLinkConstraint(4, 6);
+            physicsState.addLinkConstraint(5, 7);
+            physicsState.addLinkConstraint(2, 7);
+            physicsState.addLinkConstraint(6, 7);
 
-            physicsState.addLineConstraint(2, 8);
-            physicsState.addLineConstraint(8, 9);
-            physicsState.addLineConstraint(9, 10);
+            physicsState.addLinkConstraint(2, 8);
+            physicsState.addLinkConstraint(8, 9);
+            physicsState.addLinkConstraint(9, 10);
             
 
 
@@ -206,79 +212,79 @@ export function setupScene(physicsState, version) {
             physicsState.addFixedPosConstraint(0);
             physicsState.addFixedYConstraint(21);
 
-            physicsState.addLineConstraint(0, 1);
-            physicsState.addLineConstraint(0, 2);
-            physicsState.addLineConstraint(1, 2);
+            physicsState.addLinkConstraint(0, 1);
+            physicsState.addLinkConstraint(0, 2);
+            physicsState.addLinkConstraint(1, 2);
             //
-            physicsState.addLineConstraint(1, 3);
-            physicsState.addLineConstraint(1, 4);
-            physicsState.addLineConstraint(2, 3);
-            physicsState.addLineConstraint(2, 4);
-            physicsState.addLineConstraint(3, 4);
+            physicsState.addLinkConstraint(1, 3);
+            physicsState.addLinkConstraint(1, 4);
+            physicsState.addLinkConstraint(2, 3);
+            physicsState.addLinkConstraint(2, 4);
+            physicsState.addLinkConstraint(3, 4);
             //
-            physicsState.addLineConstraint(3, 5);
-            physicsState.addLineConstraint(3, 6);
-            physicsState.addLineConstraint(4, 5);
-            physicsState.addLineConstraint(4, 6);
-            physicsState.addLineConstraint(5, 6);
+            physicsState.addLinkConstraint(3, 5);
+            physicsState.addLinkConstraint(3, 6);
+            physicsState.addLinkConstraint(4, 5);
+            physicsState.addLinkConstraint(4, 6);
+            physicsState.addLinkConstraint(5, 6);
             //
-            physicsState.addLineConstraint(5, 7);
-            physicsState.addLineConstraint(5, 8);
-            physicsState.addLineConstraint(6, 7);
-            physicsState.addLineConstraint(6, 8);
-            physicsState.addLineConstraint(7, 8);
+            physicsState.addLinkConstraint(5, 7);
+            physicsState.addLinkConstraint(5, 8);
+            physicsState.addLinkConstraint(6, 7);
+            physicsState.addLinkConstraint(6, 8);
+            physicsState.addLinkConstraint(7, 8);
             //
-            physicsState.addLineConstraint(6, 10);
-            physicsState.addLineConstraint(6, 9);
-            physicsState.addLineConstraint(8, 9);
-            physicsState.addLineConstraint(8, 10);
-            physicsState.addLineConstraint(9, 10);
+            physicsState.addLinkConstraint(6, 10);
+            physicsState.addLinkConstraint(6, 9);
+            physicsState.addLinkConstraint(8, 9);
+            physicsState.addLinkConstraint(8, 10);
+            physicsState.addLinkConstraint(9, 10);
             //
-            physicsState.addLineConstraint(9, 11);
-            physicsState.addLineConstraint(9, 12);
-            physicsState.addLineConstraint(10, 11);
-            physicsState.addLineConstraint(10, 12);
-            physicsState.addLineConstraint(11, 12);
+            physicsState.addLinkConstraint(9, 11);
+            physicsState.addLinkConstraint(9, 12);
+            physicsState.addLinkConstraint(10, 11);
+            physicsState.addLinkConstraint(10, 12);
+            physicsState.addLinkConstraint(11, 12);
             //
-            physicsState.addLineConstraint(11, 13);
-            physicsState.addLineConstraint(11, 14);
-            physicsState.addLineConstraint(12, 13);
-            physicsState.addLineConstraint(12, 14);
-            physicsState.addLineConstraint(13, 14);
+            physicsState.addLinkConstraint(11, 13);
+            physicsState.addLinkConstraint(11, 14);
+            physicsState.addLinkConstraint(12, 13);
+            physicsState.addLinkConstraint(12, 14);
+            physicsState.addLinkConstraint(13, 14);
             //
-            physicsState.addLineConstraint(13, 15);
-            physicsState.addLineConstraint(13, 16);
-            physicsState.addLineConstraint(14, 15);
-            physicsState.addLineConstraint(14, 16);
-            physicsState.addLineConstraint(15, 16);
+            physicsState.addLinkConstraint(13, 15);
+            physicsState.addLinkConstraint(13, 16);
+            physicsState.addLinkConstraint(14, 15);
+            physicsState.addLinkConstraint(14, 16);
+            physicsState.addLinkConstraint(15, 16);
             //
-            physicsState.addLineConstraint(17, 13);
-            physicsState.addLineConstraint(17, 15);
-            physicsState.addLineConstraint(18, 13);
-            physicsState.addLineConstraint(18, 15);
-            physicsState.addLineConstraint(17, 18);
+            physicsState.addLinkConstraint(17, 13);
+            physicsState.addLinkConstraint(17, 15);
+            physicsState.addLinkConstraint(18, 13);
+            physicsState.addLinkConstraint(18, 15);
+            physicsState.addLinkConstraint(17, 18);
             //
-            physicsState.addLineConstraint(19, 17);
-            physicsState.addLineConstraint(19, 18);
-            physicsState.addLineConstraint(20, 17);
-            physicsState.addLineConstraint(20, 18);
-            physicsState.addLineConstraint(19, 20);
+            physicsState.addLinkConstraint(19, 17);
+            physicsState.addLinkConstraint(19, 18);
+            physicsState.addLinkConstraint(20, 17);
+            physicsState.addLinkConstraint(20, 18);
+            physicsState.addLinkConstraint(19, 20);
             //
-            physicsState.addLineConstraint(19, 21);
-            physicsState.addLineConstraint(20, 21);
+            physicsState.addLinkConstraint(19, 21);
+            physicsState.addLinkConstraint(20, 21);
             //
-            physicsState.addLineConstraint(7, 22);
-            physicsState.addLineConstraint(8, 22);
+            physicsState.addLinkConstraint(7, 22);
+            physicsState.addLinkConstraint(8, 22);
             //
-            physicsState.addLineConstraint(14, 23);
-            physicsState.addLineConstraint(16, 23);
+            physicsState.addLinkConstraint(14, 23);
+            physicsState.addLinkConstraint(16, 23);
             //
-            physicsState.addLineConstraint(5, 24);
-            physicsState.addLineConstraint(7, 24);
+            physicsState.addLinkConstraint(5, 24);
+            physicsState.addLinkConstraint(7, 24);
             //
-            physicsState.addLineConstraint(24, 25);
-            physicsState.addLineConstraint(25, 26);
-            physicsState.addLineConstraint(26, 27);
+            physicsState.addLinkConstraint(24, 25);
+            physicsState.addLinkConstraint(25, 26);
+            physicsState.addLinkConstraint(26, 27);
 
 
 
@@ -332,49 +338,49 @@ export function setupScene(physicsState, version) {
             // physicsState.addFixedPosConstraint(16);
 
             //
-            physicsState.addLineConstraint(0, 1);
+            physicsState.addLinkConstraint(0, 1);
             //
-            physicsState.addLineConstraint(0, 2);
-            physicsState.addLineConstraint(1, 3);
-            physicsState.addLineConstraint(0, 3);
-            physicsState.addLineConstraint(2, 3);
+            physicsState.addLinkConstraint(0, 2);
+            physicsState.addLinkConstraint(1, 3);
+            physicsState.addLinkConstraint(0, 3);
+            physicsState.addLinkConstraint(2, 3);
             //
-            physicsState.addLineConstraint(2, 4);
-            physicsState.addLineConstraint(3, 5);
-            physicsState.addLineConstraint(3, 4);
-            physicsState.addLineConstraint(4, 5);
+            physicsState.addLinkConstraint(2, 4);
+            physicsState.addLinkConstraint(3, 5);
+            physicsState.addLinkConstraint(3, 4);
+            physicsState.addLinkConstraint(4, 5);
             //
-            physicsState.addLineConstraint(4, 6);
-            physicsState.addLineConstraint(5, 7);
-            physicsState.addLineConstraint(4, 7);
-            physicsState.addLineConstraint(6, 7);
+            physicsState.addLinkConstraint(4, 6);
+            physicsState.addLinkConstraint(5, 7);
+            physicsState.addLinkConstraint(4, 7);
+            physicsState.addLinkConstraint(6, 7);
             //
-            physicsState.addLineConstraint(6, 8);
-            physicsState.addLineConstraint(7, 9);
-            physicsState.addLineConstraint(7, 8);
-            physicsState.addLineConstraint(8, 9);
+            physicsState.addLinkConstraint(6, 8);
+            physicsState.addLinkConstraint(7, 9);
+            physicsState.addLinkConstraint(7, 8);
+            physicsState.addLinkConstraint(8, 9);
             // outer line on attachment
-            physicsState.addLineConstraint(7, 10);
-            physicsState.addLineConstraint(10, 11);
-            physicsState.addLineConstraint(11, 12);
-            physicsState.addLineConstraint(12, 13); // is vertical, also outer line
-            physicsState.addLineConstraint(13, 14);
-            physicsState.addLineConstraint(14, 15);
-            physicsState.addLineConstraint(9, 15);
+            physicsState.addLinkConstraint(7, 10);
+            physicsState.addLinkConstraint(10, 11);
+            physicsState.addLinkConstraint(11, 12);
+            physicsState.addLinkConstraint(12, 13); // is vertical, also outer line
+            physicsState.addLinkConstraint(13, 14);
+            physicsState.addLinkConstraint(14, 15);
+            physicsState.addLinkConstraint(9, 15);
             // inner diagonals
-            physicsState.addLineConstraint(7, 15);
-            physicsState.addLineConstraint(11, 15);
-            physicsState.addLineConstraint(11, 13);
+            physicsState.addLinkConstraint(7, 15);
+            physicsState.addLinkConstraint(11, 15);
+            physicsState.addLinkConstraint(11, 13);
             // inner verticals
-            physicsState.addLineConstraint(10, 15);
-            physicsState.addLineConstraint(11, 14);
+            physicsState.addLinkConstraint(10, 15);
+            physicsState.addLinkConstraint(11, 14);
             // left triangle
-            physicsState.addLineConstraint(6, 16);
-            physicsState.addLineConstraint(8, 16);
+            physicsState.addLinkConstraint(6, 16);
+            physicsState.addLinkConstraint(8, 16);
             // right, weight
-            physicsState.addLineConstraint(12, 17);
-            physicsState.addLineConstraint(17, 18);
-            physicsState.addLineConstraint(18, 19);
+            physicsState.addLinkConstraint(12, 17);
+            physicsState.addLinkConstraint(17, 18);
+            physicsState.addLinkConstraint(18, 19);
             // left, weight
 
 
@@ -390,4 +396,8 @@ export function setupScene(physicsState, version) {
 
             break;
     }
+
+    solver.physicsState_is_null = false;
+    solver.simulating = false;
+
 }

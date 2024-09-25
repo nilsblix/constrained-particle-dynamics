@@ -239,7 +239,7 @@ export class FixedXConstraint {
     }
 }
 
-export class LineConstraint {
+export class LinkConstraint { // constrains two particles to be a fixed distance apart
     constructor(id1, id2, l0) {
         this.id1 = id1;
         this.id2 = id2;
@@ -277,7 +277,7 @@ export class LineConstraint {
     }
 
     render(c, m_objects, lagrange_mult) {  
-        c.lineCap = Extras.LINECONSTRAINT_ENDCAPS;       
+        c.lineCap = Extras.LINKCONSTRAINT_ENDCAPS;       
 
         const pos1 = Units.sim_canv(m_objects[this.id1].pos);
         const pos2 = Units.sim_canv(m_objects[this.id2].pos);
@@ -286,15 +286,15 @@ export class LineConstraint {
         c.beginPath();
 
         // border
-        c.lineWidth = LineWidths.OUTER_LINECONSTRAINT;
-        c.strokeStyle = Colours.OUTER_LINECONSTRAINT;
+        c.lineWidth = LineWidths.OUTER_LINKCONSTRAINT;
+        c.strokeStyle = Colours.OUTER_LINKCONSTRAINT;
         c.moveTo(pos1.x, pos1.y);
         c.lineTo(pos2.x, pos2.y);
         c.stroke();
 
         // interiour
 
-        const c_value =  Extras.LINECONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINECONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
+        const c_value =  Extras.LINKCONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINKCONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
                                                            :  0
         // const c_value = 0;
         const color = lagrange_mult < 0
@@ -302,7 +302,7 @@ export class LineConstraint {
               "rgba(255," + (255 - c_value) + ", " + (255 - c_value) + ", " + 255             + ")";
 
 
-        c.lineWidth = LineWidths.INNER_LINECONSTRAINT;
+        c.lineWidth = LineWidths.INNER_LINKCONSTRAINT;
         c.strokeStyle = color;
         c.moveTo(pos1.x, pos1.y);
         c.lineTo(pos2.x, pos2.y);
