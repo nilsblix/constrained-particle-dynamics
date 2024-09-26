@@ -1,8 +1,8 @@
 import {Vector2, Vector, SparseMatrix, SparseMatrixBlock} from "./linear_algebra.js";
 
 export class ConstraintManager {
-    #k_s = 10;
-    #k_d = 5;
+    #k_s = 40;
+    #k_d = 10;
     constructor() {
         this.q = new Vector(0);
         this.q_dot = new Vector(0);
@@ -54,10 +54,11 @@ export class ConstraintForceSolver {
         if (rk_mag2 < this.#m_minError * this.#m_minError) {
             // console.log("Premature lambda found on iteration: 0 (before iterating)");
             return x;
-        } else if (Math.sqrt(rk_mag2) > 1) {
-            // console.log("Upped CGM iteration count due to too high residual squared mag: " + Math.sqrt(rk_mag2));
-            max_iter = this.#upped_iteration_count;
         }
+        // } else if (Math.sqrt(rk_mag2) > 1) {
+        //     // console.log("Upped CGM iteration count due to too high residual squared mag: " + Math.sqrt(rk_mag2));
+        //     max_iter = this.#upped_iteration_count;
+        // }
 
         let p = r;
 

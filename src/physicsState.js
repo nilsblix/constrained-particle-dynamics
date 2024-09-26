@@ -189,7 +189,7 @@ export class PhysicsState {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
-                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 64) // last int is iteration-count
+                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 128) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.averaging.cfsdt_sum += CFS_et - CFS_st;
                 this.averaging.cfsdt_frames++;
