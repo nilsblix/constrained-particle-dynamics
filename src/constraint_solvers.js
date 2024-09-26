@@ -79,8 +79,8 @@ export class ConstraintForceSolver {
             p = Vector.add_vectors(r, Vector.scale_vector(beta, p));
             rk_mag2 = rk1_mag2;
 
-            if (k == max_iter - 1)
-                console.warn("CFS: All iterations were used, ==> not converging");
+            // if (k == max_iter - 1) // enable if shit goes to hell (numerically)
+            //     console.warn("CFS: All iterations were used, ==> not converging");
 
         }
 

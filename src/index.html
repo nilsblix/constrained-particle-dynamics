@@ -160,11 +160,12 @@
     </div>
 
     <script>
+        // if the start values should change, don't forget to also change the values in start() (main.js)
         let slider_values = {
             gravity: 1.6,
             linear_damping: 0.1,
             mouse_spring: 15,
-            spring_joint: 10,
+            spring_joint: 20,
         };
 
         // times_activated = {
@@ -183,16 +184,20 @@
                 slider_container.style.display = "flex";
                 
                 if (option == "gravity") {
+                    slider.min = -2;
+                    slider.max = 2;
                     slider.value = slider_values.gravity;
-                    // times_activated.gravity++;
-                    console.log("gravity");
                 } else if (option == "linear damping") {
+                    slider.min = 0;
+                    slider.max = 2;
                     slider.value = slider_values.linear_damping;
-                    // times_activated.linear_damping++;
                 } else if (option == "mouse spring") {
+                    slider.min = 0;
+                    slider.max = 40;
                     slider.value = slider_values.mouse_spring;
-                    // times_activated.mouse_spring++;
                 } else if (option == "spring joint") {
+                    slider.min = 0;
+                    slider.max = 40;
                     slider.value = slider_values.spring_joint;
                 }
 
@@ -209,21 +214,13 @@
             const slider = document.getElementById("rangeSlider");
 
             if (option == "gravity") {
-                slider.min = -2;
-                slider.max = 2;
                 slider_values.gravity = slider.value;
             } else if (option == "linear damping") {
-                slider.min = 0;
-                slider.max = 2;
                 slider_values.linear_damping = slider.value;
             } else if (option == "mouse spring") {
                 slider_values.mouse_spring = slider.value;
-                slider.min = 0;
-                slider.max = 30;
             } else if (option == "spring joint") {
                 slider_values.spring_joint = slider.value;
-                slider.min = 0;
-                slider.max = 30;
             }
 
             const slider_value = document.getElementById("sliderValue");

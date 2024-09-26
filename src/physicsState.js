@@ -35,7 +35,25 @@ export class PhysicsState {
         this.addForceGenerator(new LinearDamping());
 
         // debugs:
-        this.CFS_ms = 0;
+        this.averaging = {
+            swap_frames: 10, 
+
+            averaged_cfsdt: -1,
+
+            cfsdt_sum: 0,
+            cfsdt_frames: 0,
+        
+            check_swap_cfsdt() {
+                if (this.cfsdt_sum > this.swap_frames) {
+                    this.cfsdt_sum /= this.cfsdt_frames;
+                    this.averaged_cfsdt = this.cfsdt_sum;
+                    this.cfsdt_sum = 0;
+                    this.cfsdt_frames = 0;
+                }
+            },
+
+        }
+        
         this.CFS_accumulated_error = 0;
         this.system_energy = 0;
         this.C_value = 0;
@@ -173,7 +191,9 @@ export class PhysicsState {
                 let CFS_st = performance.now();
                     this.#CM.lambda = this.#CFS.CGM(this.#CM, 64) // last int is iteration-count
                 let CFS_et = performance.now();
-                this.CFS_ms = CFS_et - CFS_st;
+                this.averaging.cfsdt_sum += CFS_et - CFS_st;
+                this.averaging.cfsdt_frames++;
+                this.averaging.check_swap_cfsdt();
 
                 const Q_hat = SparseMatrix.matT_mult_vec(this.#CM.J, this.#CM.lambda);
                 for (let i = 0; i < this.#m_objects.length; i++) {
