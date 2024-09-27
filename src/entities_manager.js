@@ -1,6 +1,7 @@
 import {Units} from "./main.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {Vector2} from "./linear_algebra.js";
+import {CubicBezier} from "./bezier_curve.js";
 
 export const entities_manager = {
     active: false,
@@ -9,34 +10,35 @@ export const entities_manager = {
     drawing_line: false,
     drawing_spring_joint: false,
     recent_entities: [],
+    cubic_bezier_active: false,
+    cubic_bezier_curve: null,
+    standard_interactable_radius: 0.1,
+    num_objects_in_bezier: 10,
+    object_bezier_mass: 1,
 
     dynamicObject(physicsState, solver, mouse) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const pos = this.snap_to_grid ? Units.snap_to_grid(mouse_sim_pos) : mouse_sim_pos;
+        const pos = this.snap_to_grid ? Units.snap_to_grid(mouse.sim_pos) : mouse.sim_pos;
         physicsState.addObject(new DynamicObject(pos, 1, solver.standard_radius));
         const length = physicsState.getDynamicObjectsLength();
         this.recent_entities.push({type: "DynamicObject", id: length - 1});
     },
 
     fixedXConstraint(physicsState, solver, mouse) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         physicsState.addFixedXConstraint(id);
         const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
     },
 
     fixedYConstraint(physicsState, solver, mouse) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         physicsState.addFixedYConstraint(id);
         const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
     },
 
     fixedPosConstraint(physicsState, solver, mouse) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         physicsState.addFixedPosConstraint(id);
         const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
@@ -58,8 +60,7 @@ export const entities_manager = {
 
     // add other stuff to the scene -->>>
     addRagdoll(physicsState, solver, mouse) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const pos = this.snap_to_grid ? Units.snap_to_grid(mouse_sim_pos) : mouse_sim_pos;
+        const pos = this.snap_to_grid ? Units.snap_to_grid(mouse.sim_pos) : mouse.sim_pos;
         const rad = solver.standard_radius;
         const object_id_offset = physicsState.getDynamicObjectsLength();
         const constraint_id_offset = physicsState.getConstraintLength();
@@ -123,5 +124,58 @@ export const entities_manager = {
         m_linkConstraint(0, 1);
         
     },
+
+    addCubicBezierCurve(mouse) {
+        // its flipped so that no matter if mouse pos if left or right of
+        // units.width the bezier curve will always reflect correctly
+        // also change according to snap_to_grid
+        const pos1 =    !this.snap_to_grid ? 
+                            mouse.sim_pos.x < Units.WIDTH / 2 ? 
+                            mouse.sim_pos : new Vector2(Units.WIDTH - mouse.sim_pos.x, mouse.sim_pos.y)
+                        :   mouse.sim_pos.x < Units.WIDTH / 2 ? 
+                            Units.snap_to_grid(mouse.sim_pos) : Units.snap_to_grid(new Vector2(Units.WIDTH - mouse.sim_pos.x, mouse.sim_pos.y));
+        const pos2 =    !this.snap_to_grid ? 
+                            mouse.sim_pos.x < Units.WIDTH / 2 ? 
+                            new Vector2(Units.WIDTH - mouse.sim_pos.x, mouse.sim_pos.y) : mouse.sim_pos
+                        :   mouse.sim_pos.x < Units.WIDTH / 2 ? 
+                            Units.snap_to_grid(new Vector2(Units.WIDTH - mouse.sim_pos.x, mouse.sim_pos.y)) : Units.snap_to_grid(mouse.sim_pos);
+        this.cubic_bezier_curve = new CubicBezier(pos1, pos2, this.standard_interactable_radius);
+    },
+
+    spawnViaCubicBezier(physicsState, solver, mouse) {
+        const rad = solver.standard_radius;
+        const object_id_offset = physicsState.getDynamicObjectsLength();
+        const constraint_id_offset = physicsState.getConstraintLength();
+    
+        const self = this;
+        function m_linkConstraint(id1, id2) {
+            physicsState.addLinkConstraint(id1 + object_id_offset, id2 + object_id_offset);
+            self.recent_entities.push({type: "Constraint", id: constraint_id_offset - 1});
+        }
+
+        for (let i = 0; i <= this.num_objects_in_bezier; i++) {
+            const t = i / this.num_objects_in_bezier;
+            const position = this.cubic_bezier_curve.getPointOnCurve(t);
+            const object = new DynamicObject(position, this.object_bezier_mass, rad);
+            physicsState.addObject(object);
+            this.recent_entities.push({type: "DynamicObject", id: i + object_id_offset});
+        }
+
+        for (let i = 0; i < this.num_objects_in_bezier; i++) {
+            m_linkConstraint(i, i + 1);
+        }
+
+        this.cubic_bezier_curve = null;
+        this.cubic_bezier_active = false;
+
+    },
+
+    update(mouse) {
+        this.cubic_bezier_curve.update(this.snap_to_grid, mouse);
+    },
+
+    render(c) {
+        this.cubic_bezier_curve.render(c, this.num_objects_in_bezier);
+    }
 
 }

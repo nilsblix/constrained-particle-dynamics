@@ -2,6 +2,15 @@ import {SparseMatrixBlock, SparseMatrix, Vector, Vector2} from "./linear_algebra
 import {Units} from "./main.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 
+// if you add an extended constraint, make sure to include it in all places in physicsState
+// where to do things with rendering/ add or remove constraints it is necessary to know
+// how many core constraints are in this extended constraints.
+// EX: 
+// in physicsState in removeLastConstraint(), instance of (an extended constraint)
+// is used to know how many physics_constraints (core constraints) need to be 
+// removed to match the extended constraint  
+
+
 export class FixedPosConstraint {
     constructor(id, pos) {
         this.id = id;

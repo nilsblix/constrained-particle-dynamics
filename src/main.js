@@ -87,6 +87,7 @@ let solver = {
 
 let mouse = {
     canv_pos: new Vector2(0,0),
+    sim_pos: new Vector2(0,0),
     on_canvas: false,
     left_down:  false,
 
@@ -195,9 +196,8 @@ function renderBackground() {
     c.strokeStyle = "#000000";
     c.lineWidth = 3;
     // constants
-    const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
     if (entities_manager.snap_to_grid) {
-        const c_pos = Units.sim_canv(Units.snap_to_grid(mouse_sim_pos));
+        const c_pos = Units.sim_canv(Units.snap_to_grid(mouse.sim_pos));
         c.beginPath();
         c.arc(c_pos.x, c_pos.y, 10, 0, 2 * Math.PI);
         c.stroke();
@@ -230,7 +230,6 @@ function start() {
     physicsState.setSpringJointStiffness(20);
 
     // stp is snap to grid
-    // console.log("Keybinds: Simulate: s, Step sim: LArr, SloMo: UpArr, Full Reset: R, Reset: r, Mousespring: LM, Interact Mode: i, STP: I, (while i) DO: 1, ConstX: x, ConstY: y, ConstP, p, ConstLine: l + LM")
 
     console.log("General --> Simulate: s, Sim Step: LArr, SloMotion: UpArr, Full Reset: R, reset (demo) r");
     console.log("Demo Scenes --> 1: Pratt Truss, 2: King Post Truss, 3: Large Bridge Structure, 4: Crane Structure");
@@ -273,9 +272,13 @@ function update() {
 
     updateSliderValues();
 
+    if (entities_manager.active && entities_manager.cubic_bezier_active) {
+        entities_manager.update(mouse);
+    }
+
     // console.log(mouse.toString());
     if (mouse.on_canvas && !entities_manager.active)
-        physicsState.updateMouse(Units.canv_sim(mouse.canv_pos), mouse.left_down)
+        physicsState.updateMouse(mouse.sim_pos, mouse.left_down)
 
     // physics
     if (solver.simulating) {
@@ -295,6 +298,11 @@ function update() {
     let r_st = performance.now();
         c.clearRect(0, 0, canvas.width, canvas.height);
         renderBackground();
+
+        if (entities_manager.active && entities_manager.cubic_bezier_active) {
+            entities_manager.render(c);
+        }
+
         physicsState.render(c);
     let r_et = performance.now();
     averaging.rdt_sum += r_et - r_st;
@@ -342,7 +350,8 @@ document.addEventListener("keydown", function(event) {
     // add to physics manager
     if (event.key == "i") {
         entities_manager.active = !entities_manager.active;
-        solver.physicsState_is_null = false;
+        if (entities_manager.recent_entities.length != 0)
+            solver.physicsState_is_null = false;
     }
     if (event.key == "I") {
         entities_manager.snap_to_grid = !entities_manager.snap_to_grid;
@@ -363,8 +372,7 @@ document.addEventListener("keydown", function(event) {
         entities_manager.fixedPosConstraint(physicsState, solver, mouse);
     }
     if (event.key == "l" && entities_manager.active) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && !entities_manager.drawing_line) {
             entities_manager.line_start_id = id;
@@ -373,8 +381,7 @@ document.addEventListener("keydown", function(event) {
         }
     }
     if (event.key == "k" && entities_manager.active) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && !entities_manager.drawing_spring_joint) {
             entities_manager.line_start_id = id;
@@ -383,6 +390,17 @@ document.addEventListener("keydown", function(event) {
     }
     if (event.key == "d" && entities_manager.active) {
         entities_manager.removeMostRecentEntity(physicsState);
+    }
+    if (event.key == "B" && entities_manager.active) {
+        if (!entities_manager.cubic_bezier_active) {
+            entities_manager.cubic_bezier_active = true;
+            entities_manager.addCubicBezierCurve(mouse);
+        } else if (entities_manager.cubic_bezier_active) {
+            entities_manager.cubic_bezier_active = false;
+        }
+    }
+    if (event.key == "S" && entities_manager.active && entities_manager.cubic_bezier_active) {
+        entities_manager.spawnViaCubicBezier(physicsState, solver, mouse);
     }
 
 });
@@ -409,6 +427,8 @@ document.addEventListener("keyup", function(event) {
         const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && entities_manager.drawing_spring_joint) {
+            if (id == entities_manager.line_start_id)
+                return;
             physicsState.addSpringJoint(entities_manager.line_start_id, id);
             const gen_length = physicsState.getForceGeneratorsLength();
             entities_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
@@ -439,6 +459,7 @@ canvas.addEventListener("mousemove", function(event) {
     const x = event.clientX - rect.x;
     const y = event.clientY - rect.y;
     mouse.canv_pos = new Vector2(x, y);
+    mouse.sim_pos = Units.canv_sim(mouse.canv_pos);
 })
 
 

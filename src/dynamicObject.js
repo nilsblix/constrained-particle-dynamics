@@ -93,9 +93,7 @@ export class DynamicObject {
         const radius = this.drawing_radius * Units.scale_s_c;
 
         c.fillStyle = Colours.INNER_DYNAMIC_OBJECT;
-        // c.fillStyle = "#FFFFFF";
-        // c.fillStyle = "#e3a88a";
-        c.strokeStyle = Colours.OUTER_DYNAMIC_OBJECT; // do all right of this file
+        c.strokeStyle = Colours.OUTER_DYNAMIC_OBJECT; 
         c.lineWidth = LineWidths.DYNAMIC_OBJECT;
         
         c.beginPath();
