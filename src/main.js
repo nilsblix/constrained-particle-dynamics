@@ -231,11 +231,7 @@ function start() {
 
     // stp is snap to grid
 
-    console.log("General --> Simulate: s, Sim Step: LArr, SloMotion: UpArr, Full Reset: R, reset (demo) r");
-    console.log("Demo Scenes --> 1: Pratt Truss, 2: King Post Truss, 3: Large Bridge Structure, 4: Crane Structure");
-    console.log("Mouse --> MouseSpring: LM");
-    console.log("Editor --> Enable: i, Snap To Grid: I, Particle: 1, Draw SpringJoint: k");
-    console.log("Editor Constraints --> X: x, Y: y, Draw LinkConstraint: l");
+    console.log("Keybinds can be found in the keybinds.tx file");
 
 }
 
