@@ -39,7 +39,7 @@ export class FixedYConstraint {
 
         const obj = m_objects[this.p_id];
 
-        const obj_rad = obj.drawing_radius;
+        const obj_rad = obj.radius;
 
         const small_circle_rad = obj_rad / 4;
         const connection_circle_rad = obj_rad * Units.scale_s_c / 3; // Math.sqrt(2 * obj_rad * Units.scale_s_c);
@@ -163,7 +163,7 @@ export class FixedXConstraint {
     render(c, m_objects, lagrange_mult) {
         const obj = m_objects[this.p_id];
         const canv_pos = Units.sim_canv(obj.pos);
-        const rad = obj.drawing_radius;
+        const rad = obj.radius;
         const canvas_rad = rad * Units.scale_s_c;
 
         c.lineCap = Extras.FIXEDXCONSTRAINT_VERTICAL_LINE_ENDCAPS;  

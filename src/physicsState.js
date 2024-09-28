@@ -97,8 +97,8 @@ export class PhysicsState {
             this.#CM.Q.elements[2 * i] =        this.#m_objects[i].force.x;
             this.#CM.Q.elements[2 * i + 1] =    this.#m_objects[i].force.y;
 
-            this.#CM.W.elements[2 * i] =        this.#m_objects[i].wass;
-            this.#CM.W.elements[2 * i + 1] =    this.#m_objects[i].wass;
+            this.#CM.W.elements[2 * i] =        this.#m_objects[i].w;
+            this.#CM.W.elements[2 * i + 1] =    this.#m_objects[i].w;
         }
 
         this.#CM.C =        new Vector(this.#m_constraints.length);
@@ -332,7 +332,7 @@ export class PhysicsState {
         for (let i = 0; i < this.#m_objects.length; i++) {
             const v = Vector2.subtractVectors(this.#m_objects[i].pos, pos);
             const dist2 = v.x * v.x + v.y * v.y;
-            const rad = this.#m_objects[i].drawing_radius;
+            const rad = this.#m_objects[i].radius;
             if (dist2 < rad * rad) 
                 return i;
         }

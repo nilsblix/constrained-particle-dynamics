@@ -21,7 +21,7 @@ export class FixedPosConstraint {
     render(c, m_objects, lagrange_mult) {
         const obj = m_objects[this.id];
 
-        const obj_rad = obj.drawing_radius;
+        const obj_rad = obj.radius;
 
         const connection_circle_rad = Units.scale_s_c * obj_rad / 3;
 

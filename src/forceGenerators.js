@@ -17,7 +17,7 @@ export class Gravity {
     apply(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
             // m_objects[i].force = Vector2.addVectors(m_objects[i].force, new Vector2(0, - this.g_GRAVITY));
-            m_objects[i].force = Vector2.addVectors(m_objects[i].force, Vector2.scaleVector(new Vector2(0, -this.gravity), m_objects[i].mass));
+            m_objects[i].force = Vector2.addVectors(m_objects[i].force, Vector2.scaleVector(new Vector2(0, -this.gravity), m_objects[i].m));
         }
     }
 
@@ -25,7 +25,7 @@ export class Gravity {
         let energy = 0;
 
         for (let i = 0; i < m_objects.length; i++) {
-            energy += m_objects[i].mass * m_objects[i].pos.y * this.gravity;
+            energy += m_objects[i].m * m_objects[i].pos.y * this.gravity;
         }
         return energy;
     }
@@ -43,7 +43,7 @@ export class Wind {
 
     apply(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
-            m_objects[i].force = Vector2.addVectors(m_objects[i].force, Vector2.scaleVector(new Vector2(this.wind, 0), m_objects[i].mass));
+            m_objects[i].force = Vector2.addVectors(m_objects[i].force, Vector2.scaleVector(new Vector2(this.wind, 0), m_objects[i].m));
 
         }
     }
@@ -53,9 +53,9 @@ export class Wind {
 
         for (let i = 0; i < m_objects.length; i++) {
             if (this.wind > 0)
-                energy += m_objects[i].mass * (Units.WIDTH - m_objects[i].pos.x) * this.wind;
+                energy += m_objects[i].m * (Units.WIDTH - m_objects[i].pos.x) * this.wind;
             else 
-                energy += m_objects[i].mass * m_objects[i].pos.x * this.wind;   
+                energy += m_objects[i].m * m_objects[i].pos.x * this.wind;   
         }
         return energy;
     }
@@ -137,8 +137,8 @@ export class SpringJoint {
         const num_segments = Extras.SPRINGJOINT_NUM_SEGMENTS;
         const width = 0.2;
 
-        const outer_holding_circle_width_1 = obj1.drawing_radius * 1;
-        const outer_holding_circle_width_2 = obj2.drawing_radius * 1;
+        const outer_holding_circle_width_1 = obj1.radius * 1;
+        const outer_holding_circle_width_2 = obj2.radius * 1;
 
         let segments = [];
 
@@ -165,7 +165,7 @@ export class SpringJoint {
 
         // connection to object:
         // constants:
-        const connection_obj1_radius = Math.sqrt(2 * obj1.drawing_radius * Units.scale_s_c);
+        const connection_obj1_radius = Math.sqrt(2 * obj1.radius * Units.scale_s_c);
         const connection_obj1_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj1_radius);
         const connection_obj1_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj1_delta));
         const connection_obj1_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj1_delta.negated()));
@@ -203,7 +203,7 @@ export class SpringJoint {
 
         // connection to mouse:
         // constants:
-        const connection_obj2_radius = Math.sqrt(2 * obj2.drawing_radius * Units.scale_s_c);
+        const connection_obj2_radius = Math.sqrt(2 * obj2.radius * Units.scale_s_c);
         const connection_obj2_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj2_radius);
         const connection_obj2_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_obj2_delta));
         const connection_obj2_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_obj2_delta.negated()));
@@ -329,7 +329,7 @@ export class MouseSpring {
 
     apply(m_objects) {
         const obj = m_objects[this.particle_id];
-        this.#rest_length = obj.drawing_radius;
+        this.#rest_length = obj.radius;
 
         const dist = Vector2.distance(this.mouse_pos, obj.pos);
         const displacement = dist - this.#rest_length;
@@ -349,7 +349,7 @@ export class MouseSpring {
         for (let i = 0; i < m_objects.length; i++) {
             const v = Vector2.subtractVectors(m_objects[i].pos, this.mouse_pos);
             const dist2 = v.x * v.x + v.y * v.y;
-            const rad = m_objects[i].drawing_radius + 0.08;
+            const rad = m_objects[i].radius + 0.08;
             if (dist2 < rad * rad) {
                 this.particle_id = i;
                 return true;
@@ -369,7 +369,7 @@ export class MouseSpring {
         const dist = Vector2.distance(this.mouse_pos, obj.pos);
         const displacement = dist - this.#rest_length;
 
-        energy += 0.5 * obj.mass * displacement * displacement;
+        energy += 0.5 * obj.m * displacement * displacement;
         return energy;
     }
 
@@ -379,7 +379,7 @@ export class MouseSpring {
         const num_segments = Extras.MOUSESPRING_NUM_SEGMENTS;
         const width = 0.2;
 
-        const outer_holding_circle_width = obj.drawing_radius * 1;
+        const outer_holding_circle_width = obj.radius * 1;
         const mouse_radius = 0.1;
 
         let segments = [];
@@ -407,7 +407,7 @@ export class MouseSpring {
 
         // connection to object:
         // constants:
-        const connection_obj_radius = Math.sqrt(2 * obj.drawing_radius * Units.scale_s_c);
+        const connection_obj_radius = Math.sqrt(2 * obj.radius * Units.scale_s_c);
         const connection_obj_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj_radius);
         const connection_obj_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj_delta));
         const connection_obj_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj_delta.negated()));
@@ -459,7 +459,7 @@ export class MouseSpring {
 
         // connection to mouse:
         // constants:
-        const connection_mouse_radius = Math.sqrt(2 * obj.drawing_radius * Units.scale_s_c);
+        const connection_mouse_radius = Math.sqrt(2 * obj.radius * Units.scale_s_c);
         const connection_mouse_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_mouse_radius);
         const connection_mouse_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta));
         const connection_mouse_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta.negated()));
