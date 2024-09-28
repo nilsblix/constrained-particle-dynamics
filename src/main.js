@@ -225,7 +225,7 @@ function start() {
     physicsState.initConstraintManager();
 
     physicsState.setGravity(1.6);
-    physicsState.setLinearDampingMU(0.1);
+    physicsState.setLinearDampingMU(0.2);
     physicsState.setMouseSpringStiffness(15);
     physicsState.setSpringJointStiffness(20);
 
@@ -353,7 +353,16 @@ document.addEventListener("keydown", function(event) {
         entities_manager.snap_to_grid = !entities_manager.snap_to_grid;
     }
     if (event.key == "1" && entities_manager.active) {
-        entities_manager.dynamicObject(physicsState, solver, mouse);
+        entities_manager.dynamicObject(physicsState, solver, mouse, 1, 1);
+    }
+    if (event.key == "2" && entities_manager.active) {
+        entities_manager.dynamicObject(physicsState, solver, mouse, 4, 2);
+    }
+    if (event.key == "3" && entities_manager.active) {
+        entities_manager.dynamicObject(physicsState, solver, mouse, 9, 3);
+    }
+    if (event.key == "4" && entities_manager.active) {
+        entities_manager.dynamicObject(physicsState, solver, mouse, 16, 4);
     }
     if (event.key == "H" && entities_manager.active) {
         entities_manager.addRagdoll(physicsState, solver, mouse);
@@ -382,6 +391,8 @@ document.addEventListener("keydown", function(event) {
         if (mouse_over_dynamicObject && !entities_manager.drawing_spring_joint) {
             entities_manager.line_start_id = id;
             entities_manager.drawing_spring_joint = true;
+            const obj_pos = physicsState.getObjectPositionById(id);
+            entities_manager.object_offset = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
         }
     }
     if (event.key == "d" && entities_manager.active) {
@@ -425,7 +436,10 @@ document.addEventListener("keyup", function(event) {
         if (mouse_over_dynamicObject && entities_manager.drawing_spring_joint) {
             if (id == entities_manager.line_start_id)
                 return;
-            physicsState.addSpringJoint(entities_manager.line_start_id, id);
+            const obj_pos = physicsState.getObjectPositionById(id);
+            const off_1 = entities_manager.object_offset;
+            const off_2 = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
+            physicsState.addSpringJoint(entities_manager.line_start_id, id, off_1, off_2);
             const gen_length = physicsState.getForceGeneratorsLength();
             entities_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
         }

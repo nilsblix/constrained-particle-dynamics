@@ -9,6 +9,7 @@ export const entities_manager = {
     line_start_id: -1,
     drawing_line: false,
     drawing_spring_joint: false,
+    object_offset: new Vector2(0,0),
     recent_entities: [],
     cubic_bezier_active: false,
     cubic_bezier_curve: null,
@@ -16,9 +17,9 @@ export const entities_manager = {
     num_objects_in_bezier: 10,
     object_bezier_mass: 1,
 
-    dynamicObject(physicsState, solver, mouse) {
+    dynamicObject(physicsState, solver, mouse, mass, radius_mult) {
         const pos = this.snap_to_grid ? Units.snap_to_grid(mouse.sim_pos) : mouse.sim_pos;
-        physicsState.addObject(new DynamicObject(pos, 1, solver.standard_radius));
+        physicsState.addObject(new DynamicObject(pos, mass, radius_mult * solver.standard_radius)); // TEMPORARY: 20 and 5 should be 1
         const length = physicsState.getDynamicObjectsLength();
         this.recent_entities.push({type: "DynamicObject", id: length - 1});
     },

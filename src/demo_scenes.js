@@ -93,9 +93,9 @@ export function setupScene(physicsState, solver, version) {
             // physicsState.addLinkConstraint(11, 15);
             physicsState.addLinkConstraint(15, 13);
             // springs
-            physicsState.addSpringJoint(0, 14);
+            physicsState.addSpringJoint(0, 14, Vector2.zero, Vector2.zero);
             // physicsState.addSpringJoint(12, 14);
-            physicsState.addSpringJoint(11, 15);
+            physicsState.addSpringJoint(11, 15, Vector2.zero, Vector2.zero);
             // physicsState.addSpringJoint(15, 13);
 
             physicsState.addLinkConstraint(5, 16);

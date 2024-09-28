@@ -15,7 +15,7 @@ Keybinds: (correct capital is imperative)
     Toggle:              i
     Snap To Grid:        I
     Objects:
-      Spawn Particle:    1
+      Spawn Particle:    1 ... 4 (n ==> n^2 * mass, n * radius)
     ForceGenerators:
       Draw SpringJoint:  k
     Constraints:
@@ -28,3 +28,7 @@ Keybinds: (correct capital is imperative)
       Spawn Points:      S
   Auxiliary binds:    
       Mouse Spring:      Left Mouse + Mouse Position
+
+TODO:
+--> Implement rotational constraints and update q-states
+--> Maybe do some thinking on how to get the work done by rotation in mouse/spring joints.

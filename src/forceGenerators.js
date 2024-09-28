@@ -74,6 +74,7 @@ export class LinearDamping {
     apply(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
             m_objects[i].force = Vector2.subtractVectors(m_objects[i].force, Vector2.scaleVector(m_objects[i].vel, this.MU));
+            m_objects[i].tau -= m_objects[i].omega * 0.1 * this.MU;
         }
     }
 
@@ -89,12 +90,15 @@ export class LinearDamping {
 
 export class SpringJoint {
     #stiffness_const = 5;
+    #prev_theta_1 = 0;
+    #prev_theta_2 = 0;
 
-    constructor(id1, id2, m_objects) {
+    constructor(id1, id2, off_1, off_2) {
         this.id1 = id1;
         this.id2 = id2;
-        // this.rest_length = Vector2.distance(m_objects[id1].pos, m_objects[id2].pos);
-        this.rest_length = 0.5;
+        this.offset_1 = off_1;
+        this.offset_2 = off_2;
+        this.rest_length = 0.1;
     }
 
     setStiffness(value) {
@@ -105,19 +109,70 @@ export class SpringJoint {
         const obj1 = m_objects[this.id1];
         const obj2 = m_objects[this.id2];
 
-        const dist = Vector2.distance(obj1.pos, obj2.pos);
-        const displacement = dist - this.rest_length;
-        const force = this.#stiffness_const * displacement;
-        let dir = Vector2.subtractVectors(obj1.pos, obj2.pos);
-        if (dir == 0) 
-            dir = Vector2.scaleVector(dir, 1e-4);
-        else {
-            dir = Vector2.scaleVector(dir, 1 / dist);
-        }
+        this.#updateOffsets(obj1, obj2);
 
-        const total_force = Vector2.scaleVector(dir, force);
-        obj1.force = Vector2.subtractVectors(obj1.force, total_force);
-        obj2.force = Vector2.addVectors(obj2.force, total_force);
+        const applied_pos_1 = Vector2.addVectors(obj1.pos, this.offset_1);
+        const applied_pos_2 = Vector2.addVectors(obj2.pos, this.offset_2);
+        const dist = Vector2.distance(applied_pos_1, applied_pos_2);
+        const displacement = dist - this.rest_length;
+        
+        // directions are from 2 to 1
+        const linear_dir =  Vector2.subtractVectors(obj1.pos, obj2.pos);
+        const applied_dir = Vector2.subtractVectors(applied_pos_1, applied_pos_2);
+
+        const force = displacement * this.#stiffness_const;
+
+        // OBJECT 1
+        // translational force
+        const linear_force_vec_1 = Vector2.scaleVector(linear_dir.negated(), force);
+        obj1.force = Vector2.addVectors(obj1.force, linear_force_vec_1);
+
+        // rotational force (torque)
+        const applied_force_vec_1 = Vector2.scaleVector(applied_dir.negated(), force);
+        obj1.tau += Vector2.cross(this.offset_1, applied_force_vec_1); // tau is torque accumulator
+
+        // OBJECT 2
+        // translational force
+        const linear_force_vec_2 = Vector2.scaleVector(linear_dir, force);
+        obj2.force = Vector2.addVectors(obj2.force, linear_force_vec_2);
+
+        // rotational force (torque)
+        const applied_force_vec_2 = Vector2.scaleVector(applied_dir, force);
+        obj2.tau += Vector2.cross(this.offset_2, applied_force_vec_2); // tau is torque accumulator
+
+        // const dist = Vector2.distance(obj1.pos, obj2.pos);
+        // const displacement = dist - this.rest_length;
+        // const force = this.#stiffness_const * displacement;
+        // let dir = Vector2.subtractVectors(obj1.pos, obj2.pos);
+        // if (dir == 0) 
+        //     dir = Vector2.scaleVector(dir, 1e-4);
+        // else {
+        //     dir = Vector2.scaleVector(dir, 1 / dist);
+        // }
+
+        // const total_force = Vector2.scaleVector(dir, force);
+        // obj1.force = Vector2.subtractVectors(obj1.force, total_force);
+        // obj2.force = Vector2.addVectors(obj2.force, total_force);
+    }
+
+    #updateOffsets(obj1, obj2) {
+        // offset 1
+        const offset_1_magnitude = this.offset_1.magnitude();
+        const offset_1_angle = Math.atan2(this.offset_1.y, this.offset_1.x);
+        const delta_1 = obj1.theta - this.#prev_theta_1;
+        this.offset_1.x = Math.cos(offset_1_angle + delta_1) * offset_1_magnitude;
+        this.offset_1.y = Math.sin(offset_1_angle + delta_1) * offset_1_magnitude;
+
+        this.#prev_theta_1 = obj1.theta;
+
+        // offset 2
+        const offset_2_magnitude = this.offset_2.magnitude();
+        const offset_2_angle = Math.atan2(this.offset_2.y, this.offset_2.x);
+        const delta_2 = obj2.theta - this.#prev_theta_2;
+        this.offset_2.x = Math.cos(offset_2_angle + delta_2) * offset_2_magnitude;
+        this.offset_2.y = Math.sin(offset_2_angle + delta_2) * offset_2_magnitude;
+
+        this.#prev_theta_2 = obj2.theta;
     }
 
     getEnergyApplied(m_objects) {
@@ -137,20 +192,23 @@ export class SpringJoint {
         const num_segments = Extras.SPRINGJOINT_NUM_SEGMENTS;
         const width = 0.2;
 
-        const outer_holding_circle_width_1 = obj1.radius * 1;
-        const outer_holding_circle_width_2 = obj2.radius * 1;
+        const outer_holding_circle_width_1 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS
+        const outer_holding_circle_width_2 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS
+
+        const pos_1 = Vector2.addVectors(obj1.pos, this.offset_1);
+        const pos_2 = Vector2.addVectors(obj2.pos, this.offset_2);
 
         let segments = [];
 
-        const dist = Vector2.distance(obj1.pos, obj2.pos);
+        const dist = Vector2.distance(pos_1, pos_2);
 
-        const dir = Vector2.scaleVector(Vector2.subtractVectors(obj1.pos, obj2.pos), 1 / dist);
+        const dir = Vector2.scaleVector(Vector2.subtractVectors(pos_1, pos_2), 1 / dist);
         const dirT = new Vector2(-dir.y, dir.x);
 
         const spring_end_delta = Vector2.scaleVector(dir.negated(), outer_holding_circle_width_1);
-        const spring_end = Vector2.addVectors(obj1.pos, spring_end_delta);
+        const spring_end = Vector2.addVectors(pos_1, spring_end_delta);
         const spring_start_delta = Vector2.scaleVector(dir, outer_holding_circle_width_2);
-        const spring_start = Vector2.addVectors(obj2.pos, spring_start_delta);
+        const spring_start = Vector2.addVectors(pos_2, spring_start_delta);
 
         const spring_length = Vector2.distance(spring_start, spring_end);
 
@@ -165,12 +223,12 @@ export class SpringJoint {
 
         // connection to object:
         // constants:
-        const connection_obj1_radius = Math.sqrt(2 * obj1.radius * Units.scale_s_c);
-        const connection_obj1_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj1_radius);
+        const connection_obj1_radius = Extras.SPRING_JOINT_ENDS_RADIUS;
+        const connection_obj1_delta = Vector2.scaleVector(dirT, connection_obj1_radius);
         const connection_obj1_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj1_delta));
         const connection_obj1_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj1_delta.negated()));
-        const connection_obj1_pos_3 = Units.sim_canv(Vector2.addVectors(obj1.pos, connection_obj1_delta));
-        const connection_obj1_pos_4 = Units.sim_canv(Vector2.addVectors(obj1.pos, connection_obj1_delta.negated()));
+        const connection_obj1_pos_3 = Units.sim_canv(Vector2.addVectors(pos_1, connection_obj1_delta));
+        const connection_obj1_pos_4 = Units.sim_canv(Vector2.addVectors(pos_1, connection_obj1_delta.negated()));
         // init settings
         c.fillStyle = Colours.INNER_SPRING_ENDS;
         c.strokeStyle = Colours.OUTER_SPRING_ENDS;
@@ -178,7 +236,7 @@ export class SpringJoint {
         // draw rectangle:
         c.beginPath();
 
-        c.arc(Units.sim_canv_x(obj1.pos), Units.sim_canv_y(obj1.pos), connection_obj1_radius, 0, 2 * Math.PI);
+        c.arc(Units.sim_canv_x(pos_1), Units.sim_canv_y(pos_1), Units.scale_s_c * connection_obj1_radius, 0, 2 * Math.PI);
 
         c.moveTo(connection_obj1_pos_1.x, connection_obj1_pos_1.y);
         c.lineTo(connection_obj1_pos_3.x, connection_obj1_pos_3.y);
@@ -196,19 +254,19 @@ export class SpringJoint {
         
         c.beginPath();
         c.fillStyle = c.strokeStyle;
-        c.arc(Units.sim_canv_x(obj1.pos), Units.sim_canv_y(obj1.pos), 0.3 * connection_obj1_radius, 0, 2 * Math.PI);
+        c.arc(Units.sim_canv_x(pos_1), Units.sim_canv_y(pos_1), 0.3 * connection_obj1_radius, 0, 2 * Math.PI);
         c.stroke();
         c.fill();
         c.closePath();
 
         // connection to mouse:
         // constants:
-        const connection_obj2_radius = Math.sqrt(2 * obj2.radius * Units.scale_s_c);
-        const connection_obj2_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj2_radius);
+        const connection_obj2_radius = Extras.SPRING_JOINT_ENDS_RADIUS
+        const connection_obj2_delta = Vector2.scaleVector(dirT, connection_obj2_radius);
         const connection_obj2_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_obj2_delta));
         const connection_obj2_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_obj2_delta.negated()));
-        const connection_obj2_pos_3 = Units.sim_canv(Vector2.addVectors(obj2.pos, connection_obj2_delta));
-        const connection_obj2_pos_4 = Units.sim_canv(Vector2.addVectors(obj2.pos, connection_obj2_delta.negated()));
+        const connection_obj2_pos_3 = Units.sim_canv(Vector2.addVectors(pos_2, connection_obj2_delta));
+        const connection_obj2_pos_4 = Units.sim_canv(Vector2.addVectors(pos_2, connection_obj2_delta.negated()));
         // init settings
         c.fillStyle = Colours.INNER_SPRING_ENDS;
         c.strokeStyle = Colours.OUTER_SPRING_ENDS;
@@ -216,7 +274,7 @@ export class SpringJoint {
         // draw rectangle:
         c.beginPath();
 
-        c.arc(Units.sim_canv_x(obj2.pos), Units.sim_canv_y(obj2.pos), connection_obj2_radius, 0, 2 * Math.PI);
+        c.arc(Units.sim_canv_x(pos_2), Units.sim_canv_y(pos_2), Units.scale_s_c * connection_obj2_radius, 0, 2 * Math.PI);
 
         c.moveTo(connection_obj2_pos_2.x, connection_obj2_pos_2.y);
         c.lineTo(connection_obj2_pos_4.x, connection_obj2_pos_4.y);
@@ -234,7 +292,7 @@ export class SpringJoint {
         
         c.beginPath();
         c.fillStyle = c.strokeStyle;
-        c.arc(Units.sim_canv_x(obj2.pos), Units.sim_canv_y(obj2.pos), 0.3 * connection_obj2_radius, 0, 2 * Math.PI);
+        c.arc(Units.sim_canv_x(pos_2), Units.sim_canv_y(pos_2), 0.3 * connection_obj2_radius, 0, 2 * Math.PI);
         c.stroke();
         c.fill();
         c.closePath();
@@ -316,11 +374,13 @@ export class SpringJoint {
 export class MouseSpring {
     #rest_length = 0;
     #stiffness_const = 10;
+    #prev_theta = 0;
 
     constructor(id) {
         this.particle_id = id;
         this.mouse_pos = new Vector2(0,0);
         this.active = false;
+        this.offset = new Vector2(0,0);
     }
 
     setStiffness(value) {
@@ -331,27 +391,40 @@ export class MouseSpring {
         const obj = m_objects[this.particle_id];
         this.#rest_length = obj.radius;
 
-        const dist = Vector2.distance(this.mouse_pos, obj.pos);
+        const offset_magnitude = this.offset.magnitude();
+        const offset_angle = Math.atan2(this.offset.y, this.offset.x);
+        const delta = obj.theta - this.#prev_theta;
+        this.offset.x = Math.cos(offset_angle + delta) * offset_magnitude;
+        this.offset.y = Math.sin(offset_angle + delta) * offset_magnitude;
+
+        this.#prev_theta = obj.theta;
+
+        const applied_pos = Vector2.addVectors(obj.pos, this.offset);
+        const dist = Vector2.distance(this.mouse_pos, applied_pos);
         const displacement = dist - this.#rest_length;
-        const force = 2 * this.#stiffness_const * displacement;
-        let dir = Vector2.subtractVectors(this.mouse_pos, obj.pos);
 
-        if (dist == 0) 
-            dir = Vector2.scaleVector(dir, 1e-4);
-        else
-            dir = Vector2.scaleVector(dir, 1 / dist);
+        const linear_dir =  Vector2.subtractVectors(this.mouse_pos, obj.pos);
+        const applied_dir = Vector2.subtractVectors(this.mouse_pos, applied_pos);
 
-        const total_force = Vector2.scaleVector(dir, force);
-        m_objects[this.particle_id].force = Vector2.addVectors(m_objects[this.particle_id].force, total_force);
+        const force = this.#stiffness_const * displacement;
+
+        // translational force
+        const linear_force_vec = Vector2.scaleVector(linear_dir, force);
+        obj.force = Vector2.addVectors(obj.force, linear_force_vec);
+
+        // rotational force (torque)
+        const applied_force_vec = Vector2.scaleVector(applied_dir, force);
+        obj.tau += Vector2.cross(this.offset, applied_force_vec); // tau is torque accumulator
     }
 
     getClosestDynamicObject(m_objects) {
         for (let i = 0; i < m_objects.length; i++) {
             const v = Vector2.subtractVectors(m_objects[i].pos, this.mouse_pos);
             const dist2 = v.x * v.x + v.y * v.y;
-            const rad = m_objects[i].radius + 0.08;
+            const rad = m_objects[i].radius;
             if (dist2 < rad * rad) {
                 this.particle_id = i;
+                this.offset = Vector2.subtractVectors(this.mouse_pos, m_objects[i].pos);
                 return true;
             }
         }
@@ -363,36 +436,58 @@ export class MouseSpring {
             return 0;
 
         let energy = 0;
-
         const obj = m_objects[this.particle_id];
 
-        const dist = Vector2.distance(this.mouse_pos, obj.pos);
-        const displacement = dist - this.#rest_length;
+        const applied_pos = Vector2.addVectors(obj.pos, this.offset);
 
+        // simple spring hookes law
+        const dist = Vector2.distance(this.mouse_pos, applied_pos);
+        const displacement = dist - this.#rest_length;
         energy += 0.5 * obj.m * displacement * displacement;
+
+        // // objects rotational potential energy (integration of angle difference between current and most optimal rotation)
+        // const offset_magnitude = this.offset.magnitude();
+        // let optimal_dir = Vector2.subtractVectors(this.mouse_pos, obj.pos);
+        // optimal_dir = optimal_dir.normalized();
+        // // this is the lowest energy rotation
+        // optimal_dir = Vector2.scaleVector(optimal_dir, offset_magnitude);
+        // const A = Math.atan2(optimal_dir.y, optimal_dir.x); // A is the optimal angle
+        // const delta = A - obj.theta;
+        // energy += this.#stiffness_const *   (
+        //                                     this.mouse_pos.x * obj.pos.x * delta
+        //                                     + this.mouse_pos.y * obj.pos.y * delta
+        //                                     + delta
+        //                                     + (this.mouse_pos.x + obj.pos.x) * Math.sin(A)
+        //                                     + (this.mouse_pos.x + obj.pos.x) * Math.sin(obj.theta)
+        //                                     - (this.mouse_pos.y + obj.pos.y) * Math.cos(A)
+        //                                     - (this.mouse_pos.y + obj.pos.y) * Math.cos(obj.theta)
+                                            // );
+
         return energy;
     }
 
     render(c, m_objects) {
         const obj = m_objects[this.particle_id];
 
+        const start_pos = this.mouse_pos;
+        const end_pos = Vector2.addVectors(obj.pos, this.offset);
+
         const num_segments = Extras.MOUSESPRING_NUM_SEGMENTS;
         const width = 0.2;
 
-        const outer_holding_circle_width = obj.radius * 1;
-        const mouse_radius = 0.1;
+        const mouse_radius = 2 * Extras.SPRING_JOINT_ENDS_RADIUS;
 
         let segments = [];
 
-        const dist = Vector2.distance(this.mouse_pos, obj.pos);
+        const dist = Vector2.distance(start_pos, end_pos);
 
-        const dir = Vector2.scaleVector(Vector2.subtractVectors(obj.pos, this.mouse_pos), 1 / dist);
+        const dir = Vector2.scaleVector(Vector2.subtractVectors(end_pos, start_pos), 1 / dist);
         const dirT = new Vector2(-dir.y, dir.x);
 
-        const spring_end_delta = Vector2.scaleVector(dir.negated(), outer_holding_circle_width);
-        const spring_end = Vector2.addVectors(obj.pos, spring_end_delta);
+        const spring_end_delta = Vector2.scaleVector(dir.negated(), mouse_radius);
+        const spring_end = Vector2.addVectors(end_pos, spring_end_delta);
         const spring_start_delta = Vector2.scaleVector(dir, mouse_radius);
-        const spring_start = Vector2.addVectors(this.mouse_pos, spring_start_delta);
+        const spring_start = Vector2.addVectors(start_pos, spring_start_delta);
 
         const spring_length = Vector2.distance(spring_start, spring_end);
 
@@ -406,13 +501,12 @@ export class MouseSpring {
         }
 
         // connection to object:
-        // constants:
-        const connection_obj_radius = Math.sqrt(2 * obj.radius * Units.scale_s_c);
-        const connection_obj_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_obj_radius);
-        const connection_obj_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj_delta));
-        const connection_obj_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj_delta.negated()));
-        const connection_obj_pos_3 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta));
-        const connection_obj_pos_4 = Units.sim_canv(Vector2.addVectors(obj.pos, connection_obj_delta.negated()));
+        const connection_end_radius = 0.5 * mouse_radius;
+        const connection_end_delta = Vector2.scaleVector(dirT, connection_end_radius);
+        const connection_end_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_end_delta));
+        const connection_end_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_end_delta.negated()));
+        const connection_end_pos_3 = Units.sim_canv(Vector2.addVectors(end_pos, connection_end_delta));
+        const connection_end_pos_4 = Units.sim_canv(Vector2.addVectors(end_pos, connection_end_delta.negated()));
         // init settings
         c.fillStyle = Colours.INNER_SPRING_ENDS;
         c.strokeStyle = Colours.OUTER_SPRING_ENDS;
@@ -420,12 +514,12 @@ export class MouseSpring {
         // draw rectangle:
         c.beginPath();
 
-        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), connection_obj_radius, 0, 2 * Math.PI);
+        c.arc(Units.sim_canv_x(end_pos), Units.sim_canv_y(end_pos), Units.scale_s_c * connection_end_radius, 0, 2 * Math.PI);
 
-        c.moveTo(connection_obj_pos_1.x, connection_obj_pos_1.y);
-        c.lineTo(connection_obj_pos_3.x, connection_obj_pos_3.y);
-        c.lineTo(connection_obj_pos_4.x, connection_obj_pos_4.y);
-        c.lineTo(connection_obj_pos_2.x, connection_obj_pos_2.y);
+        c.moveTo(connection_end_pos_1.x, connection_end_pos_1.y);
+        c.lineTo(connection_end_pos_3.x, connection_end_pos_3.y);
+        c.lineTo(connection_end_pos_4.x, connection_end_pos_4.y);
+        c.lineTo(connection_end_pos_2.x, connection_end_pos_2.y);
         
         c.stroke();
         c.fill();
@@ -438,33 +532,33 @@ export class MouseSpring {
         
         c.beginPath();
         c.fillStyle = c.strokeStyle;
-        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), 0.3 * connection_obj_radius, 0, 2 * Math.PI);
+        c.arc(Units.sim_canv_x(end_pos), Units.sim_canv_y(end_pos), 0.3 * connection_end_radius, 0, 2 * Math.PI);
         c.stroke();
         c.fill();
         c.closePath();
 
         // mouse circle:
         // constants
-        const mouse_canvas_pos = Units.sim_canv(this.mouse_pos);
+        const mouse_canvas_pos = Units.sim_canv(start_pos);
         // init settings
         c.fillStyle = Colours.INNER_MOUSE_SPRING_MOUSE_CIRCLE;
         c.strokeStyle = Colours.OUTER_MOUSE_SPRING_MOUSE_CIRCLE;
         c.lineWidth = LineWidths.MOUSE_SPRING_MOUSE_CIRCLE;
-        // draw circle at mouse
-        c.beginPath();
-        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
-        c.fill();
-        c.stroke();
-        c.closePath();
+        // draw circle at mouse, OPTIONAL
+        // c.beginPath();
+        // c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * mouse_radius, 0, 2 * Math.PI);
+        // c.fill();
+        // c.stroke();
+        // c.closePath();
 
         // connection to mouse:
         // constants:
-        const connection_mouse_radius = Math.sqrt(2 * obj.radius * Units.scale_s_c);
-        const connection_mouse_delta = Vector2.scaleVector(dirT, Units.scale_c_s * connection_mouse_radius);
-        const connection_mouse_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta));
-        const connection_mouse_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta.negated()));
-        const connection_mouse_pos_3 = Units.sim_canv(Vector2.addVectors(this.mouse_pos, connection_mouse_delta));
-        const connection_mouse_pos_4 = Units.sim_canv(Vector2.addVectors(this.mouse_pos, connection_mouse_delta.negated()));
+        const connection_start_radius = 0.5 * mouse_radius;
+        const connection_mouse_delta = Vector2.scaleVector(dirT, connection_start_radius);
+        const connection_start_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta));
+        const connection_start_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_mouse_delta.negated()));
+        const connection_start_pos_3 = Units.sim_canv(Vector2.addVectors(start_pos, connection_mouse_delta));
+        const connection_start_pos_4 = Units.sim_canv(Vector2.addVectors(start_pos, connection_mouse_delta.negated()));
         // init settings
         c.fillStyle = Colours.INNER_SPRING_ENDS;
         c.strokeStyle = Colours.OUTER_SPRING_ENDS;
@@ -472,12 +566,12 @@ export class MouseSpring {
         // draw rectangle:
         c.beginPath();
 
-        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, connection_mouse_radius, 0, 2 * Math.PI);
+        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, Units.scale_s_c * connection_start_radius, 0, 2 * Math.PI);
 
-        c.moveTo(connection_mouse_pos_2.x, connection_mouse_pos_2.y);
-        c.lineTo(connection_mouse_pos_4.x, connection_mouse_pos_4.y);
-        c.lineTo(connection_mouse_pos_3.x, connection_mouse_pos_3.y);
-        c.lineTo(connection_mouse_pos_1.x, connection_mouse_pos_1.y);
+        c.moveTo(connection_start_pos_2.x, connection_start_pos_2.y);
+        c.lineTo(connection_start_pos_4.x, connection_start_pos_4.y);
+        c.lineTo(connection_start_pos_3.x, connection_start_pos_3.y);
+        c.lineTo(connection_start_pos_1.x, connection_start_pos_1.y);
 
         c.stroke();
         c.fill();
@@ -490,7 +584,7 @@ export class MouseSpring {
         
         c.beginPath();
         c.fillStyle = c.strokeStyle;
-        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, 0.3 * connection_mouse_radius, 0, 2 * Math.PI);
+        c.arc(mouse_canvas_pos.x, mouse_canvas_pos.y, 0.3 * connection_start_radius, 0, 2 * Math.PI);
         c.stroke();
         c.fill();
         c.closePath();

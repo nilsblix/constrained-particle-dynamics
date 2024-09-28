@@ -1,4 +1,6 @@
 export class Vector2 {
+    static zero = new Vector2(0,0);
+
     constructor(x = 0.0, y = 0.0) {
         this.x = x;
         this.y = y;
@@ -58,6 +60,10 @@ export class Vector2 {
     normalized() {
         const dist = this.magnitude();
         return Vector2.scaleVector(this, 1 / dist);
+    }
+
+    static cross(a, b) {
+        return a.x * b.y - a.y * b.x
     }
 
     toString() {

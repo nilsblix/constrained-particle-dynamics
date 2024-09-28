@@ -189,7 +189,7 @@ export class PhysicsState {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
-                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 64) // last int is iteration-count
+                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 96) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.averaging.cfsdt_sum += CFS_et - CFS_st;
                 this.averaging.cfsdt_frames++;
@@ -204,7 +204,10 @@ export class PhysicsState {
 
             // integrate
             for (let i = 0; i < this.#m_objects.length; i++) {
-                this.#m_objects[i].symplecticEuler(sub_dt);
+                this.#m_objects[i].symplecticEulerTranslation(sub_dt);
+            }
+            for (let i = 0; i < this.#m_objects.length; i++) {
+                this.#m_objects[i].symplecticEulerRotation(sub_dt);
             }
             // console.log("obj len: " + this.#m_objects.length);
 
@@ -377,8 +380,8 @@ export class PhysicsState {
         }
     }
     
-    addSpringJoint(id1, id2) {
-        const gen = new SpringJoint(id1, id2, this.#m_objects);
+    addSpringJoint(id1, id2, offset_1, offset_2) {
+        const gen = new SpringJoint(id1, id2, offset_1, offset_2);
         this.addForceGenerator(gen);
     }
 
@@ -405,6 +408,10 @@ export class PhysicsState {
         const con = new LinkConstraint(id1, id2, dist)
         this.addConstraint(con);
         this.addRenderedConstraint(con);
+    }
+
+    getObjectPositionById(id) {
+        return this.#m_objects[id].pos;
     }
 
 }
