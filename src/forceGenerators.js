@@ -117,8 +117,8 @@ export class SpringJoint {
         const displacement = dist - this.rest_length;
         
         // directions are from 2 to 1
-        const linear_dir =  Vector2.subtractVectors(obj1.pos, obj2.pos);
-        const applied_dir = Vector2.subtractVectors(applied_pos_1, applied_pos_2);
+        const linear_dir =  (Vector2.subtractVectors(obj1.pos, obj2.pos)).normalized();
+        const applied_dir = (Vector2.subtractVectors(applied_pos_1, applied_pos_2)).normalized();
 
         const force = displacement * this.#stiffness_const;
 
@@ -179,10 +179,26 @@ export class SpringJoint {
         const obj1 = m_objects[this.id1];
         const obj2 = m_objects[this.id2];
 
-        const dist = Vector2.distance(obj1.pos, obj2.pos);
-        const displacement = dist - this.rest_length;
+        let energy = 0;
 
-        return 1 / 2 * this.#stiffness_const * displacement * displacement;
+        const applied_pos_1 = Vector2.addVectors(obj1.pos, this.offset_1);
+        const applied_pos_2 = Vector2.addVectors(obj2.pos, this.offset_2);
+
+        // simple spring hookes law
+        const dist = Vector2.distance(applied_pos_1, applied_pos_2);
+        const displacement = dist - this.rest_length;
+        const force = this.#stiffness_const * displacement;
+        energy += 0.5 * force * displacement;
+
+        return energy;
+
+        // const dist = Vector2.distance(obj1.pos, obj2.pos);
+        // const displacement = dist - this.rest_length;
+
+        // return 1 / 2 * this.#stiffness_const * displacement * displacement;
+
+
+        
     }
 
     render(c, m_objects) {
@@ -403,8 +419,11 @@ export class MouseSpring {
         const dist = Vector2.distance(this.mouse_pos, applied_pos);
         const displacement = dist - this.#rest_length;
 
-        const linear_dir =  Vector2.subtractVectors(this.mouse_pos, obj.pos);
-        const applied_dir = Vector2.subtractVectors(this.mouse_pos, applied_pos);
+        if (dist == 0) 
+            return;
+        
+        const linear_dir =  (Vector2.subtractVectors(this.mouse_pos, obj.pos)).normalized();
+        const applied_dir = (Vector2.subtractVectors(this.mouse_pos, applied_pos)).normalized();
 
         const force = this.#stiffness_const * displacement;
 
@@ -443,25 +462,8 @@ export class MouseSpring {
         // simple spring hookes law
         const dist = Vector2.distance(this.mouse_pos, applied_pos);
         const displacement = dist - this.#rest_length;
-        energy += 0.5 * obj.m * displacement * displacement;
-
-        // // objects rotational potential energy (integration of angle difference between current and most optimal rotation)
-        // const offset_magnitude = this.offset.magnitude();
-        // let optimal_dir = Vector2.subtractVectors(this.mouse_pos, obj.pos);
-        // optimal_dir = optimal_dir.normalized();
-        // // this is the lowest energy rotation
-        // optimal_dir = Vector2.scaleVector(optimal_dir, offset_magnitude);
-        // const A = Math.atan2(optimal_dir.y, optimal_dir.x); // A is the optimal angle
-        // const delta = A - obj.theta;
-        // energy += this.#stiffness_const *   (
-        //                                     this.mouse_pos.x * obj.pos.x * delta
-        //                                     + this.mouse_pos.y * obj.pos.y * delta
-        //                                     + delta
-        //                                     + (this.mouse_pos.x + obj.pos.x) * Math.sin(A)
-        //                                     + (this.mouse_pos.x + obj.pos.x) * Math.sin(obj.theta)
-        //                                     - (this.mouse_pos.y + obj.pos.y) * Math.cos(A)
-        //                                     - (this.mouse_pos.y + obj.pos.y) * Math.cos(obj.theta)
-                                            // );
+        const force = this.#stiffness_const * displacement;
+        energy += 0.5 * force * displacement;
 
         return energy;
     }

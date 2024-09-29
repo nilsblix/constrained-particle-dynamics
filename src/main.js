@@ -295,11 +295,11 @@ function update() {
         c.clearRect(0, 0, canvas.width, canvas.height);
         renderBackground();
 
-        if (entities_manager.active && entities_manager.cubic_bezier_active) {
-            entities_manager.render(c);
-        }
-
         physicsState.render(c);
+
+        if (entities_manager.active) 
+            entities_manager.render(c, physicsState, solver, mouse);
+        
     let r_et = performance.now();
     averaging.rdt_sum += r_et - r_st;
     averaging.rdt_frames++;
@@ -379,9 +379,9 @@ document.addEventListener("keydown", function(event) {
     if (event.key == "l" && entities_manager.active) {
         const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && !entities_manager.drawing_line) {
+        if (mouse_over_dynamicObject && !entities_manager.drawing_link_constraint) {
             entities_manager.line_start_id = id;
-            entities_manager.drawing_line = true;
+            entities_manager.drawing_link_constraint = true;
 
         }
     }
@@ -395,7 +395,7 @@ document.addEventListener("keydown", function(event) {
             entities_manager.object_offset = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
         }
     }
-    if (event.key == "d" && entities_manager.active) {
+    if (event.key == "Backspace" && entities_manager.active) {
         entities_manager.removeMostRecentEntity(physicsState);
     }
     if (event.key == "B" && entities_manager.active) {
@@ -420,30 +420,30 @@ document.addEventListener("keyup", function(event) {
         const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
         const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
         const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && entities_manager.drawing_line) {
+        if (mouse_over_dynamicObject && entities_manager.drawing_link_constraint) {
             if (id != entities_manager.line_start_id) {
                 physicsState.addLinkConstraint(entities_manager.line_start_id, id);
                 const c_length = physicsState.getConstraintLength();
                 entities_manager.recent_entities.push({type: "Constraint", id: c_length - 1});
             }
-            entities_manager.drawing_line = false;
+            entities_manager.drawing_link_constraint = false;
         }
     }
     if (event.key == "k" && entities_manager.active) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && entities_manager.drawing_spring_joint) {
-            if (id == entities_manager.line_start_id)
-                return;
-            const obj_pos = physicsState.getObjectPositionById(id);
-            const off_1 = entities_manager.object_offset;
-            const off_2 = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
-            physicsState.addSpringJoint(entities_manager.line_start_id, id, off_1, off_2);
-            const gen_length = physicsState.getForceGeneratorsLength();
-            entities_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
+            if (id != entities_manager.line_start_id) {
+                const obj_pos = physicsState.getObjectPositionById(id);
+                const off_1 = entities_manager.object_offset;
+                const off_2 = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
+                physicsState.addSpringJoint(entities_manager.line_start_id, id, off_1, off_2);
+                const gen_length = physicsState.getForceGeneratorsLength();
+                entities_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
+            }
         }
         entities_manager.drawing_spring_joint = false;
+        entities_manager.object_offset = Vector2.zero;
     }
 });
 

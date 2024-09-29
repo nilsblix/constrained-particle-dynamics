@@ -63,7 +63,7 @@ export class Vector2 {
     }
 
     static cross(a, b) {
-        return a.x * b.y - a.y * b.x
+        return a.x * b.y - a.y * b.x;
     }
 
     toString() {

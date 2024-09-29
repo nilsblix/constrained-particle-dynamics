@@ -2,14 +2,15 @@ import {Units} from "./main.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {Vector2} from "./linear_algebra.js";
 import {CubicBezier} from "./bezier_curve.js";
+import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 export const entities_manager = {
     active: false,
     snap_to_grid: false,
     line_start_id: -1,
-    drawing_line: false,
+    drawing_link_constraint: false,
     drawing_spring_joint: false,
-    object_offset: new Vector2(0,0),
+    object_offset: Vector2.zero,
     recent_entities: [],
     cubic_bezier_active: false,
     cubic_bezier_curve: null,
@@ -175,8 +176,23 @@ export const entities_manager = {
         this.cubic_bezier_curve.update(this.snap_to_grid, mouse);
     },
 
-    render(c) {
-        this.cubic_bezier_curve.render(c, this.num_objects_in_bezier);
+    render(c, physicsState, solver, mouse) {
+        if (this.cubic_bezier_active)
+            this.cubic_bezier_curve.render(c, this.num_objects_in_bezier);
+
+        if (this.drawing_link_constraint || this.drawing_spring_joint) {
+            const p1 = Vector2.addVectors(physicsState.getObjectPositionById(this.line_start_id), this.object_offset);
+            const p2 = mouse.sim_pos;
+            c.lineCap = "round";
+            c.strokeStyle = Colours.INNER_CUBIC_BEZIER_SUPPORTING_LINES;
+            c.lineWidth = LineWidths.INNER_CUBIC_BEZIER_LINE;
+            c.beginPath();
+            c.moveTo(Units.sim_canv_x(p1), Units.sim_canv_y(p1));
+            c.lineTo(Units.sim_canv_x(p2), Units.sim_canv_y(p2));
+            c.stroke();
+            c.closePath();
+        }
+
     }
 
 }
