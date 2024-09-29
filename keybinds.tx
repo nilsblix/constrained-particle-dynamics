@@ -22,6 +22,8 @@ Keybinds: (correct capital is imperative)
       Fixed X:           x
       Fixed Y:           y
       Draw Link:         l
+      Fixed Rot:         t
+      Fixed Rot Vel:     m (for motor)
     Bezier Curve:
       Toggle:            B
       *Change the positions of the control points with:   Left Mouse + Mouse Position
@@ -30,5 +32,5 @@ Keybinds: (correct capital is imperative)
       Mouse Spring:      Left Mouse + Mouse Position
 
 TODO:
---> Implement rotational constraints and update q-states
---> Maybe do some thinking on how to get the work done by rotation in mouse/spring joints.
+--> LinkConstraint with rotational offsets
+--> Springs acting on LinkConstraints
