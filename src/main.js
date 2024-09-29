@@ -240,6 +240,12 @@ function start() {
 
 }
 
+function reset() {
+    solver.simulating = false;
+    solver.physicsState_is_null = true;
+    physicsState.initConstraintManager();
+}
+
 const averaging = { // cfs time is handled in physicsState class
 
     swap_frames: 20, 
@@ -322,10 +328,7 @@ document.addEventListener("keydown", function(event) {
     }
     if (event.key == "R") {
         physicsState = new PhysicsState();
-        start();
-        solver.simulating = false;
-        solver.physicsState_is_null = true;
-        physicsState.initConstraintManager();
+        reset();
     }
     if (event.key == "1" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "pratt truss");

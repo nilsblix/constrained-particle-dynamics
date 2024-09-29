@@ -93,12 +93,16 @@ export class SpringJoint {
     #prev_theta_1 = 0;
     #prev_theta_2 = 0;
 
-    constructor(id1, id2, off_1, off_2) {
+    constructor(id1, id2, off_1, off_2, m_objects) {
         this.id1 = id1;
         this.id2 = id2;
         this.offset_1 = off_1;
         this.offset_2 = off_2;
-        this.rest_length = 0.1;
+        // this.rest_length = 0.1;
+        this.rest_length = Vector2.distance(m_objects[id1].pos, m_objects[id2].pos);
+
+        this.#prev_theta_1 = m_objects[id1].theta;
+        this.#prev_theta_2 = m_objects[id2].theta;
     }
 
     setStiffness(value) {
@@ -425,6 +429,7 @@ export class MouseSpring {
             if (dist2 < rad * rad) {
                 this.particle_id = i;
                 this.offset = Vector2.subtractVectors(this.mouse_pos, m_objects[i].pos);
+                this.#prev_theta = m_objects[i].theta;
                 return true;
             }
         }

@@ -409,7 +409,7 @@ export class PhysicsState {
     }
     
     addSpringJoint(id1, id2, offset_1, offset_2) {
-        const gen = new SpringJoint(id1, id2, offset_1, offset_2);
+        const gen = new SpringJoint(id1, id2, offset_1, offset_2, this.#m_objects);
         this.addForceGenerator(gen);
     }
 
