@@ -146,6 +146,7 @@
                 <option value="linear damping">Linear Damping</option>
                 <option value="mouse spring">Mouse Spring Stiffness</option>
                 <option value="spring joint">Spring Joint Stiffness</option>
+                <option value="omega constraint">Ang. Vel. Con. Value</option>
             </select>
         </div>
 
@@ -166,6 +167,7 @@
             linear_damping: 0.2,
             mouse_spring: 15,
             spring_joint: 20,
+            omega_constraint: 20,
         };
 
         // times_activated = {
@@ -199,6 +201,10 @@
                     slider.min = 0;
                     slider.max = 40;
                     slider.value = slider_values.spring_joint;
+                } else if (option == "omega constraint") {
+                    slider.min = 0;
+                    slider.max = 70;
+                    slider.value = slider_values.omega_constraint;
                 }
 
             } else {
@@ -221,6 +227,8 @@
                 slider_values.mouse_spring = slider.value;
             } else if (option == "spring joint") {
                 slider_values.spring_joint = slider.value;
+            } else if (option == "omega constraint") {
+                slider_values.omega_constraint = slider.value;
             }
 
             const slider_value = document.getElementById("sliderValue");

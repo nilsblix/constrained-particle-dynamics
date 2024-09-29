@@ -117,14 +117,15 @@ export class SpringJoint {
         const displacement = dist - this.rest_length;
         
         // directions are from 2 to 1
-        const linear_dir =  (Vector2.subtractVectors(obj1.pos, obj2.pos)).normalized();
+        const linear_dir_1 =  (Vector2.subtractVectors(applied_pos_2, obj1.pos)).normalized();
+        const linear_dir_2 =  (Vector2.subtractVectors(applied_pos_1, obj2.pos)).normalized();
         const applied_dir = (Vector2.subtractVectors(applied_pos_1, applied_pos_2)).normalized();
 
         const force = displacement * this.#stiffness_const;
 
         // OBJECT 1
         // translational force
-        const linear_force_vec_1 = Vector2.scaleVector(linear_dir.negated(), force);
+        const linear_force_vec_1 = Vector2.scaleVector(linear_dir_1, force);
         obj1.force = Vector2.addVectors(obj1.force, linear_force_vec_1);
 
         // rotational force (torque)
@@ -133,26 +134,13 @@ export class SpringJoint {
 
         // OBJECT 2
         // translational force
-        const linear_force_vec_2 = Vector2.scaleVector(linear_dir, force);
+        const linear_force_vec_2 = Vector2.scaleVector(linear_dir_2, force);
         obj2.force = Vector2.addVectors(obj2.force, linear_force_vec_2);
 
         // rotational force (torque)
         const applied_force_vec_2 = Vector2.scaleVector(applied_dir, force);
         obj2.tau += Vector2.cross(this.offset_2, applied_force_vec_2); // tau is torque accumulator
 
-        // const dist = Vector2.distance(obj1.pos, obj2.pos);
-        // const displacement = dist - this.rest_length;
-        // const force = this.#stiffness_const * displacement;
-        // let dir = Vector2.subtractVectors(obj1.pos, obj2.pos);
-        // if (dir == 0) 
-        //     dir = Vector2.scaleVector(dir, 1e-4);
-        // else {
-        //     dir = Vector2.scaleVector(dir, 1 / dist);
-        // }
-
-        // const total_force = Vector2.scaleVector(dir, force);
-        // obj1.force = Vector2.subtractVectors(obj1.force, total_force);
-        // obj2.force = Vector2.addVectors(obj2.force, total_force);
     }
 
     #updateOffsets(obj1, obj2) {
@@ -191,13 +179,6 @@ export class SpringJoint {
         energy += 0.5 * force * displacement;
 
         return energy;
-
-        // const dist = Vector2.distance(obj1.pos, obj2.pos);
-        // const displacement = dist - this.rest_length;
-
-        // return 1 / 2 * this.#stiffness_const * displacement * displacement;
-
-
         
     }
 

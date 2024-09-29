@@ -2,7 +2,7 @@ import {Vector2} from "./linear_algebra.js";
 import {PhysicsState} from "./physicsState.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {setupScene} from "./demo_scenes.js";
-import {entities_manager} from "./entities_manager.js";
+import {entity_manager} from "./entity_manager.js";
 
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
@@ -126,6 +126,9 @@ function updateSliderValues() {
         physicsState.setMouseSpringStiffness(slider.value);
     } else if (selected == "spring joint") {
         physicsState.setSpringJointStiffness(slider.value);
+    } else if (selected == "omega constraint") {
+        physicsState.setOmegaConstraintValue(slider.value * solver.dt);
+        entity_manager.angular_motor_vel = slider.value * solver.dt;
     }
 }
 
@@ -189,14 +192,14 @@ function renderBackground() {
     }
 
     // draw when adding objects etc to the physics engine
-    if (!entities_manager.active)
+    if (!entity_manager.active)
         return;
     // settings:
     c.fillStyle = "rgba(156, 58, 58, 1)";
     c.strokeStyle = "#000000";
     c.lineWidth = 3;
     // constants
-    if (entities_manager.snap_to_grid) {
+    if (entity_manager.snap_to_grid) {
         const c_pos = Units.sim_canv(Units.snap_to_grid(mouse.sim_pos));
         c.beginPath();
         c.arc(c_pos.x, c_pos.y, 10, 0, 2 * Math.PI);
@@ -228,6 +231,8 @@ function start() {
     physicsState.setLinearDampingMU(0.2);
     physicsState.setMouseSpringStiffness(15);
     physicsState.setSpringJointStiffness(20);
+    physicsState.setOmegaConstraintValue(20 * solver.dt);
+    entity_manager.angular_motor_vel = 20 * solver.dt;
 
     // stp is snap to grid
 
@@ -268,12 +273,12 @@ function update() {
 
     updateSliderValues();
 
-    if (entities_manager.active && entities_manager.cubic_bezier_active) {
-        entities_manager.update(mouse);
+    if (entity_manager.active && entity_manager.cubic_bezier_active) {
+        entity_manager.update(mouse);
     }
 
     // console.log(mouse.toString());
-    if (mouse.on_canvas && !entities_manager.active)
+    if (mouse.on_canvas && !entity_manager.active)
         physicsState.updateMouse(mouse.sim_pos, mouse.left_down)
 
     // physics
@@ -297,8 +302,8 @@ function update() {
 
         physicsState.render(c);
 
-        if (entities_manager.active) 
-            entities_manager.render(c, physicsState, solver, mouse);
+        if (entity_manager.active) 
+            entity_manager.render(c, physicsState, solver, mouse);
         
     let r_et = performance.now();
     averaging.rdt_sum += r_et - r_st;
@@ -322,16 +327,16 @@ document.addEventListener("keydown", function(event) {
         solver.physicsState_is_null = true;
         physicsState.initConstraintManager();
     }
-    if (event.key == "1" && solver.physicsState_is_null && !entities_manager.active) {
+    if (event.key == "1" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "pratt truss");
     }
-    if (event.key == "2" && solver.physicsState_is_null && !entities_manager.active) {
+    if (event.key == "2" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "king post truss");
     }
-    if (event.key == "3" && solver.physicsState_is_null && !entities_manager.active) {
+    if (event.key == "3" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "large bridge structure");
     }
-    if (event.key == "4" && solver.physicsState_is_null && !entities_manager.active) {
+    if (event.key == "4" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "crane structure");
     }
     if (event.key == "ArrowRight" && !solver.simulating) {
@@ -345,69 +350,75 @@ document.addEventListener("keydown", function(event) {
     }
     // add to physics manager
     if (event.key == "i") {
-        entities_manager.active = !entities_manager.active;
-        if (entities_manager.recent_entities.length != 0)
+        entity_manager.active = !entity_manager.active;
+        if (entity_manager.recent_entities.length != 0)
             solver.physicsState_is_null = false;
     }
     if (event.key == "I") {
-        entities_manager.snap_to_grid = !entities_manager.snap_to_grid;
+        entity_manager.snap_to_grid = !entity_manager.snap_to_grid;
     }
-    if (event.key == "1" && entities_manager.active) {
-        entities_manager.dynamicObject(physicsState, solver, mouse, 1, 1);
+    if (event.key == "1" && entity_manager.active) {
+        entity_manager.dynamicObject(physicsState, solver, mouse, 1, 1);
     }
-    if (event.key == "2" && entities_manager.active) {
-        entities_manager.dynamicObject(physicsState, solver, mouse, 4, 2);
+    if (event.key == "2" && entity_manager.active) {
+        entity_manager.dynamicObject(physicsState, solver, mouse, 4, 2);
     }
-    if (event.key == "3" && entities_manager.active) {
-        entities_manager.dynamicObject(physicsState, solver, mouse, 9, 3);
+    if (event.key == "3" && entity_manager.active) {
+        entity_manager.dynamicObject(physicsState, solver, mouse, 9, 3);
     }
-    if (event.key == "4" && entities_manager.active) {
-        entities_manager.dynamicObject(physicsState, solver, mouse, 16, 4);
+    if (event.key == "4" && entity_manager.active) {
+        entity_manager.dynamicObject(physicsState, solver, mouse, 32, 8);
     }
-    if (event.key == "H" && entities_manager.active) {
-        entities_manager.addRagdoll(physicsState, solver, mouse);
+    if (event.key == "H" && entity_manager.active) {
+        entity_manager.addRagdoll(physicsState, solver, mouse);
     }
-    if (event.key == "x" && entities_manager.active) {
-        entities_manager.fixedXConstraint(physicsState, solver, mouse);
+    if (event.key == "x" && entity_manager.active) {
+        entity_manager.fixedXConstraint(physicsState, solver, mouse);
     }
-    if (event.key == "y" && entities_manager.active) {
-        entities_manager.fixedYConstraint(physicsState, solver, mouse);
+    if (event.key == "y" && entity_manager.active) {
+        entity_manager.fixedYConstraint(physicsState, solver, mouse);
     }
-    if (event.key == "p" && entities_manager.active) {
-        entities_manager.fixedPosConstraint(physicsState, solver, mouse);
+    if (event.key == "p" && entity_manager.active) {
+        entity_manager.fixedPosConstraint(physicsState, solver, mouse);
     }
-    if (event.key == "l" && entities_manager.active) {
+    if (event.key == "t" && entity_manager.active) {
+        entity_manager.fixedRotConstraint(physicsState, solver, mouse);
+    }
+    if (event.key == "m" && entity_manager.active) {
+        entity_manager.fixedRotOmegaConstraint(physicsState, solver, mouse);
+    }
+    if (event.key == "l" && entity_manager.active) {
         const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && !entities_manager.drawing_link_constraint) {
-            entities_manager.line_start_id = id;
-            entities_manager.drawing_link_constraint = true;
+        if (mouse_over_dynamicObject && !entity_manager.drawing_link_constraint) {
+            entity_manager.line_start_id = id;
+            entity_manager.drawing_link_constraint = true;
 
         }
     }
-    if (event.key == "k" && entities_manager.active) {
+    if (event.key == "k" && entity_manager.active) {
         const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && !entities_manager.drawing_spring_joint) {
-            entities_manager.line_start_id = id;
-            entities_manager.drawing_spring_joint = true;
+        if (mouse_over_dynamicObject && !entity_manager.drawing_spring_joint) {
+            entity_manager.line_start_id = id;
+            entity_manager.drawing_spring_joint = true;
             const obj_pos = physicsState.getObjectPositionById(id);
-            entities_manager.object_offset = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
+            entity_manager.object_offset = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
         }
     }
-    if (event.key == "Backspace" && entities_manager.active) {
-        entities_manager.removeMostRecentEntity(physicsState);
+    if (event.key == "Backspace" && entity_manager.active) {
+        entity_manager.removeMostRecentEntity(physicsState);
     }
-    if (event.key == "B" && entities_manager.active) {
-        if (!entities_manager.cubic_bezier_active) {
-            entities_manager.cubic_bezier_active = true;
-            entities_manager.addCubicBezierCurve(mouse);
-        } else if (entities_manager.cubic_bezier_active) {
-            entities_manager.cubic_bezier_active = false;
+    if (event.key == "B" && entity_manager.active) {
+        if (!entity_manager.cubic_bezier_active) {
+            entity_manager.cubic_bezier_active = true;
+            entity_manager.addCubicBezierCurve(mouse);
+        } else if (entity_manager.cubic_bezier_active) {
+            entity_manager.cubic_bezier_active = false;
         }
     }
-    if (event.key == "S" && entities_manager.active && entities_manager.cubic_bezier_active) {
-        entities_manager.spawnViaCubicBezier(physicsState, solver, mouse);
+    if (event.key == "S" && entity_manager.active && entity_manager.cubic_bezier_active) {
+        entity_manager.spawnViaCubicBezier(physicsState, solver, mouse);
     }
 
 });
@@ -416,34 +427,34 @@ document.addEventListener("keyup", function(event) {
     if (event.key == "ArrowUp" && !solver.simulating) {
         keyboard.arrow_up = false;
     }
-    if (event.key == "l" && entities_manager.active) {
+    if (event.key == "l" && entity_manager.active) {
         const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
         const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
         const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && entities_manager.drawing_link_constraint) {
-            if (id != entities_manager.line_start_id) {
-                physicsState.addLinkConstraint(entities_manager.line_start_id, id);
+        if (mouse_over_dynamicObject && entity_manager.drawing_link_constraint) {
+            if (id != entity_manager.line_start_id) {
+                physicsState.addLinkConstraint(entity_manager.line_start_id, id);
                 const c_length = physicsState.getConstraintLength();
-                entities_manager.recent_entities.push({type: "Constraint", id: c_length - 1});
+                entity_manager.recent_entities.push({type: "Constraint", id: c_length - 1});
             }
-            entities_manager.drawing_link_constraint = false;
         }
+        entity_manager.drawing_link_constraint = false;
     }
-    if (event.key == "k" && entities_manager.active) {
+    if (event.key == "k" && entity_manager.active) {
         const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && entities_manager.drawing_spring_joint) {
-            if (id != entities_manager.line_start_id) {
+        if (mouse_over_dynamicObject && entity_manager.drawing_spring_joint) {
+            if (id != entity_manager.line_start_id) {
                 const obj_pos = physicsState.getObjectPositionById(id);
-                const off_1 = entities_manager.object_offset;
+                const off_1 = entity_manager.object_offset;
                 const off_2 = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
-                physicsState.addSpringJoint(entities_manager.line_start_id, id, off_1, off_2);
+                physicsState.addSpringJoint(entity_manager.line_start_id, id, off_1, off_2);
                 const gen_length = physicsState.getForceGeneratorsLength();
-                entities_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
+                entity_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
             }
         }
-        entities_manager.drawing_spring_joint = false;
-        entities_manager.object_offset = Vector2.zero;
+        entity_manager.drawing_spring_joint = false;
+        entity_manager.object_offset = Vector2.zero;
     }
 });
 

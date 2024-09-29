@@ -19,20 +19,20 @@ export class FixedYConstraint {
     }
 
     C_i(q) {
-        return q.elements[2 * this.p_id + 1] - this.height;
+        return q.elements[3 * this.p_id + 1] - this.height;
     }
 
     C_i_dot(q, q_dot) {
-        return q_dot.elements[2 * this.p_id + 1];
+        return q_dot.elements[3 * this.p_id + 1];
     }
 
     J_i(q, ith_row) {
         // last 1 is the data, actual jacobian
-        return [new SparseMatrixBlock(ith_row, 2 * this.p_id + 1, 1)];
+        return [new SparseMatrixBlock(ith_row, 3 * this.p_id + 1, 1)];
     }
 
     J_i_dot(q, q_dot, ith_row) {
-        return [new SparseMatrixBlock(ith_row, 2 * this.p_id + 1, 0)];
+        return [];
     }
 
     render(c, m_objects, lagrange_mult) {
@@ -145,19 +145,19 @@ export class FixedXConstraint {
     }
 
     C_i(q) {
-        return q.elements[2 * this.p_id] - this.x0;
+        return q.elements[3 * this.p_id] - this.x0;
     }
 
     C_i_dot(q, q_dot) {
-        return q_dot.elements[2 * this.p_id];
+        return q_dot.elements[3 * this.p_id];
     }
 
     J_i(q, ith_row) {
-        return [new SparseMatrixBlock(ith_row, 2 * this.p_id, 1)];
+        return [new SparseMatrixBlock(ith_row, 3 * this.p_id, 1)];
     }
 
     J_i_dot(q, q_dot, ith_row) {
-        return [new SparseMatrixBlock(ith_row, 2 * this.p_id, 0)];
+        return [];
     }
 
     render(c, m_objects, lagrange_mult) {
@@ -247,32 +247,32 @@ export class LinkConstraint { // constrains two particles to be a fixed distance
     }
 
     C_i(q) {
-        const dx = q.elements[2 * this.id2] - q.elements[2 * this.id1];
-        const dy = q.elements[2 * this.id2 + 1] - q.elements[2 * this.id1 + 1];
+        const dx = q.elements[3 * this.id2] - q.elements[3 * this.id1];
+        const dy = q.elements[3 * this.id2 + 1] - q.elements[3 * this.id1 + 1];
         return 0.5 * (dx * dx + dy * dy - this.l0 * this.l0);
     }
 
     C_i_dot(q, q_dot) {
-        const dx = q.elements[2 * this.id2] - q.elements[2 * this.id1];
-        const dy = q.elements[2 * this.id2 + 1] - q.elements[2 * this.id1 + 1];
-        const dvx = q_dot.elements[2 * this.id2] - q_dot.elements[2 * this.id1];
-        const dvy = q_dot.elements[2 * this.id2 + 1] - q_dot.elements[2 * this.id1 + 1];
+        const dx = q.elements[3 * this.id2] - q.elements[3 * this.id1];
+        const dy = q.elements[3 * this.id2 + 1] - q.elements[3 * this.id1 + 1];
+        const dvx = q_dot.elements[3 * this.id2] - q_dot.elements[3 * this.id1];
+        const dvy = q_dot.elements[3 * this.id2 + 1] - q_dot.elements[3 * this.id1 + 1];
         return dx * dvx + dy * dvy;
     }
 
     J_i(q, ith_row) {
-        const wrt_x1 = new SparseMatrixBlock(ith_row, 2 * this.id1,     -1 * (q.elements[2 * this.id2] - q.elements[2 * this.id1]));
-        const wrt_y1 = new SparseMatrixBlock(ith_row, 2 * this.id1 + 1, -1 * (q.elements[2 * this.id2 + 1] - q.elements[2 * this.id1 + 1]));
-        const wrt_x2 = new SparseMatrixBlock(ith_row, 2 * this.id2,     1 * (q.elements[2 * this.id2] - q.elements[2 * this.id1]));
-        const wrt_y2 = new SparseMatrixBlock(ith_row, 2 * this.id2 + 1, 1 * (q.elements[2 * this.id2 + 1] - q.elements[2 * this.id1 + 1]));
+        const wrt_x1 = new SparseMatrixBlock(ith_row, 3 * this.id1,     -1 * (q.elements[3 * this.id2] - q.elements[3 * this.id1]));
+        const wrt_y1 = new SparseMatrixBlock(ith_row, 3 * this.id1 + 1, -1 * (q.elements[3 * this.id2 + 1] - q.elements[3 * this.id1 + 1]));
+        const wrt_x2 = new SparseMatrixBlock(ith_row, 3 * this.id2,     1 * (q.elements[3 * this.id2] - q.elements[3 * this.id1]));
+        const wrt_y2 = new SparseMatrixBlock(ith_row, 3 * this.id2 + 1, 1 * (q.elements[3 * this.id2 + 1] - q.elements[3 * this.id1 + 1]));
         return [wrt_x1, wrt_y1, wrt_x2, wrt_y2];
     }
 
     J_i_dot(q, q_dot, ith_row) {
-        const wrt_x1 = new SparseMatrixBlock(ith_row, 2 * this.id1,     -1 * (q_dot.elements[2 * this.id2] - q_dot.elements[2 * this.id1]));
-        const wrt_y1 = new SparseMatrixBlock(ith_row, 2 * this.id1 + 1, -1 * (q_dot.elements[2 * this.id2 + 1] - q_dot.elements[2 * this.id1 + 1]));
-        const wrt_x2 = new SparseMatrixBlock(ith_row, 2 * this.id2,     1 * (q_dot.elements[2 * this.id2] - q_dot.elements[2 * this.id1]));
-        const wrt_y2 = new SparseMatrixBlock(ith_row, 2 * this.id2 + 1, 1 * (q_dot.elements[2 * this.id2 + 1] - q_dot.elements[2 * this.id1 + 1]));
+        const wrt_x1 = new SparseMatrixBlock(ith_row, 3 * this.id1,     -1 * (q_dot.elements[3 * this.id2] - q_dot.elements[3 * this.id1]));
+        const wrt_y1 = new SparseMatrixBlock(ith_row, 3 * this.id1 + 1, -1 * (q_dot.elements[3 * this.id2 + 1] - q_dot.elements[3 * this.id1 + 1]));
+        const wrt_x2 = new SparseMatrixBlock(ith_row, 3 * this.id2,     1 * (q_dot.elements[3 * this.id2] - q_dot.elements[3 * this.id1]));
+        const wrt_y2 = new SparseMatrixBlock(ith_row, 3 * this.id2 + 1, 1 * (q_dot.elements[3 * this.id2 + 1] - q_dot.elements[3 * this.id1 + 1]));
         return [wrt_x1, wrt_y1, wrt_x2, wrt_y2];
     }
 
@@ -314,4 +314,171 @@ export class LinkConstraint { // constrains two particles to be a fixed distance
         m_objects[this.id2].render(c);
     
     }
+}
+
+export class FixedRotationConstraint {
+    constructor(id, theta) {
+        this.id = id;
+        this.theta = theta;
+    }
+
+    #normalize_angle(angle) {
+        return angle % (2 * Math.PI);
+    }
+
+    C_i(q) {
+        return this.#normalize_angle(q.elements[3 * this.id + 2] - this.theta);
+    }
+
+    C_i_dot(q, q_dot) {
+        return this.#normalize_angle(q_dot.elements[3 * this.id + 2]);
+    }
+
+    J_i(q, ith_row) {
+        return [new SparseMatrixBlock(ith_row, 3 * this.id + 2, 1)];
+    }
+
+    J_i_dot(q, q_dot, ith_row) {
+        return [];
+    }
+
+    render(c, m_objects, lagrange_mult) {
+
+        const obj = m_objects[this.id];
+
+        // draw the small dot visualising rotation
+        c.fillStyle = "#ffffff";
+        c.strokeStyle = Colours.OUTER_DYNAMIC_OBJECT; 
+        c.lineWidth = LineWidths.DYNAMIC_OBJECT;
+
+        let rotation_radius = Extras.DYNAMIC_OBJECT_ROTATIONAL_RADIUS_MULT * obj.radius;
+        let m = Extras.DYNAMIC_OBJECT_ROTATIONAL_POSITION_MULT;
+        let offset = Vector2.scaleVector(new Vector2(Math.cos(obj.theta + Math.PI), Math.sin(obj.theta + Math.PI)), m * obj.radius);
+        let rotation_pos = Vector2.addVectors(obj.pos, offset);
+        c.beginPath();
+        c.arc(Units.sim_canv_x(rotation_pos), Units.sim_canv_y(rotation_pos), Units.scale_s_c * rotation_radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        offset = Vector2.scaleVector(new Vector2(Math.cos(obj.theta), Math.sin(obj.theta)), m * obj.radius);
+        rotation_pos = Vector2.addVectors(obj.pos, offset);
+        c.beginPath();
+        c.arc(Units.sim_canv_x(rotation_pos), Units.sim_canv_y(rotation_pos), Units.scale_s_c * rotation_radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+    }
+
+}
+
+export class FixedOmegaConstraint {
+    constructor(id, theta, velocity) {
+        this.id = id;
+        this.prev_theta = theta;
+        this.velocity = velocity;
+    }
+
+    #normalize_angle(angle) {
+        return angle % (2 * Math.PI);
+    }
+
+    C_i(q) {
+        const delta = q.elements[3 * this.id + 2] - this.prev_theta;
+        return this.#normalize_angle(delta - this.velocity);
+    }
+
+    C_i_dot(q, q_dot) {
+        return this.#normalize_angle(q_dot.elements[3 * this.id + 2]);
+    }
+
+    J_i(q, ith_row) {
+        return [new SparseMatrixBlock(ith_row, 3 * this.id + 2, 1)];
+    }
+
+    J_i_dot(q, q_dot, ith_row) {
+        this.prev_theta = q.elements[3 * this.id + 2];
+        return [];
+    }
+
+    render(c, m_objects, lagrange_mult) {
+        // draw this one as the first forcegenerator
+
+        const obj = m_objects[this.id];
+        const angle = Extras.FIXED_OMEGA_CONSTRAINT_ANGLE;
+        const inner_rad = Units.scale_c_s * LineWidths.INNER_FIXED_OMEGA_CONSTRAINT + obj.radius;
+
+        c.fillStyle = Colours.INNER_FIXED_OMEGA_CONSTRAINT;
+        c.strokeStyle = Colours.OUTER_FIXED_OMEGA_CONSTRAINT;
+        c.lineWidth = LineWidths.OUTER_FIXED_OMEGA_CONSTRAINT;
+
+        // arrow 1
+        const top_axle = - obj.theta;
+        c.beginPath();
+        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), Units.scale_s_c * inner_rad, top_axle - angle, top_axle + angle);
+        // c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), Units.scale_s_c * inner_rad, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        // arrow 2
+        const bottom_axle = - obj.theta + Math.PI;
+        c.beginPath();
+        c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), Units.scale_s_c * inner_rad, bottom_axle - angle, bottom_axle + angle);
+        // c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), Units.scale_s_c * inner_rad, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        obj.render(c);
+
+        // triangles:
+        const o = 1 / 2 * Units.scale_c_s * LineWidths.INNER_FIXED_OMEGA_CONSTRAINT
+        // triangle 1
+        let offset = Vector2.scaleVector(new Vector2(Math.cos(-top_axle + angle), Math.sin(-top_axle + angle)), inner_rad - o);
+        let tip_1 = Vector2.addVectors(obj.pos, offset);
+        let dir = Vector2.subtractVectors(tip_1, obj.pos).normalized();
+        let dir_t = new Vector2(-dir.y, dir.x);
+        let tri_1 = Vector2.addVectors(tip_1, Vector2.scaleVector(dir_t, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+        let tri_2 = Vector2.subtractVectors(tip_1, Vector2.scaleVector(dir_t, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+        let tri_3 = tri_2;
+        tri_2 = Vector2.subtractVectors(tri_2, Vector2.scaleVector(dir, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+        tri_3 = Vector2.addVectors(tri_3, Vector2.scaleVector(dir, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+
+        c.fillStyle = Colours.INNER_FIXED_OMEGA_CONSTRAINT;
+        c.strokeStyle = Colours.OUTER_FIXED_OMEGA_CONSTRAINT;
+        c.lineWidth = LineWidths.OUTER_FIXED_OMEGA_CONSTRAINT;
+        c.beginPath();
+        c.moveTo(Units.sim_canv_x(tri_2), Units.sim_canv_y(tri_2));
+        c.lineTo(Units.sim_canv_x(tri_1), Units.sim_canv_y(tri_1));
+        c.lineTo(Units.sim_canv_x(tri_3), Units.sim_canv_y(tri_3));
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        // triangle 2
+        offset = Vector2.scaleVector(new Vector2(Math.cos(-bottom_axle + angle), Math.sin(-bottom_axle + angle)), inner_rad - o);
+        tip_1 = Vector2.addVectors(obj.pos, offset);
+        dir = Vector2.subtractVectors(tip_1, obj.pos).normalized();
+        dir_t = new Vector2(-dir.y, dir.x);
+        tri_1 = Vector2.addVectors(tip_1, Vector2.scaleVector(dir_t, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+        tri_2 = Vector2.subtractVectors(tip_1, Vector2.scaleVector(dir_t, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+        tri_3 = tri_2;
+        tri_2 = Vector2.subtractVectors(tri_2, Vector2.scaleVector(dir, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+        tri_3 = Vector2.addVectors(tri_3, Vector2.scaleVector(dir, Extras.FIXED_OMEGA_CONSTRAINT_TRIANGLE_SIZE));
+
+        c.fillStyle = Colours.INNER_FIXED_OMEGA_CONSTRAINT;
+        c.strokeStyle = Colours.OUTER_FIXED_OMEGA_CONSTRAINT;
+        c.lineWidth = LineWidths.OUTER_FIXED_OMEGA_CONSTRAINT;
+        c.beginPath();
+        c.moveTo(Units.sim_canv_x(tri_2), Units.sim_canv_y(tri_2));
+        c.lineTo(Units.sim_canv_x(tri_1), Units.sim_canv_y(tri_1));
+        c.lineTo(Units.sim_canv_x(tri_3), Units.sim_canv_y(tri_3));
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+    }
+
 }

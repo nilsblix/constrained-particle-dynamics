@@ -3,7 +3,7 @@ import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js"
 import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
 // import {Units} from "./main.js"; 
-import {FixedXConstraint, FixedYConstraint, LinkConstraint} from "./core_constraints.js";
+import {FixedXConstraint, FixedYConstraint, LinkConstraint, FixedRotationConstraint, FixedOmegaConstraint} from "./core_constraints.js";
 import {FixedPosConstraint} from "./extended_constraints.js";
 
 export class PhysicsState {
@@ -27,6 +27,7 @@ export class PhysicsState {
     #m_gravity = 1.6;
     #m_linear_damping_MU = 0.5;
     #m_spring_joint_stiffness = 5;
+    #m_omega_constraint_value = 20;
 
     constructor() {
         this.mouseSpringActive = false;
@@ -80,32 +81,41 @@ export class PhysicsState {
                 this.#m_forceGenerators[i].setStiffness(this.#m_spring_joint_stiffness);
         }
 
+        for (let i = 0; i < this.#m_constraints.length; i++) {
+            if (this.#m_constraints[i] instanceof FixedOmegaConstraint)
+                this.#m_constraints[i].velocity = this.#m_omega_constraint_value;
+        }
+
     }
 
     #updateConstraintManager() {
-        this.#CM.q =        new Vector(2 * this.#m_objects.length);
-        this.#CM.q_dot =    new Vector(2 * this.#m_objects.length);
-        this.#CM.Q =        new Vector(2 * this.#m_objects.length);
-        this.#CM.W =        new Vector(2 * this.#m_objects.length);
+        this.#CM.q =        new Vector(3 * this.#m_objects.length);
+        this.#CM.q_dot =    new Vector(3 * this.#m_objects.length);
+        this.#CM.Q =        new Vector(3 * this.#m_objects.length);
+        this.#CM.W =        new Vector(3 * this.#m_objects.length);
         for (let i = 0; i < this.#m_objects.length; i++) {
-            this.#CM.q.elements[2 * i] =        this.#m_objects[i].pos.x;
-            this.#CM.q.elements[2 * i + 1] =    this.#m_objects[i].pos.y;
+            this.#CM.q.elements[3 * i] =        this.#m_objects[i].pos.x;
+            this.#CM.q.elements[3 * i + 1] =    this.#m_objects[i].pos.y;
+            this.#CM.q.elements[3 * i + 2] =    this.#m_objects[i].theta;
 
-            this.#CM.q_dot.elements[2 * i] =        this.#m_objects[i].vel.x;
-            this.#CM.q_dot.elements[2 * i + 1] =    this.#m_objects[i].vel.y;
+            this.#CM.q_dot.elements[3 * i] =        this.#m_objects[i].vel.x;
+            this.#CM.q_dot.elements[3 * i + 1] =    this.#m_objects[i].vel.y;
+            this.#CM.q_dot.elements[3 * i + 2] =    this.#m_objects[i].omega;
 
-            this.#CM.Q.elements[2 * i] =        this.#m_objects[i].force.x;
-            this.#CM.Q.elements[2 * i + 1] =    this.#m_objects[i].force.y;
+            this.#CM.Q.elements[3 * i] =        this.#m_objects[i].force.x;
+            this.#CM.Q.elements[3 * i + 1] =    this.#m_objects[i].force.y;
+            this.#CM.Q.elements[3 * i + 2] =    this.#m_objects[i].tau;
 
-            this.#CM.W.elements[2 * i] =        this.#m_objects[i].w;
-            this.#CM.W.elements[2 * i + 1] =    this.#m_objects[i].w;
+            this.#CM.W.elements[3 * i] =        this.#m_objects[i].w;
+            this.#CM.W.elements[3 * i + 1] =    this.#m_objects[i].w;
+            this.#CM.W.elements[3 * i + 2] =    this.#m_objects[i].w;
         }
 
         this.#CM.C =        new Vector(this.#m_constraints.length);
         this.#CM.C_dot =    new Vector(this.#m_constraints.length);
 
-        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
-        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
+        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
+        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
 
         for (let ith_row = 0; ith_row < this.#m_constraints.length; ith_row++) {
             this.#CM.C.elements[ith_row] = this.#m_constraints[ith_row].C_i(this.#CM.q);
@@ -140,13 +150,13 @@ export class PhysicsState {
     initConstraintManager() {
         this.#CM = new ConstraintManager();
 
-        this.#CM.q =        new Vector(2 * this.#m_objects.length);
-        this.#CM.q_dot =    new Vector(2 * this.#m_objects.length);
-        this.#CM.Q =        new Vector(2 * this.#m_objects.length);
-        this.#CM.W =        new Vector(2 * this.#m_objects.length);
+        this.#CM.q =        new Vector(3 * this.#m_objects.length);
+        this.#CM.q_dot =    new Vector(3 * this.#m_objects.length);
+        this.#CM.Q =        new Vector(3 * this.#m_objects.length);
+        this.#CM.W =        new Vector(3 * this.#m_objects.length);
         this.#CM.lambda =   new Vector(this.#m_constraints.length);
-        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
-        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 2 * this.#m_objects.length);
+        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
+        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
         this.#CM.accumulated_error = 0;
         this.#CM.C =        new Vector(this.#m_constraints.length);
         this.#CM.C_dot =    new Vector(this.#m_constraints.length);
@@ -197,8 +207,10 @@ export class PhysicsState {
 
                 const Q_hat = SparseMatrix.matT_mult_vec(this.#CM.J, this.#CM.lambda);
                 for (let i = 0; i < this.#m_objects.length; i++) {
-                    const d_force = new Vector2(Q_hat.elements[2 * i], Q_hat.elements[2 * i + 1]);
+                    const d_force = new Vector2(Q_hat.elements[3 * i], Q_hat.elements[3 * i + 1]);
+                    const d_tau = Q_hat.elements[3 * i + 2];
                     this.#m_objects[i].force = Vector2.addVectors(this.#m_objects[i].force, d_force);
+                    this.#m_objects[i].tau += d_tau;
                 }
             }
 
@@ -232,6 +244,8 @@ export class PhysicsState {
             } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
                 index_phys_const++;
                 // this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (this.#m_renderedConstraints[i] instanceof FixedOmegaConstraint) {
+                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
             }
             index_phys_const++;
         }
@@ -246,6 +260,16 @@ export class PhysicsState {
                 this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
             } else if (this.#m_renderedConstraints[i] instanceof FixedXConstraint) {
                 this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            }
+            index_phys_const++;
+        }
+
+        index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            if (this.#m_renderedConstraints[i] instanceof FixedRotationConstraint) {
+                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
+                index_phys_const++;
             }
             index_phys_const++;
         }
@@ -331,6 +355,10 @@ export class PhysicsState {
         this.#m_mouseSpring.setStiffness(value);
     }
 
+    setOmegaConstraintValue(value) {
+        this.#m_omega_constraint_value = value;
+    }
+
     getObjIndexContainingPos(pos) {
         for (let i = 0; i < this.#m_objects.length; i++) {
             const v = Vector2.subtractVectors(this.#m_objects[i].pos, pos);
@@ -406,6 +434,18 @@ export class PhysicsState {
     addLinkConstraint(id1, id2) {
         const dist = Vector2.distance(this.#m_objects[id1].pos, this.#m_objects[id2].pos);
         const con = new LinkConstraint(id1, id2, dist)
+        this.addConstraint(con);
+        this.addRenderedConstraint(con);
+    }
+
+    addFixedRotConstraint(id) {
+        const con = new FixedRotationConstraint(id, this.#m_objects[id].theta);
+        this.addConstraint(con);
+        this.addRenderedConstraint(con);
+    }
+    
+    addFixedOmegaConstraint(id, vel) {
+        const con = new FixedOmegaConstraint(id, this.#m_objects[id].theta, vel);
         this.addConstraint(con);
         this.addRenderedConstraint(con);
     }

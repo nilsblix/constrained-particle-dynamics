@@ -4,7 +4,7 @@ import {Vector2} from "./linear_algebra.js";
 import {CubicBezier} from "./bezier_curve.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 
-export const entities_manager = {
+export const entity_manager = {
     active: false,
     snap_to_grid: false,
     line_start_id: -1,
@@ -17,6 +17,7 @@ export const entities_manager = {
     standard_interactable_radius: 0.1,
     num_objects_in_bezier: 10,
     object_bezier_mass: 1,
+    angular_motor_vel: 20,
 
     dynamicObject(physicsState, solver, mouse, mass, radius_mult) {
         const pos = this.snap_to_grid ? Units.snap_to_grid(mouse.sim_pos) : mouse.sim_pos;
@@ -44,6 +45,21 @@ export const entities_manager = {
         physicsState.addFixedPosConstraint(id);
         const length = physicsState.getRenderedConstraintLength();
         this.recent_entities.push({type: "Constraint", id: length - 1});
+    },
+
+    fixedRotConstraint(physicsState, solver, mouse) {
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos) 
+        physicsState.addFixedRotConstraint(id);
+        const length = physicsState.getRenderedConstraintLength();
+        this.recent_entities.push({type: "Constraint", id: length - 1});   
+    },
+
+    fixedRotOmegaConstraint(physicsState, solver, mouse) {
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos)     
+        const vel = solver.dt * this.angular_motor_vel;
+        physicsState.addFixedOmegaConstraint(id, vel);
+        const length = physicsState.getRenderedConstraintLength();
+        this.recent_entities.push({type: "Constraint", id: length - 1});   
     },
 
     removeMostRecentEntity(physicsState) {
