@@ -5,12 +5,12 @@ import {CubicBezier} from "./bezier_curve.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 export const entity_manager = {
+    // honestly update this shit. it is definately as fucked as can be. plz it looks SO ass.
     active: false,
     snap_to_grid: false,
-    line_start_id: -1,
     drawing_link_constraint: false,
     drawing_spring_joint: false,
-    object_offset: Vector2.zero,
+    draw_state: {entity: null, offset: null, prev_theta: null, t_param: null, applied_pos: null},
     recent_entities: [],
     cubic_bezier_active: false,
     cubic_bezier_curve: null,
@@ -196,8 +196,8 @@ export const entity_manager = {
         if (this.cubic_bezier_active)
             this.cubic_bezier_curve.render(c, this.num_objects_in_bezier);
 
-        if (this.drawing_link_constraint || this.drawing_spring_joint) {
-            const p1 = Vector2.addVectors(physicsState.getObjectPositionById(this.line_start_id), this.object_offset);
+        if (this.drawing_link_constraint || this.drawing_spring_joint && this.draw_state.applied_pos != null) {
+            const p1 = this.drawing_link_constraint ? physicsState.getObjectPositionById(this.draw_state.entity) : this.draw_state.applied_pos;
             const p2 = mouse.sim_pos;
             c.lineCap = "round";
             c.strokeStyle = Colours.INNER_CUBIC_BEZIER_SUPPORTING_LINES;
@@ -209,6 +209,6 @@ export const entity_manager = {
             c.closePath();
         }
 
-    }
+    }, 
 
 }

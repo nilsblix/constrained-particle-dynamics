@@ -2,6 +2,11 @@ import {Units} from "./main.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {Vector2} from "./linear_algebra.js";
 
+/*
+    Things to know if one where to build a new demo scene
+    --> Nothing. Everything gets automatically picked up by the pipeline
+*/
+
 export function setupScene(physicsState, solver, version) {
     switch (version) {
         case "null":
@@ -35,9 +40,6 @@ export function setupScene(physicsState, solver, version) {
 
             const t16 = new DynamicObject(new Vector2(5, -pratt_p_delta+height_pratt_truss), 1, 1*pratt_truss_radius);
             const t17 = new DynamicObject(new Vector2(5, -2*pratt_p_delta+height_pratt_truss), 5, 2.5*pratt_truss_radius);
-
-
-
 
             physicsState.addObject(t0);
             physicsState.addObject(t1);
@@ -93,9 +95,9 @@ export function setupScene(physicsState, solver, version) {
             // physicsState.addLinkConstraint(11, 15);
             physicsState.addLinkConstraint(15, 13);
             // springs
-            physicsState.addSpringJoint(0, 14, Vector2.zero, Vector2.zero);
+            physicsState.addSpringJoint(0, 14);
             // physicsState.addSpringJoint(12, 14);
-            physicsState.addSpringJoint(11, 15, Vector2.zero, Vector2.zero);
+            physicsState.addSpringJoint(11, 15);
             // physicsState.addSpringJoint(15, 13);
 
             physicsState.addLinkConstraint(5, 16);
@@ -385,17 +387,6 @@ export function setupScene(physicsState, solver, version) {
             physicsState.addLinkConstraint(17, 18);
             physicsState.addLinkConstraint(18, 19);
             // left, weight
-
-
-
-
-
-
-
-
-
-
-
 
             break;
     }

@@ -30,7 +30,3 @@ Keybinds: (correct capital is imperative)
       Spawn Points:      S
   Auxiliary binds:    
       Mouse Spring:      Left Mouse + Mouse Position
-
-TODO:
---> LinkConstraint with rotational offsets
---> Springs acting on LinkConstraints

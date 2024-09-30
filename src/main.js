@@ -394,19 +394,17 @@ document.addEventListener("keydown", function(event) {
         const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && !entity_manager.drawing_link_constraint) {
-            entity_manager.line_start_id = id;
+            entity_manager.draw_state.entity = id;
             entity_manager.drawing_link_constraint = true;
 
         }
     }
     if (event.key == "k" && entity_manager.active) {
-        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
-        const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && !entity_manager.drawing_spring_joint) {
-            entity_manager.line_start_id = id;
+        const info = physicsState.getClosestObject(mouse.sim_pos);
+        if (info.entity != null && !entity_manager.drawing_spring_joint) {
             entity_manager.drawing_spring_joint = true;
-            const obj_pos = physicsState.getObjectPositionById(id);
-            entity_manager.object_offset = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
+            entity_manager.draw_state = info;
+            // info = (of type) {entity: null, offset: null, prev_theta: null, t_param: t, applied_pos: null};
         }
     }
     if (event.key == "Backspace" && entity_manager.active) {
@@ -431,12 +429,11 @@ document.addEventListener("keyup", function(event) {
         keyboard.arrow_up = false;
     }
     if (event.key == "l" && entity_manager.active) {
-        const mouse_sim_pos = Units.canv_sim(mouse.canv_pos);
-        const id = physicsState.getObjIndexContainingPos(mouse_sim_pos);
+        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
         const mouse_over_dynamicObject = (id != -1);
         if (mouse_over_dynamicObject && entity_manager.drawing_link_constraint) {
-            if (id != entity_manager.line_start_id) {
-                physicsState.addLinkConstraint(entity_manager.line_start_id, id);
+            if (id != entity_manager.draw_start_object) {
+                physicsState.addLinkConstraint(entity_manager.draw_state.entity, id);
                 const c_length = physicsState.getConstraintLength();
                 entity_manager.recent_entities.push({type: "Constraint", id: c_length - 1});
             }
@@ -444,17 +441,12 @@ document.addEventListener("keyup", function(event) {
         entity_manager.drawing_link_constraint = false;
     }
     if (event.key == "k" && entity_manager.active) {
-        const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
-        const mouse_over_dynamicObject = (id != -1);
-        if (mouse_over_dynamicObject && entity_manager.drawing_spring_joint) {
-            if (id != entity_manager.line_start_id) {
-                const obj_pos = physicsState.getObjectPositionById(id);
-                const off_1 = entity_manager.object_offset;
-                const off_2 = Vector2.subtractVectors(mouse.sim_pos, obj_pos);
-                physicsState.addSpringJoint(entity_manager.line_start_id, id, off_1, off_2);
-                const gen_length = physicsState.getForceGeneratorsLength();
-                entity_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
-            }
+        const info = physicsState.getClosestObject(mouse.sim_pos);
+        if (info.entity != null && entity_manager.drawing_spring_joint && info.entity != entity_manager.draw_state.entity) {
+        
+            physicsState.addSpringJointWithStates(entity_manager.draw_state, info);
+            const gen_length = physicsState.getForceGeneratorsLength();
+            entity_manager.recent_entities.push({type: "ForceGenerator", id: gen_length - 1});
         }
         entity_manager.drawing_spring_joint = false;
         entity_manager.object_offset = Vector2.zero;

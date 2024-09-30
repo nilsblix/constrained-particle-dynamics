@@ -92,81 +92,107 @@ export class LinearDamping {
 
 export class SpringJoint {
     #stiffness_const = 5;
-    #prev_theta_1 = 0;
-    #prev_theta_2 = 0;
+    
+    // t has to be from index 2 to index 1
+    constructor(state_1, state_2, m_objects) { // state = {Entity entity, Vector2 offset, float prev_theta, float t_param, Vector2 applied_pos}
+        this.state_1 = {    entity: state_1.entity, 
+                            offset: state_1.offset, 
+                            prev_theta: state_1.prev_theta, 
+                            t_param: state_1.t_param, 
+                            applied_pos: state_1.applied_pos};
 
-    constructor(id1, id2, off_1, off_2, m_objects) {
-        this.id1 = id1;
-        this.id2 = id2;
-        this.offset_1 = off_1;
-        this.offset_2 = off_2;
-        // this.rest_length = 0.1;
-        this.rest_length = Vector2.distance(m_objects[id1].pos, m_objects[id2].pos);
+        this.state_2 = {    entity: state_2.entity, 
+                            offset: state_2.offset, 
+                            prev_theta: state_1.prev_theta, 
+                            t_param: state_2.t_param, 
+                            applied_pos: state_2.applied_pos};
 
-        this.#prev_theta_1 = m_objects[id1].theta;
-        this.#prev_theta_2 = m_objects[id2].theta;
+        this.rest_length = Vector2.distance(state_1.applied_pos, state_2.applied_pos);
     }
 
     setStiffness(value) {
         this.#stiffness_const = value;
     }
 
-    apply(m_objects) {
-        const obj1 = m_objects[this.id1];
-        const obj2 = m_objects[this.id2];
+    #getLinkConstraintAppliedPos(state, m_objects) { // assumes that entity is of a LinkConstraint
+        const A = m_objects[state.entity.id1];
+        const B = m_objects[state.entity.id2];
+        const A_B = Vector2.subtractVectors(A.pos, B.pos);
+        const proj = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, state.t_param));
+        return proj;
+    }
 
-        this.#updateOffsets(obj1, obj2);
+    #updateDynamicObjectRotationOffset(state) {
+        const offset_magnitude = state.offset.magnitude();
+        const offset_1_angle = Math.atan2(state.offset.y, state.offset.x);
+        const delta_1 = state.entity.theta - state.prev_theta;
+        state.offset.x = Math.cos(offset_1_angle + delta_1) * offset_magnitude;
+        state.offset.y = Math.sin(offset_1_angle + delta_1) * offset_magnitude;
 
-        const applied_pos_1 = Vector2.addVectors(obj1.pos, this.offset_1);
-        const applied_pos_2 = Vector2.addVectors(obj2.pos, this.offset_2);
-        const dist = Vector2.distance(applied_pos_1, applied_pos_2);
-        const displacement = dist - this.rest_length;
-        
-        // directions are from 2 to 1
-        const linear_dir_1 =  (Vector2.subtractVectors(applied_pos_2, obj1.pos)).normalized();
-        const linear_dir_2 =  (Vector2.subtractVectors(applied_pos_1, obj2.pos)).normalized();
-        const applied_dir = (Vector2.subtractVectors(applied_pos_1, applied_pos_2)).normalized();
+        state.prev_theta = state.entity.theta;
+    }
 
-        const force = displacement * this.#stiffness_const;
+    #apply_to_dynamicObject(state, other_applied_pos, force) { // this assumes that entity is of a DynamicObject
+        const obj = state.entity;
+    
+        this.#updateDynamicObjectRotationOffset(state);
+        state.applied_pos = Vector2.addVectors(obj.pos, state.offset);
 
-        // OBJECT 1
-        // translational force
-        const linear_force_vec_1 = Vector2.scaleVector(linear_dir_1, force);
-        obj1.force = Vector2.addVectors(obj1.force, linear_force_vec_1);
+        const translational_dir = Vector2.subtractVectors(other_applied_pos, obj.pos).normalized();
+        const applied_dir = Vector2.subtractVectors(other_applied_pos, obj.pos);
 
-        // rotational force (torque)
-        const applied_force_vec_1 = Vector2.scaleVector(applied_dir.negated(), force);
-        obj1.tau += Vector2.cross(this.offset_1, applied_force_vec_1); // tau is torque accumulator
+        const linear_force_vec = Vector2.scaleVector(translational_dir, force);
+        obj.force = Vector2.addVectors(obj.force, linear_force_vec);
 
-        // OBJECT 2
-        // translational force
-        const linear_force_vec_2 = Vector2.scaleVector(linear_dir_2, force);
-        obj2.force = Vector2.addVectors(obj2.force, linear_force_vec_2);
+        const applied_force_vec = Vector2.scaleVector(applied_dir, force);
+        obj.tau += Vector2.cross(state.offset, applied_force_vec);
+    }   
 
-        // rotational force (torque)
-        const applied_force_vec_2 = Vector2.scaleVector(applied_dir, force);
-        obj2.tau += Vector2.cross(this.offset_2, applied_force_vec_2); // tau is torque accumulator
+    #apply_to_linkConstraint(state, m_objects, other_applied_pos, force) {
+        const obj1 = m_objects[state.entity.id1];
+        const obj2 = m_objects[state.entity.id2];
+
+        state.applied_pos = this.#getLinkConstraintAppliedPos(state, m_objects);
+
+        const v = Vector2.subtractVectors(other_applied_pos, state.applied_pos).normalized();
+        const linear_force_vec = Vector2.scaleVector(v, force);
+
+        // translational forces
+        obj1.force = Vector2.addVectors(obj1.force, linear_force_vec);
+        obj2.force = Vector2.addVectors(obj2.force, linear_force_vec);
+
+        // rotational forces (torque)
+        const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
+        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, obj1.m / (obj1.m + obj2.m)));
+        const torque = Vector2.cross(Vector2.subtractVectors(state.applied_pos, COM), linear_force_vec);
+
+        const v1 = Vector2.subtractVectors(obj1.pos, COM).normalized();
+        const torque_dir_1 = new Vector2(- v1.y, v1.x);
+        obj1.force = Vector2.addVectors(obj1.force, Vector2.scaleVector(torque_dir_1, torque));
+
+        const v2 = Vector2.subtractVectors(obj2.pos, COM).normalized();
+        const torque_dir_2 = new Vector2(- v2.y, v2.x);
+        obj2.force = Vector2.addVectors(obj2.force, Vector2.scaleVector(torque_dir_2, torque));
 
     }
 
-    #updateOffsets(obj1, obj2) {
-        // offset 1
-        const offset_1_magnitude = this.offset_1.magnitude();
-        const offset_1_angle = Math.atan2(this.offset_1.y, this.offset_1.x);
-        const delta_1 = obj1.theta - this.#prev_theta_1;
-        this.offset_1.x = Math.cos(offset_1_angle + delta_1) * offset_1_magnitude;
-        this.offset_1.y = Math.sin(offset_1_angle + delta_1) * offset_1_magnitude;
+    apply(m_objects) {
+        const dist = Vector2.distance(this.state_1.applied_pos, this.state_2.applied_pos);
+        const displacement = dist - this.rest_length;
+        const force = this.#stiffness_const * displacement;
 
-        this.#prev_theta_1 = obj1.theta;
+        if (this.state_1.entity instanceof DynamicObject) {
+            this.#apply_to_dynamicObject(this.state_1, this.state_2.applied_pos, force);
+        } else if (this.state_1.entity instanceof LinkConstraint) {
+            this.#apply_to_linkConstraint(this.state_1, m_objects, this.state_2.applied_pos, force);
+        }
 
-        // offset 2
-        const offset_2_magnitude = this.offset_2.magnitude();
-        const offset_2_angle = Math.atan2(this.offset_2.y, this.offset_2.x);
-        const delta_2 = obj2.theta - this.#prev_theta_2;
-        this.offset_2.x = Math.cos(offset_2_angle + delta_2) * offset_2_magnitude;
-        this.offset_2.y = Math.sin(offset_2_angle + delta_2) * offset_2_magnitude;
+        if (this.state_2.entity instanceof DynamicObject) {
+            this.#apply_to_dynamicObject(this.state_2, this.state_1.applied_pos, force);
+        } else if (this.state_2.entity instanceof LinkConstraint) {
+            this.#apply_to_linkConstraint(this.state_2, m_objects, this.state_1.applied_pos, force);
+        }
 
-        this.#prev_theta_2 = obj2.theta;
     }
 
     getEnergyApplied(m_objects) {
@@ -175,8 +201,8 @@ export class SpringJoint {
 
         let energy = 0;
 
-        const applied_pos_1 = Vector2.addVectors(obj1.pos, this.offset_1);
-        const applied_pos_2 = Vector2.addVectors(obj2.pos, this.offset_2);
+        const applied_pos_1 = this.state_1.applied_pos;
+        const applied_pos_2 = this.state_2.applied_pos;
 
         // simple spring hookes law
         const dist = Vector2.distance(applied_pos_1, applied_pos_2);
@@ -189,17 +215,14 @@ export class SpringJoint {
     }
 
     render(c, m_objects) {
-        const obj1 = m_objects[this.id1];
-        const obj2 = m_objects[this.id2];
-
         const num_segments = Extras.SPRINGJOINT_NUM_SEGMENTS;
         const width = 0.2;
 
-        const outer_holding_circle_width_1 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS
-        const outer_holding_circle_width_2 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS
+        const outer_holding_circle_width_1 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS;
+        const outer_holding_circle_width_2 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS;
 
-        const pos_1 = Vector2.addVectors(obj1.pos, this.offset_1);
-        const pos_2 = Vector2.addVectors(obj2.pos, this.offset_2);
+        const pos_1 = this.state_1.applied_pos;
+        const pos_2 = this.state_2.applied_pos;
 
         let segments = [];
 
@@ -378,7 +401,6 @@ export class MouseSpring {
     #rest_length = 0;
     #stiffness_const = 10;
     #prev_theta = 0;
-    #link_inertia = 0;
 
     constructor() {
         this.object = null;
@@ -442,23 +464,23 @@ export class MouseSpring {
         const v = Vector2.scaleVector(Vector2.subtractVectors(this.mouse_pos, applied_pos), 1 / dist);
         const force_vec = Vector2.scaleVector(v, force);
 
-        const mass_scalar = obj1.m / (obj1.m + obj2.m);
-        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, mass_scalar));
+        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, obj1.m / (obj1.m + obj2.m)));
+
 
         // translational forces
         obj1.force = Vector2.addVectors(obj1.force, force_vec);
         obj2.force = Vector2.addVectors(obj2.force, force_vec);
         
         // rotational forces (adds to objects translational force)
-        const offset_1 = Vector2.subtractVectors(obj1.pos, COM);
-        const force_magnitude_1 = Vector2.cross(offset_1, force_vec);
-        const force_dir_1 = (new Vector2(- offset_1.y, offset_1.x)).normalized();
-        obj1.force = Vector2.addVectors(obj1.force, Vector2.scaleVector(force_dir_1, force_magnitude_1));
+        const torque = Vector2.cross(Vector2.subtractVectors(applied_pos, COM), force_vec);
 
-        const offset_2 = Vector2.subtractVectors(obj2.pos, COM);
-        const force_magnitude_2 = Vector2.cross(offset_2, force_vec);
-        const force_dir_2 = (new Vector2(- offset_2.y, offset_2.x)).normalized();
-        obj2.force = Vector2.addVectors(obj2.force, Vector2.scaleVector(force_dir_2, force_magnitude_2));
+        const v1 = Vector2.subtractVectors(obj1.pos, COM).normalized();
+        const torque_dir_1 = new Vector2(- v1.y, v1.x);
+        obj1.force = Vector2.addVectors(obj1.force, Vector2.scaleVector(torque_dir_1, torque));
+
+        const v2 = Vector2.subtractVectors(obj2.pos, COM).normalized();
+        const torque_dir_2 = new Vector2(- v2.y, v2.x);
+        obj2.force = Vector2.addVectors(obj2.force, Vector2.scaleVector(torque_dir_2, torque));
         
     }
 
@@ -469,7 +491,7 @@ export class MouseSpring {
             this.#apply_to_linkConstraint(m_objects);
     }
 
-    getClosestDynamicObject(m_objects, m_constraints) {
+    getClosestObject(m_objects, m_constraints) {
         // for objects
         for (let i = 0; i < m_objects.length; i++) {
             const v = Vector2.subtractVectors(m_objects[i].pos, this.mouse_pos);
@@ -499,11 +521,6 @@ export class MouseSpring {
                 this.object = m_constraints[i];
                 this.t_linkConstraint = t;
 
-                // when t is from B to A
-                const d_A = this.object.l0 * t;
-                const d_B = this.object.lo * (1 - t);
-                // this.#link_inertia = A.mass * d_A ** 2 + B.mass * d_B ** 2
-
                 return true;
             }
         }
@@ -514,23 +531,40 @@ export class MouseSpring {
     getEnergyApplied(m_objects) {
         // TODO
         // change this so that it works with linkconst also
-        return;
 
         if (!this.active)
             return 0;
 
-        let energy = 0;
-        const obj = m_objects[this.particle_id];
+        if (this.object instanceof DynamicObject) {
+            let energy = 0;
 
-        const applied_pos = Vector2.addVectors(obj.pos, this.offset);
+            const applied_pos = Vector2.addVectors(this.object.pos, this.offset);
 
-        // simple spring hookes law
-        const dist = Vector2.distance(this.mouse_pos, applied_pos);
-        const displacement = dist - this.#rest_length;
-        const force = this.#stiffness_const * displacement;
-        energy += 0.5 * force * displacement;
+            // simple spring hookes law
+            const dist = Vector2.distance(this.mouse_pos, applied_pos);
+            const displacement = dist - this.#rest_length;
+            const force = this.#stiffness_const * displacement;
+            energy += 0.5 * force * displacement;
 
-        return energy;
+            return energy;
+        } else if (this.object instanceof LinkConstraint) {
+            let energy = 0;
+
+            const obj1 = m_objects[this.object.id1];
+            const obj2 = m_objects[this.object.id2];
+
+            const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
+            const applied_pos = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
+            const dist = Vector2.distance(this.mouse_pos, applied_pos);
+            const displacement = dist - this.#rest_length;
+
+            const force = this.#stiffness_const * displacement;
+
+            energy += 0.5 * force * displacement;
+
+            return energy;
+        }
+        
     }
 
     render(c, m_objects) {

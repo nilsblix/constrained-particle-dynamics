@@ -2,7 +2,8 @@ import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
 import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js";
 import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
-// import {Units} from "./main.js"; 
+import {Units} from "./main.js"; 
+import { Colours, LineWidths, Extras } from "./render_settings.js";
 import {FixedXConstraint, FixedYConstraint, LinkConstraint, FixedRotationConstraint, FixedOmegaConstraint} from "./core_constraints.js";
 import {FixedPosConstraint} from "./extended_constraints.js";
 
@@ -168,7 +169,7 @@ export class PhysicsState {
         this.#m_mouseSpring.mouse_pos = mouse_pos;
 
         if (mouse_down && !this.#m_mouseSpring.active) {
-            if (this.#m_mouseSpring.getClosestDynamicObject(this.#m_objects, this.#m_constraints)) {
+            if (this.#m_mouseSpring.getClosestObject(this.#m_objects, this.#m_constraints)) {
                 // console.log("Mouse Spring Active");
                 this.#m_mouseSpring.active = true;
             }
@@ -408,8 +409,17 @@ export class PhysicsState {
         }
     }
     
-    addSpringJoint(id1, id2, offset_1, offset_2) {
-        const gen = new SpringJoint(id1, id2, offset_1, offset_2, this.#m_objects);
+    addSpringJointWithStates(state_1, state_2) {
+        const gen = new SpringJoint(state_1, state_2, this.#m_objects);
+        this.addForceGenerator(gen);
+    }
+
+    addSpringJoint(id1, id2) {
+        const obj1 = this.#m_objects[id1];
+        const obj2 = this.#m_objects[id2];
+        const state_1 = {entity: obj1, offset: Vector2.zero, prev_theta: obj1.theta, t_param: null, applied_pos: obj1.pos};
+        const state_2 = {entity: obj2, offset: Vector2.zero, prev_theta: obj2.theta, t_param: null, applied_pos: obj2.pos};
+        const gen = new SpringJoint(state_1, state_2, this.#m_objects);
         this.addForceGenerator(gen);
     }
 
@@ -452,6 +462,40 @@ export class PhysicsState {
 
     getObjectPositionById(id) {
         return this.#m_objects[id].pos;
+    }
+
+    getClosestObject(pos) {
+        // dynamicObject
+        for (let i = 0; i < this.#m_objects.length; i++) {
+            const v = Vector2.subtractVectors(this.#m_objects[i].pos, pos);
+            const dist2 = v.sqr_magnitude();
+            const rad = this.#m_objects[i].radius;
+            if (dist2 < rad * rad) {
+                const offset = Vector2.subtractVectors(pos, this.#m_objects[i].pos);
+                return {entity: this.#m_objects[i], offset: offset, prev_theta: this.#m_objects[i].theta, t_param: null, applied_pos: pos};
+            }
+        }
+
+        // constraints
+        for (let i = 0; i < this.#m_constraints.length; i++) {
+            const con = this.#m_constraints[i];
+            if (con instanceof LinkConstraint) {
+                const A = this.#m_objects[con.id1];
+                const B = this.#m_objects[con.id2];
+                const C_B = Vector2.subtractVectors(pos, B.pos);
+                const A_B = Vector2.subtractVectors(A.pos, B.pos);
+                const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
+                const proj = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, t));
+                const dist2 = Vector2.subtractVectors(proj, pos).sqr_magnitude();
+                const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
+                if (dist2 < sim_line_width * sim_line_width) {
+                    return {entity: con, offset: null, prev_theta: null, t_param: t, applied_pos: proj};
+                }
+            }
+        }
+
+        return {entity: null, offset: null, prev_theta: null, t_param: null, applied_pos: null};
+
     }
 
 }
