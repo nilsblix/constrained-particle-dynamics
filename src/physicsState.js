@@ -168,7 +168,7 @@ export class PhysicsState {
         this.#m_mouseSpring.mouse_pos = mouse_pos;
 
         if (mouse_down && !this.#m_mouseSpring.active) {
-            if (this.#m_mouseSpring.getClosestDynamicObject(this.#m_objects)) {
+            if (this.#m_mouseSpring.getClosestDynamicObject(this.#m_objects, this.#m_constraints)) {
                 // console.log("Mouse Spring Active");
                 this.#m_mouseSpring.active = true;
             }

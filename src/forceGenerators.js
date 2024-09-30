@@ -1,6 +1,8 @@
+import { LinkConstraint } from "./core_constraints.js";
 import {Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
+import { DynamicObject } from "./dynamicObject.js";
 
 /* 
     When adding a new force generator, these functions must be in them and spelled correctly
@@ -376,9 +378,11 @@ export class MouseSpring {
     #rest_length = 0;
     #stiffness_const = 10;
     #prev_theta = 0;
+    #link_inertia = 0;
 
-    constructor(id) {
-        this.particle_id = id;
+    constructor() {
+        this.object = null;
+        this.t_linkConstraint = null;
         this.mouse_pos = new Vector2(0,0);
         this.active = false;
         this.offset = new Vector2(0,0);
@@ -388,55 +392,130 @@ export class MouseSpring {
         this.#stiffness_const = value;
     }
 
-    apply(m_objects) {
-        const obj = m_objects[this.particle_id];
-        this.#rest_length = obj.radius;
+    #apply_to_dynamicObject(m_objects) {
+        this.#rest_length = this.object.radius;
 
         const offset_magnitude = this.offset.magnitude();
         const offset_angle = Math.atan2(this.offset.y, this.offset.x);
-        const delta = obj.theta - this.#prev_theta;
+        const delta = this.object.theta - this.#prev_theta;
         this.offset.x = Math.cos(offset_angle + delta) * offset_magnitude;
         this.offset.y = Math.sin(offset_angle + delta) * offset_magnitude;
 
-        this.#prev_theta = obj.theta;
+        this.#prev_theta = this.object.theta;
 
-        const applied_pos = Vector2.addVectors(obj.pos, this.offset);
+        const applied_pos = Vector2.addVectors(this.object.pos, this.offset);
         const dist = Vector2.distance(this.mouse_pos, applied_pos);
         const displacement = dist - this.#rest_length;
 
         if (dist == 0) 
             return;
         
-        const linear_dir =  (Vector2.subtractVectors(this.mouse_pos, obj.pos)).normalized();
+        const linear_dir =  (Vector2.subtractVectors(this.mouse_pos, this.object.pos)).normalized();
         const applied_dir = (Vector2.subtractVectors(this.mouse_pos, applied_pos)).normalized();
 
         const force = this.#stiffness_const * displacement;
 
         // translational force
-        const linear_force_vec = Vector2.scaleVector(linear_dir, force);
-        obj.force = Vector2.addVectors(obj.force, linear_force_vec);
+        const linear_force_vec = Vector2.scaleVector(applied_dir, force);
+        this.object.force = Vector2.addVectors(this.object.force, linear_force_vec);
 
         // rotational force (torque)
         const applied_force_vec = Vector2.scaleVector(applied_dir, force);
-        obj.tau += Vector2.cross(this.offset, applied_force_vec); // tau is torque accumulator
+        this.object.tau += Vector2.cross(this.offset, applied_force_vec); // tau is torque accumulator
     }
 
-    getClosestDynamicObject(m_objects) {
+    #apply_to_linkConstraint(m_objects) {
+        const obj1 = m_objects[this.object.id1];
+        const obj2 = m_objects[this.object.id2];
+
+        this.#rest_length = 0.2;
+
+        const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
+        const applied_pos = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
+        const dist = Vector2.distance(this.mouse_pos, applied_pos);
+        const displacement = dist - this.#rest_length;
+
+        if (dist == 0)
+            return;
+
+        const force = this.#stiffness_const * displacement;
+        const v = Vector2.scaleVector(Vector2.subtractVectors(this.mouse_pos, applied_pos), 1 / dist);
+        const force_vec = Vector2.scaleVector(v, force);
+
+        const mass_scalar = obj1.m / (obj1.m + obj2.m);
+        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, mass_scalar));
+
+        // translational forces
+        obj1.force = Vector2.addVectors(obj1.force, force_vec);
+        obj2.force = Vector2.addVectors(obj2.force, force_vec);
+        
+        // rotational forces (adds to objects translational force)
+        const offset_1 = Vector2.subtractVectors(obj1.pos, COM);
+        const force_magnitude_1 = Vector2.cross(offset_1, force_vec);
+        const force_dir_1 = (new Vector2(- offset_1.y, offset_1.x)).normalized();
+        obj1.force = Vector2.addVectors(obj1.force, Vector2.scaleVector(force_dir_1, force_magnitude_1));
+
+        const offset_2 = Vector2.subtractVectors(obj2.pos, COM);
+        const force_magnitude_2 = Vector2.cross(offset_2, force_vec);
+        const force_dir_2 = (new Vector2(- offset_2.y, offset_2.x)).normalized();
+        obj2.force = Vector2.addVectors(obj2.force, Vector2.scaleVector(force_dir_2, force_magnitude_2));
+        
+    }
+
+    apply(m_objects) {
+        if (this.object instanceof DynamicObject) 
+            this.#apply_to_dynamicObject(m_objects);
+        else if (this.object instanceof LinkConstraint)
+            this.#apply_to_linkConstraint(m_objects);
+    }
+
+    getClosestDynamicObject(m_objects, m_constraints) {
+        // for objects
         for (let i = 0; i < m_objects.length; i++) {
             const v = Vector2.subtractVectors(m_objects[i].pos, this.mouse_pos);
             const dist2 = v.x * v.x + v.y * v.y;
             const rad = m_objects[i].radius;
             if (dist2 < rad * rad) {
-                this.particle_id = i;
+                this.object = m_objects[i];
                 this.offset = Vector2.subtractVectors(this.mouse_pos, m_objects[i].pos);
                 this.#prev_theta = m_objects[i].theta;
                 return true;
             }
         }
+        // for linkConstraints
+        for (let i = 0; i < m_constraints.length; i++) {
+            if (!(m_constraints[i] instanceof LinkConstraint))
+                continue;
+            const A = m_objects[m_constraints[i].id1];
+            const B = m_objects[m_constraints[i].id2];
+            // finish this, make sure its working
+            const C_B = Vector2.subtractVectors(this.mouse_pos, B.pos);
+            const A_B = Vector2.subtractVectors(A.pos, B.pos);
+            const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
+            const proj = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, t));
+            const dist2 = Vector2.subtractVectors(proj, this.mouse_pos).sqr_magnitude();
+            const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
+            if (dist2 < sim_line_width * sim_line_width) {
+                this.object = m_constraints[i];
+                this.t_linkConstraint = t;
+
+                // when t is from B to A
+                const d_A = this.object.l0 * t;
+                const d_B = this.object.lo * (1 - t);
+                // this.#link_inertia = A.mass * d_A ** 2 + B.mass * d_B ** 2
+
+                return true;
+            }
+        }
+
         return false;
     }
 
     getEnergyApplied(m_objects) {
+        // TODO
+        // change this so that it works with linkconst also
+        return;
+
         if (!this.active)
             return 0;
 
@@ -455,10 +534,17 @@ export class MouseSpring {
     }
 
     render(c, m_objects) {
-        const obj = m_objects[this.particle_id];
 
         const start_pos = this.mouse_pos;
-        const end_pos = Vector2.addVectors(obj.pos, this.offset);
+        let end_pos;
+        if (this.object instanceof DynamicObject) {
+            end_pos = Vector2.addVectors(this.object.pos, this.offset);
+        } else if (this.object instanceof LinkConstraint) {
+            const A = m_objects[this.object.id1];
+            const B = m_objects[this.object.id2];
+            const A_B = Vector2.subtractVectors(A.pos, B.pos);
+            end_pos = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
+        }
 
         const num_segments = Extras.MOUSESPRING_NUM_SEGMENTS;
         const width = 0.2;

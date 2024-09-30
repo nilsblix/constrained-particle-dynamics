@@ -53,6 +53,10 @@ export class Vector2 {
         return (this.subtractVectors(a, b)).magnitude();
     }
 
+    static sqr_distance(a, b) {
+        return (this.subtractVectors(a, b)).sqr_magnitude();
+    }
+
     negated() {
         return new Vector2(-this.x, -this.y);
     }
