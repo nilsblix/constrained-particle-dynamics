@@ -7,7 +7,7 @@ import {entity_manager} from "./entity_manager.js";
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 
-const x_offset = 190;
+const x_offset = 100;
 // const y_offset = 80;
 canvas.width = window.innerWidth - x_offset;
 // canvas.height = window.innerHeight - y_offset;
@@ -67,6 +67,14 @@ export class Units {
 // canvas.height = Units.scale_s_c * (Units.HEIGHT) - y_offset;
 canvas.height = Units.scale_s_c * (Units.HEIGHT);
 
+const rect = canvas.getBoundingClientRect();
+const keybinds_wrapper = document.querySelector('.keybinds-dropdown');
+keybinds_wrapper.style.top = `${rect.top}px`;
+keybinds_wrapper.style.left = `${rect.left}px`;
+
+const debugs_wrapper = document.querySelector('.debugs-dropdown');
+debugs_wrapper.style.top = `${keybinds_wrapper.getBoundingClientRect().bottom - 1}px`;
+debugs_wrapper.style.left = `${rect.left}px`;
 
 /* 
 int main() {
@@ -74,9 +82,13 @@ int main() {
 }
 */
 
+function roundToNearest(value, base) {
+    return Math.round(value / base) * base;
+}
+
 var physicsState = new PhysicsState();
 let solver = {
-    dt: 1 / 60,
+    dt: 1 / 120,
     sim_steps: 8,
     simulating: false,
     physics_frame_time: -1,
@@ -100,17 +112,34 @@ let keyboard = {
     arrow_up:  false,
 }
 
+var frame = 0;
 function updateDisplayedDebugs() {
     if (!solver.simulating)
         solver.physics_frame_time = -1;
 
+    // if (frame % 1200 == 0) {
+    //     solver.dt = 1 / handle_FPS.fps;
+    //     solver.sim_steps = Math.floor(980 / handle_FPS.fps);
+    // }
+
+    // frame++;
+
+    document.getElementById("fps").innerHTML = roundToNearest(handle_FPS.fps, 60);
+    document.getElementById("simulation_rate").innerHTML = roundToNearest(solver.sim_steps * Math.round(handle_FPS.fps), 10);
+    document.getElementById("steps").innerHTML = solver.sim_steps.toFixed(0);
+
     document.getElementById("physics_frame_time").innerHTML = solver.physics_frame_time.toFixed(1);
+    document.getElementById("system dt").innerHTML = solver.dt.toFixed(4);
     document.getElementById("render_frame_time").innerHTML = solver.render_frame_time.toFixed(1);
     document.getElementById("CFS_ms").innerHTML = physicsState.averaging.averaged_cfsdt.toFixed(1);
     document.getElementById("CFS_accumulated_error").innerHTML = physicsState.CFS_accumulated_error.toFixed(2);
     document.getElementById("system_energy").innerHTML = physicsState.system_energy.toFixed(3);
     document.getElementById("C_value").innerHTML = physicsState.C_value.toFixed(5);
     document.getElementById("C_dot_value").innerHTML = physicsState.C_dot_value.toFixed(5);
+
+    document.getElementById("q length").innerHTML = (3 * physicsState.getDynamicObjectsLength()).toFixed(0);
+    document.getElementById("lambda length").innerHTML = (physicsState.getConstraintLength()).toFixed(0);
+
 }
 
 function updateSliderValues() {
@@ -227,12 +256,12 @@ function start() {
     solver.simulating = false;
     physicsState.initConstraintManager();
 
-    physicsState.setGravity(1.6);
+    physicsState.setGravity(5);
     physicsState.setLinearDampingMU(0.2);
-    physicsState.setMouseSpringStiffness(15);
-    physicsState.setSpringJointStiffness(20);
-    physicsState.setOmegaConstraintValue(20 * solver.dt);
-    entity_manager.angular_motor_vel = 20 * solver.dt;
+    physicsState.setMouseSpringStiffness(50);
+    physicsState.setSpringJointStiffness(50);
+    physicsState.setOmegaConstraintValue(50 * solver.dt);
+    entity_manager.angular_motor_vel = 50 * solver.dt;
 
 }
 
@@ -478,7 +507,22 @@ canvas.addEventListener("mousemove", function(event) {
     mouse.sim_pos = Units.canv_sim(mouse.canv_pos);
 })
 
+const handle_FPS = {
+    last_time: 0,
+    fps: 0,
+}
 
+function measureFrameRate(timestamp) {
+    if (handle_FPS.last_time > 0) {
+        const delta_t = timestamp - handle_FPS.last_time;
+        handle_FPS.fps = 1000 / delta_t;
+    }
+    
+    handle_FPS.last_time = timestamp;
+    requestAnimationFrame(measureFrameRate);
+}
+
+requestAnimationFrame(measureFrameRate);
 
 start();
 update();

@@ -27,7 +27,7 @@
 
         #myCanvas {
             display: block;
-            margin: 14px auto 0 auto;
+            margin: 10px auto 0 auto;
         }
 
         .container {
@@ -55,7 +55,7 @@
             color: #ffffff;
             font-family: inherit;
             font-size: 8px;
-            border: 1px solid #50505f;
+            border: 1px solid #ffffff;
             border-radius: 2px;
 
             text-align: center;
@@ -66,6 +66,7 @@
         .slider-container {
             display: none;
             font-size: 8px;
+            height: 10px;
         }
 
         .slider-value {
@@ -80,17 +81,17 @@
             /* font-size: 14px; */
             /* width: 90%; */
             /* background: #ff0000; */
-            height: 10px;
+            height: inherit;
             background: none; 
-            opacity: 0.5; 
-            border-radius: 2px;
-            outline: double 1px #50505f;
+            opacity: 1; 
+            border-radius: 0px;
+            outline: double 1px white;
             -webkit-transition: .2s; 
             transition: opacity .2s background .2s;
         }
         .constants-slider:hover {
             opacity: 1;
-            background: #c8c8c8;
+            background: #4c4c4c;
         }
         .constants-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -106,7 +107,7 @@
             width: 3px;
             height: 10px;
             /* border-radius: 50%; */
-            background: rgb(87, 87, 87);
+            background: rgb(255, 255, 255);
             cursor: pointer;
             text-align: center;
         }  
@@ -114,7 +115,7 @@
         .keybinds-dropdown {
             position: absolute;
             top: 80px;
-            left: 110px;
+            left: 90px;
             font-family: basis33;
 
             background-color: #1a1e21; /* Set a green background color for the button */
@@ -125,8 +126,6 @@
         }
 
         .keybinds-button {
-            display: true;
-
             background-color: inherit;
             opacity: 1;
             color: inherit;
@@ -135,17 +134,20 @@
             cursor: pointer; 
             font-size: inherit;
             border-radius: inherit;
+            min-width: 100px;
 
             font-family: QuinqueFive;
+
+            user-select: none;
         }
 
         .keybinds-content {
             display: none;
             position: absolute;
-            margin: 5px 0px;
+            margin: 5px 5px;
             background-color: rgba(0,0,0,0);
             border: none;
-            padding: inherit;
+            padding: none;
             min-width: 400px;
             z-index: 1; /* Ensures it's above the canvas */
             font-size: 19px;
@@ -163,29 +165,65 @@
         .keybinds-button:hover {
             background-color: #979797;
         }
+        
+        .debugs-dropdown {
+            display: block;
+            position: absolute;
+            top: 80px;
+            left: 90px;
+            font-family: basis33;
 
-        .debug-wrapper {
-            text-align: center;
+            background-color: #1a1e21; /* Set a green background color for the button */
+
+            color: white; /* Set the text color to white */
+            font-size: 8px; /* Increase the font size */
+
+        }
+
+        .debugs-button {
+            display: true;
+
+            background-color: inherit;
+            opacity: 1;
+            color: inherit;
+            padding: 8px 8px;
+            border: 1px solid rgb(255, 255, 255); /* Remove the border */
+            cursor: pointer; 
+            font-size: inherit;
+            border-radius: inherit;
+
+            min-width: 100px;
+
+            font-family: QuinqueFive;
+
             user-select: none;
         }
 
-        .debug-value, .debug-text {
-            font-size: 8px;
-            color: #ffffff;
+        .debugs-content {
+            display: none;
+            position: absolute;
+            margin: 5px 5px;
+            background-color: rgba(0,0,0,0);
+            border: none;
+            padding: inherit;
+            min-width: 400px;
+            z-index: 1; /* Ensures it's above the canvas */
+            font-size: 19px;
+
+            user-select: none;
+
+            pointer-events: none;
         }
 
-        .debug-value {
-            /* font-family: 'Courier New', Courier, monospace; */
-            /* font-family: basis33; */
-            font-family: QuinqueFive;
-            font-variant-numeric: tabular-nums;
-            
+        .debugs-content p {
+            margin: 0;
+            padding: 1px;
         }
-        .debug-text {
-            /* font-family: 'Courier New', Courier, monospace; */
-            /* font-family: basis33; */
-            font-family: QuinqueFive;
+
+        .debugs-button:hover {
+            background-color: #979797;
         }
+        
 
     </style>
 </head>
@@ -208,7 +246,7 @@
         <div class="slider-container" id="slider-container">
             <label for="rangeSlider">VALUE:&nbsp&nbsp</label>
             <div style="display: flex; align-items: center;">
-                <input class="constants-slider" type="range" id="rangeSlider" min="-1.5" max="1.5" step="0.01" value="1" oninput="updateSliderValue()">
+                <input class="constants-slider" type="range" id="rangeSlider" min="-1.5" max="1.5" step="0.05" value="1" oninput="updateSliderValue()">
                 <span class="slider-value" id="sliderValue">&nbsp;1</span>
             </div>
         </div>
@@ -217,25 +255,25 @@
     <div class ="keybinds-dropdown">
         <button class="keybinds-button">Keybinds</button>
         <div class="keybinds-content"keybinds-content>
-            <p>General</p>
+            <p>General:</p>
             <p>&nbsp (s) s: Toggle Sim</p>
             <p>&nbsp LArr: Step one sim-frame</p>
             <p>&nbsp UArr: Slow Motion</p>
             <p>&nbsp (b) R: Reset Scene</p>
 
-            <p>Demo Scenes </p>
+            <p>Demo Scenes: </p>
             <p>&nbsp 1: Pratt Truss</p>
             <p>&nbsp 2: King Post Truss</p>
             <p>&nbsp 3: Large Bridge</p>
             <p>&nbsp 4: Crane</p>
 
-            <p>Editor </p>
+            <p>Editor: </p>
             <p>&nbsp (s) i: Toggle</p>
             <p>&nbsp (b) I: Snap To Grid</p>
             <p>&nbsp (s) backspace: Delete latest entity</p>
-            <p>&nbsp Objects</p>
+            <p>&nbsp Objects:</p>
             <p>&nbsp &nbsp 1 --> 4: Spawn Particle</p>
-            <p>&nbsp Force Generators </p>
+            <p>&nbsp Force Generators: </p>
             <p>&nbsp &nbsp (s) k: Spring Joint</p>
             <p>&nbsp Constraints:</p>
             <p>&nbsp &nbsp (s) x: Fixed X</p>
@@ -243,39 +281,84 @@
             <p>&nbsp &nbsp (s) l: Link</p>
             <p>&nbsp &nbsp (s) t: Fixed Rotation</p>
             <p>&nbsp &nbsp (s) m: Fixed Omega (motor)</p>
-            <p>&nbsp Bezier Curve</p>
+            <p>&nbsp Bezier Curve:</p>
             <p>&nbsp &nbsp (b) B: Toggle</p>
             <p>&nbsp &nbsp Left Mouse + Mouse Pos: C-Point pos</p>
             <p>&nbsp &nbsp (b) S: Spawn Objects</p>
 
-            <p>Auxiliary Binds</p>
+            <p>Auxiliary Binds:</p>
             <p>&nbsp Left Mouse + Mouse Pos: Mouse Spring</p>
+        </div>
+    </div>
+
+    <div class ="debugs-dropdown">
+        <button class="debugs-button">Debugs</button>
+         <div class="debugs-content"debugs-content>
+            <p> // INFO </p>
+            <p> FR = <span id="fps">0.000</span> FPS </p>
+            <p> SR = <span id="simulation_rate">0.000</span> HZ </p>
+            <p> STEPS = <span id="steps">0.000</span> </p>
+            <p> &nbsp </p>
+
+            <p> // PROFILING </p>
+            <p> SYSTEM DT = <span id="system dt">0.000</span> MS </p>
+            <p> PDT = <span id="physics_frame_time">0.000</span> MS </p>
+            <p> RDT = <span id="render_frame_time">0.000</span> MS </p>
+            <p> CFS DT = <span id="CFS_ms">0.000</span> MS </p>
+            <p> CFS ERR = <span id="CFS_accumulated_error">0.000</span> </p>
+            <p> ENERGY = <span id="system_energy">0.000</span> </p>
+            <p> C-EVAL = <span id="C_value">0.000</span> </p>
+            <p> C-DOT-EVAL = <span id="C_dot_value">0.000</span> </p>
+            <p> &nbsp </p>
+
+            <p> // PHYSICS INFO </p>
+            <p> Q LENGTH = <span id="q length">0.000</span> </p>
+            <p> LAMBDA LENGTH = <span id="lambda length">0.000</span> </p>
+
         </div>
     </div>
 
     <!-- keybinds dropdown -->
     <script>
-        const dropdownContent = document.querySelector('.keybinds-content');
-        const button = document.querySelector('.keybinds-dropdown button');
+        const keybinds_content = document.querySelector('.keybinds-content');
+        const keybinds_button = document.querySelector('.keybinds-dropdown button');
+
+        const debugs_dropdown = document.querySelector('.debugs-dropdown');
     
-        button.addEventListener('click', () => {
-            if (dropdownContent.style.display === 'block') {
-                dropdownContent.style.display = 'none';
+        keybinds_button.addEventListener('click', () => {
+            if (keybinds_content.style.display === 'block') {
+                keybinds_content.style.display = 'none';
+                debugs_dropdown.style.display = 'block';
             } else {
-                dropdownContent.style.display = 'block';
+                keybinds_content.style.display = 'block';
+                debugs_dropdown.style.display = 'none';
             }
         });
     </script>
 
-    <!-- simulation constants slider -->
+    <!-- debug dropdown -->
+    <script>
+        const debugs_content = document.querySelector('.debugs-content');
+        const debugs_button = document.querySelector('.debugs-dropdown button');
+
+        debugs_button.addEventListener('click', () => {
+            if (debugs_content.style.display === 'block') {
+                debugs_content.style.display = 'none';
+            } else {
+                debugs_content.style.display = 'block';
+            }
+        });
+    </script>    
+
+<!-- simulation constants slider -->
     <script>
         // if the start values should change, don't forget to also change the values in start() (main.js)
         let slider_values = {
-            gravity: 1.6,
+            gravity: 5,
             linear_damping: 0.2,
-            mouse_spring: 15,
-            spring_joint: 20,
-            omega_constraint: 20,
+            mouse_spring: 50,
+            spring_joint: 50,
+            omega_constraint: 50,
         };
 
         function showSlider() {
@@ -287,25 +370,30 @@
                 slider_container.style.display = "flex";
                 
                 if (option == "gravity") {
-                    slider.min = -2;
-                    slider.max = 2;
+                    slider.min = -10;
+                    slider.max = 10;
                     slider.value = slider_values.gravity;
+                    slider.step = 0.05;
                 } else if (option == "linear damping") {
                     slider.min = 0;
                     slider.max = 2;
                     slider.value = slider_values.linear_damping;
+                    slider.step = 0.005;
                 } else if (option == "mouse spring") {
                     slider.min = 0;
-                    slider.max = 40;
+                    slider.max = 100;
                     slider.value = slider_values.mouse_spring;
+                    slider.step = 0.05;
                 } else if (option == "spring joint") {
                     slider.min = 0;
-                    slider.max = 40;
+                    slider.max = 100;
                     slider.value = slider_values.spring_joint;
+                    slider.step = 0.05;
                 } else if (option == "omega constraint") {
                     slider.min = 0;
-                    slider.max = 70;
+                    slider.max = 150;
                     slider.value = slider_values.omega_constraint;
+                    slider.step = 0.05;
                 }
 
             } else {
@@ -337,22 +425,6 @@
         }
     </script>
 
-    <div class="debug-wrapper">
-    <span class="debug-value" id="physics_frame_time">0.000</span> 
-    <span class="debug-text"> PDT &nbsp; | &nbsp;</span>
-    <span class="debug-value" id="render_frame_time">0.000</span> 
-    <span class="debug-text"> RDT &nbsp; | &nbsp;</span>
-    <span class="debug-value" id="CFS_ms">0.000</span>
-    <span class="debug-text"> CFS-DT &nbsp; | &nbsp;</span>
-    <span class="debug-value" id="CFS_accumulated_error">0.000</span> 
-    <span class="debug-text"> CFS-ERR &nbsp; | &nbsp;</span>
-    <span class="debug-value" id="system_energy">0.000</span> 
-    <span class="debug-text"> ENERGY &nbsp; | &nbsp;</span>
-    <span class="debug-value" id="C_value">0.000</span> 
-    <span class="debug-text"> C-EVAL &nbsp; | &nbsp;</span>
-    <span class="debug-value" id="C_dot_value">0.000</span> 
-    <span class="debug-text"> C-DOT-EVAL </span> 
-    </div>
     <canvas id="myCanvas" style="border: 1px solid white"></canvas>
     <script src="./main.js" type="module"></script>
 </body>
