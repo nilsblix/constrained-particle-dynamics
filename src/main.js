@@ -234,10 +234,6 @@ function start() {
     physicsState.setOmegaConstraintValue(20 * solver.dt);
     entity_manager.angular_motor_vel = 20 * solver.dt;
 
-    // stp is snap to grid
-
-    console.log("Keybinds can be found in the keybinds.tx file");
-
 }
 
 function reset() {
@@ -332,15 +328,19 @@ document.addEventListener("keydown", function(event) {
     }
     if (event.key == "1" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "pratt truss");
+        start();
     }
     if (event.key == "2" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "king post truss");
+        start();
     }
     if (event.key == "3" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "large bridge structure");
+        start();
     }
     if (event.key == "4" && solver.physicsState_is_null && !entity_manager.active) {
         setupScene(physicsState, solver, "crane structure");
+        start();
     }
     if (event.key == "ArrowRight" && !solver.simulating) {
         let p_st = performance.now();

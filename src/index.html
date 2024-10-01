@@ -111,8 +111,62 @@
             text-align: center;
         }  
 
+        .keybinds-dropdown {
+            position: absolute;
+            top: 80px;
+            left: 110px;
+            font-family: basis33;
+
+            background-color: #1a1e21; /* Set a green background color for the button */
+
+            color: white; /* Set the text color to white */
+            font-size: 8px; /* Increase the font size */
+
+        }
+
+        .keybinds-button {
+            display: true;
+
+            background-color: inherit;
+            opacity: 1;
+            color: inherit;
+            padding: 8px 8px;
+            border: 1px solid rgb(255, 255, 255); /* Remove the border */
+            cursor: pointer; 
+            font-size: inherit;
+            border-radius: inherit;
+
+            font-family: QuinqueFive;
+        }
+
+        .keybinds-content {
+            display: none;
+            position: absolute;
+            margin: 5px 0px;
+            background-color: rgba(0,0,0,0);
+            border: none;
+            padding: inherit;
+            min-width: 400px;
+            z-index: 1; /* Ensures it's above the canvas */
+            font-size: 19px;
+
+            user-select: none;
+
+            pointer-events: none;
+        }
+
+        .keybinds-content p {
+            margin: 0;
+            padding: 1px;
+        }
+
+        .keybinds-button:hover {
+            background-color: #979797;
+        }
+
         .debug-wrapper {
             text-align: center;
+            user-select: none;
         }
 
         .debug-value, .debug-text {
@@ -160,6 +214,60 @@
         </div>
     </div>
 
+    <div class ="keybinds-dropdown">
+        <button class="keybinds-button">Keybinds</button>
+        <div class="keybinds-content"keybinds-content>
+            <p>General</p>
+            <p>&nbsp (s) s: Toggle Sim</p>
+            <p>&nbsp LArr: Step one sim-frame</p>
+            <p>&nbsp UArr: Slow Motion</p>
+            <p>&nbsp (b) R: Reset Scene</p>
+
+            <p>Demo Scenes </p>
+            <p>&nbsp 1: Pratt Truss</p>
+            <p>&nbsp 2: King Post Truss</p>
+            <p>&nbsp 3: Large Bridge</p>
+            <p>&nbsp 4: Crane</p>
+
+            <p>Editor </p>
+            <p>&nbsp (s) i: Toggle</p>
+            <p>&nbsp (b) I: Snap To Grid</p>
+            <p>&nbsp (s) backspace: Delete latest entity</p>
+            <p>&nbsp Objects</p>
+            <p>&nbsp &nbsp 1 --> 4: Spawn Particle</p>
+            <p>&nbsp Force Generators </p>
+            <p>&nbsp &nbsp (s) k: Spring Joint</p>
+            <p>&nbsp Constraints:</p>
+            <p>&nbsp &nbsp (s) x: Fixed X</p>
+            <p>&nbsp &nbsp (s) y: Fixed Y</p>
+            <p>&nbsp &nbsp (s) l: Link</p>
+            <p>&nbsp &nbsp (s) t: Fixed Rotation</p>
+            <p>&nbsp &nbsp (s) m: Fixed Omega (motor)</p>
+            <p>&nbsp Bezier Curve</p>
+            <p>&nbsp &nbsp (b) B: Toggle</p>
+            <p>&nbsp &nbsp Left Mouse + Mouse Pos: C-Point pos</p>
+            <p>&nbsp &nbsp (b) S: Spawn Objects</p>
+
+            <p>Auxiliary Binds</p>
+            <p>&nbsp Left Mouse + Mouse Pos: Mouse Spring</p>
+        </div>
+    </div>
+
+    <!-- keybinds dropdown -->
+    <script>
+        const dropdownContent = document.querySelector('.keybinds-content');
+        const button = document.querySelector('.keybinds-dropdown button');
+    
+        button.addEventListener('click', () => {
+            if (dropdownContent.style.display === 'block') {
+                dropdownContent.style.display = 'none';
+            } else {
+                dropdownContent.style.display = 'block';
+            }
+        });
+    </script>
+
+    <!-- simulation constants slider -->
     <script>
         // if the start values should change, don't forget to also change the values in start() (main.js)
         let slider_values = {
@@ -169,13 +277,6 @@
             spring_joint: 20,
             omega_constraint: 20,
         };
-
-        // times_activated = {
-        //     gravity: 0,
-        //     linear_damping: 0,
-        //     mouse_spring: 0,
-        // };
-
 
         function showSlider() {
             const option = document.getElementById("option").value;
