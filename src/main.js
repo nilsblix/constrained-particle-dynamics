@@ -7,8 +7,8 @@ import {entity_manager} from "./entity_manager.js";
 const canvas = document.getElementById("myCanvas");
 const c = canvas.getContext("2d");
 
-const x_offset = 100;
-// const y_offset = 80;
+const x_offset = 80;
+// const x_offset = 2;
 canvas.width = window.innerWidth - x_offset;
 // canvas.height = window.innerHeight - y_offset;
 
@@ -112,7 +112,7 @@ let keyboard = {
     arrow_up:  false,
 }
 
-var frame = 0;
+// var frame = 0;
 function updateDisplayedDebugs() {
     if (!solver.simulating)
         solver.physics_frame_time = -1;
@@ -256,10 +256,10 @@ function start() {
     solver.simulating = false;
     physicsState.initConstraintManager();
 
-    physicsState.setGravity(5);
+    physicsState.setGravity(8);
     physicsState.setLinearDampingMU(0.2);
-    physicsState.setMouseSpringStiffness(50);
-    physicsState.setSpringJointStiffness(50);
+    physicsState.setMouseSpringStiffness(70);
+    physicsState.setSpringJointStiffness(70);
     physicsState.setOmegaConstraintValue(50 * solver.dt);
     entity_manager.angular_motor_vel = 50 * solver.dt;
 

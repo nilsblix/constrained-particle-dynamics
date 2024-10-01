@@ -26,8 +26,12 @@
         }
 
         #myCanvas {
+            /* position: absolute; */
+            /* top: 0; */
+            /* left: 0; */
+            /* z-index: 0; */
             display: block;
-            margin: 10px auto 0 auto;
+            margin: 8px auto 0 auto;
         }
 
         .container {
@@ -40,6 +44,8 @@
             height: 20px;
             font-size: 8px;
             color: #ffffff;
+
+            z-index: 1;
         }
         .dropdown-container {
             margin-right: 20px;
@@ -144,7 +150,7 @@
         .keybinds-content {
             display: none;
             position: absolute;
-            margin: 5px 5px;
+            margin: 5px 10px;
             background-color: rgba(0,0,0,0);
             border: none;
             padding: none;
@@ -202,7 +208,7 @@
         .debugs-content {
             display: none;
             position: absolute;
-            margin: 5px 5px;
+            margin: 5px 10px;
             background-color: rgba(0,0,0,0);
             border: none;
             padding: inherit;
@@ -354,10 +360,10 @@
     <script>
         // if the start values should change, don't forget to also change the values in start() (main.js)
         let slider_values = {
-            gravity: 5,
+            gravity: 8,
             linear_damping: 0.2,
-            mouse_spring: 50,
-            spring_joint: 50,
+            mouse_spring: 70,
+            spring_joint: 70,
             omega_constraint: 50,
         };
 

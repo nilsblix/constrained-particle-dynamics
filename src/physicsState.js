@@ -109,7 +109,8 @@ export class PhysicsState {
 
             this.#CM.W.elements[3 * i] =        this.#m_objects[i].w;
             this.#CM.W.elements[3 * i + 1] =    this.#m_objects[i].w;
-            this.#CM.W.elements[3 * i + 2] =    this.#m_objects[i].w;
+            // this.#CM.W.elements[3 * i + 2] =    this.#m_objects[i].w;
+            this.#CM.W.elements[3 * i + 2] =    1 / this.#m_objects[i].I;
         }
 
         this.#CM.C =        new Vector(this.#m_constraints.length);
