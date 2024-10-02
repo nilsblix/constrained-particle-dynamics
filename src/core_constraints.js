@@ -60,7 +60,7 @@ export class FixedYConstraint {
         const connection_obj_pos3 = Vector2.addVectors(obj.pos, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos4 = Vector2.addVectors(horizontal_pos2, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         
-        obj.render(c);
+        // obj.render(c);
 
         // draw the connecting things
         // settings
@@ -190,7 +190,7 @@ export class FixedXConstraint {
 
         c.closePath();
 
-        m_objects[this.p_id].render(c)
+        // m_objects[this.p_id].render(c)
 
 
         // horizontal
@@ -310,10 +310,322 @@ export class LinkConstraint { // constrains two particles to be a fixed distance
 
         c.closePath();
 
-        m_objects[this.id1].render(c);
-        m_objects[this.id2].render(c);
+        // m_objects[this.id1].render(c);
+        // m_objects[this.id2].render(c);
     
     }
+}
+
+export class OffsetLinkConstraint {
+    constructor(state_1, state_2, m_objects) {
+        this.state_1 = {    id: m_objects.indexOf(state_1.entity), 
+                            offset: state_1.offset, 
+                            prev_theta: state_1.prev_theta, 
+                            t_param: state_1.t_param, 
+                            applied_pos: state_1.applied_pos};
+
+        this.state_2 = {    id: m_objects.indexOf(state_2.entity), 
+                            offset: state_2.offset, 
+                            prev_theta: state_2.prev_theta, 
+                            t_param: state_2.t_param, 
+                            applied_pos: state_2.applied_pos};
+
+
+        const p1 = Vector2.addVectors(m_objects[this.state_1.id].pos, this.state_1.offset);                    
+        const p2 = Vector2.addVectors(m_objects[this.state_2.id].pos, this.state_2.offset);                    
+        this.l0 = Vector2.distance(p1, p2);
+
+    }
+
+    #updateDynamicObjectRotationOffset(state, q) {
+        const offset_magnitude = state.offset.magnitude();
+        const angle = Math.atan2(state.offset.y, state.offset.x);
+        const delta = q.elements[3 * state.id + 2] - state.prev_theta;
+        state.offset.x = Math.cos(angle + delta) * offset_magnitude;
+        state.offset.y = Math.sin(angle + delta) * offset_magnitude;
+
+        state.prev_theta = q.elements[3 * state.id + 2];
+    }
+
+    C_i(q) {
+
+        this.#updateDynamicObjectRotationOffset(this.state_1, q);
+        this.#updateDynamicObjectRotationOffset(this.state_2, q);
+
+        const x1 = q.elements[3 * this.state_1.id];
+        const y1 = q.elements[3 * this.state_1.id + 1];
+        const cos_1 = this.state_1.offset.x;
+        const sin_1 = this.state_1.offset.y;
+
+        const x2 = q.elements[3 * this.state_2.id];
+        const y2 = q.elements[3 * this.state_2.id + 1];
+        const cos_2 = this.state_2.offset.x;
+        const sin_2 = this.state_2.offset.y;
+
+        return 1/2 * ((x1 + cos_1 - x2 - cos_2) ** 2 + (y1 + sin_1 - y2 - sin_2) ** 2 - this.l0 ** 2);
+
+    }
+
+    C_i_dot(q, q_dot) {
+        const x1 = q.elements[3 * this.state_1.id];
+        const y1 = q.elements[3 * this.state_1.id + 1];
+        const cos_1 = this.state_1.offset.x;
+        const sin_1 = this.state_1.offset.y;
+        const x1_dot = q_dot.elements[3 * this.state_1.id];
+        const y1_dot = q_dot.elements[3 * this.state_1.id + 1];
+        const omega1 = q_dot.elements[3 * this.state_1.id + 2];
+
+        const x2 = q.elements[3 * this.state_2.id];
+        const y2 = q.elements[3 * this.state_2.id + 1];
+        const cos_2 = this.state_2.offset.x;
+        const sin_2 = this.state_2.offset.y;
+        const x2_dot = q_dot.elements[3 * this.state_2.id];
+        const y2_dot = q_dot.elements[3 * this.state_2.id + 1];
+        const omega2 = q_dot.elements[3 * this.state_2.id + 2];
+
+        return (x1_dot - omega1 * sin_1 - x2_dot + omega2 * sin_2) * (x1 + cos_1 - x2 - cos_2)
+             + (y1_dot + omega1 * cos_1 - y2_dot - omega2 * cos_2) * (y1 + sin_1 - y2 - sin_2);
+
+    }
+
+    J_i(q, ith_row) {
+        const x1 = q.elements[3 * this.state_1.id];
+        const y1 = q.elements[3 * this.state_1.id + 1];
+        const cos_1 = this.state_1.offset.x;
+        const sin_1 = this.state_1.offset.y;
+
+        const x2 = q.elements[3 * this.state_2.id];
+        const y2 = q.elements[3 * this.state_2.id + 1];
+        const cos_2 = this.state_2.offset.x;
+        const sin_2 = this.state_2.offset.y;
+
+        const wrt_x1 = new SparseMatrixBlock(ith_row, 3 * this.state_1.id,       x1 + cos_1 - x2 - cos_2);
+        const wrt_y1 = new SparseMatrixBlock(ith_row, 3 * this.state_1.id + 1,   y1 + sin_1 - y2 - sin_2);
+        const wrt_t1 = new SparseMatrixBlock(ith_row, 3 * this.state_1.id + 2,   - sin_1 * (x1 + cos_1 - x2 - cos_2) + cos_1 * (y1 + sin_1 - y2 - sin_2));
+        const wrt_x2 = new SparseMatrixBlock(ith_row, 3 * this.state_2.id,       - (x1 + cos_1 - x2 - cos_2));
+        const wrt_y2 = new SparseMatrixBlock(ith_row, 3 * this.state_2.id + 1,   - (y1 + sin_1 - y2 - sin_2));
+        const wrt_t2 = new SparseMatrixBlock(ith_row, 3 * this.state_2.id + 2,   sin_2 * (x1 + cos_1 - x2 - cos_2) - cos_2 * (y1 + sin_1 - y2 - sin_2));
+        return [wrt_x1, wrt_y1, wrt_t1, wrt_x2, wrt_y2, wrt_t2];
+    }
+
+    J_i_dot(q, q_dot, ith_row) {
+        const x1 = q.elements[3 * this.state_1.id];
+        const y1 = q.elements[3 * this.state_1.id + 1];
+        const cos_1 = this.state_1.offset.x;
+        const sin_1 = this.state_1.offset.y;
+        const x1_dot = q_dot.elements[3 * this.state_1.id];
+        const y1_dot = q_dot.elements[3 * this.state_1.id + 1];
+        const omega1 = q_dot.elements[3 * this.state_1.id + 2];
+
+        const x2 = q.elements[3 * this.state_2.id];
+        const y2 = q.elements[3 * this.state_2.id + 1];
+        const cos_2 = this.state_2.offset.x;
+        const sin_2 = this.state_2.offset.y;
+        const x2_dot = q_dot.elements[3 * this.state_2.id];
+        const y2_dot = q_dot.elements[3 * this.state_2.id + 1];
+        const omega2 = q_dot.elements[3 * this.state_2.id + 2];
+
+        const wrt_x1 = new SparseMatrixBlock(ith_row, 3 * this.state_1.id,      x1_dot - omega1 * sin_1 - x2_dot + omega2 * sin_2);
+        const wrt_y1 = new SparseMatrixBlock(ith_row, 3 * this.state_1.id + 1,  y1_dot + omega1 * cos_1 - y2_dot - omega2 * cos_2);
+        const wrt_t1 = new SparseMatrixBlock(ith_row, 3 * this.state_1.id + 2,  - omega1 * cos_1 * (x1 + cos_1 - x2 - cos_2)
+                                                                                - sin_1 * (x1_dot - omega1 * sin_1 - x2_dot + omega2 * sin_2)
+                                                                                - omega1 * sin_1 * (y1 + sin_1 - y2 - sin_2)
+                                                                                + cos_1 * (y1_dot + omega1 * cos_1 - y2_dot - omega2 * cos_2));
+        
+
+        const wrt_x2 = new SparseMatrixBlock(ith_row, 3 * this.state_2.id,      - (x1_dot - omega1 * sin_1 - x2_dot + omega2 * sin_2));
+        const wrt_y2 = new SparseMatrixBlock(ith_row, 3 * this.state_2.id + 1,  - (y1_dot + omega1 * cos_1 - y2_dot - omega2 * cos_2));
+        const wrt_t2 = new SparseMatrixBlock(ith_row, 3 * this.state_2.id + 2,  + omega2 * cos_2 * (x1 + cos_1 - x2 - cos_2)
+                                                                                + sin_2 * (x1_dot - omega1 * sin_1 - x2_dot + omega2 * sin_2)
+                                                                                + omega2 * sin_2 * (y1 + sin_1 - y2 - sin_2)
+                                                                                - cos_2 * (y1_dot + omega1 * cos_1 - y2_dot - omega2 * cos_2));
+
+        return [wrt_x1, wrt_y1, wrt_t1, wrt_x2, wrt_y2, wrt_t2];
+
+    }
+
+    render(c, m_objects, lagrange_mult) {
+        c.lineCap = Extras.LINKCONSTRAINT_ENDCAPS;       
+
+        const width = 0.2;
+
+        const link_pos1 = Units.sim_canv(Vector2.addVectors(m_objects[this.state_1.id].pos, this.state_1.offset));
+        const link_pos2 = Units.sim_canv(Vector2.addVectors(m_objects[this.state_2.id].pos, this.state_2.offset));
+        // const dir = (Vector2.subtractVectors(pos1, pos2)).normalized();
+
+        c.beginPath();
+
+        // border
+        c.fillStyle = Colours.INNER_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_SPRING_ENDS;
+        c.lineWidth = LineWidths.SPRING_EXTREME_SEGMENTS_BORDER + LineWidths.INNER_LINKCONSTRAINT;
+        c.moveTo(link_pos1.x, link_pos1.y);
+        c.lineTo(link_pos2.x, link_pos2.y);
+        c.stroke();
+
+        // interiour
+
+        const c_value =  Extras.LINKCONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINKCONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
+                                                           :  0
+        // const c_value = 0;
+        const color = lagrange_mult < 0
+            ? "rgba("     + (255 - c_value) + ", " + 255             + ", " + (255 - c_value) + ", 1)" :
+              "rgba(255," + (255 - c_value) + ", " + (255 - c_value) + ", " + 255             + ")";
+
+
+        c.lineWidth = LineWidths.INNER_LINKCONSTRAINT;
+        c.strokeStyle = color;
+        c.moveTo(link_pos1.x, link_pos1.y);
+        c.lineTo(link_pos2.x, link_pos2.y);
+        c.stroke();
+
+        c.closePath();
+
+        // m_objects[this.state_1.id].render(c);
+        // m_objects[this.state_2.id].render(c);
+
+        const outer_holding_circle_width_1 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS;
+        const outer_holding_circle_width_2 = 2 * Extras.SPRING_JOINT_ENDS_RADIUS;
+
+        const pos_1 = Vector2.addVectors(m_objects[this.state_1.id].pos, this.state_1.offset);
+        const pos_2 = Vector2.addVectors(m_objects[this.state_2.id].pos, this.state_2.offset);
+
+        const dist = Vector2.distance(pos_1, pos_2);
+
+        const dir = Vector2.scaleVector(Vector2.subtractVectors(pos_1, pos_2), 1 / dist);
+        const dirT = new Vector2(-dir.y, dir.x);
+
+        const spring_end_delta = Vector2.scaleVector(dir.negated(), outer_holding_circle_width_1);
+        const spring_end = Vector2.addVectors(pos_1, spring_end_delta);
+        const spring_start_delta = Vector2.scaleVector(dir, outer_holding_circle_width_2);
+        const spring_start = Vector2.addVectors(pos_2, spring_start_delta);
+
+        // connection to object:
+        // constants:
+        const connection_obj1_radius = Extras.SPRING_JOINT_ENDS_RADIUS;
+        const connection_obj1_delta = Vector2.scaleVector(dirT, connection_obj1_radius);
+        const connection_obj1_pos_1 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj1_delta));
+        const connection_obj1_pos_2 = Units.sim_canv(Vector2.addVectors(spring_end, connection_obj1_delta.negated()));
+        const connection_obj1_pos_3 = Units.sim_canv(Vector2.addVectors(pos_1, connection_obj1_delta));
+        const connection_obj1_pos_4 = Units.sim_canv(Vector2.addVectors(pos_1, connection_obj1_delta.negated()));
+        // init settings
+        c.fillStyle = Colours.INNER_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_SPRING_ENDS;
+        c.lineWidth = LineWidths.SPRING_ENDS;
+        // draw rectangle:
+        c.beginPath();
+
+        c.arc(Units.sim_canv_x(pos_1), Units.sim_canv_y(pos_1), Units.scale_s_c * connection_obj1_radius, 0, 2 * Math.PI);
+
+        c.moveTo(connection_obj1_pos_1.x, connection_obj1_pos_1.y);
+        c.lineTo(connection_obj1_pos_3.x, connection_obj1_pos_3.y);
+        c.lineTo(connection_obj1_pos_4.x, connection_obj1_pos_4.y);
+        c.lineTo(connection_obj1_pos_2.x, connection_obj1_pos_2.y);
+        
+        c.stroke();
+        c.fill();
+        c.closePath();
+        // draw circle at connection to object
+        // init settings
+        c.fillStyle = Colours.INNER_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_SPRING_ENDS;
+        c.lineWidth = LineWidths.SPRING_ENDS;
+        
+        c.beginPath();
+        c.fillStyle = c.strokeStyle;
+        c.arc(Units.sim_canv_x(pos_1), Units.sim_canv_y(pos_1), 0.3 * connection_obj1_radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        // connection to mouse:
+        // constants:
+        const connection_obj2_radius = Extras.SPRING_JOINT_ENDS_RADIUS
+        const connection_obj2_delta = Vector2.scaleVector(dirT, connection_obj2_radius);
+        const connection_obj2_pos_1 = Units.sim_canv(Vector2.addVectors(spring_start, connection_obj2_delta));
+        const connection_obj2_pos_2 = Units.sim_canv(Vector2.addVectors(spring_start, connection_obj2_delta.negated()));
+        const connection_obj2_pos_3 = Units.sim_canv(Vector2.addVectors(pos_2, connection_obj2_delta));
+        const connection_obj2_pos_4 = Units.sim_canv(Vector2.addVectors(pos_2, connection_obj2_delta.negated()));
+        // init settings
+        c.fillStyle = Colours.INNER_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_SPRING_ENDS;
+        c.lineWidth = LineWidths.SPRING_ENDS;
+        // draw rectangle:
+        c.beginPath();
+
+        c.arc(Units.sim_canv_x(pos_2), Units.sim_canv_y(pos_2), Units.scale_s_c * connection_obj2_radius, 0, 2 * Math.PI);
+
+        c.moveTo(connection_obj2_pos_2.x, connection_obj2_pos_2.y);
+        c.lineTo(connection_obj2_pos_4.x, connection_obj2_pos_4.y);
+        c.lineTo(connection_obj2_pos_3.x, connection_obj2_pos_3.y);
+        c.lineTo(connection_obj2_pos_1.x, connection_obj2_pos_1.y);
+
+        c.stroke();
+        c.fill();
+        c.closePath();
+        // draw circle at connection to object
+        // init settings
+        c.fillStyle = Colours.INNER_SPRING_ENDS;
+        c.strokeStyle = Colours.OUTER_SPRING_ENDS;
+        c.lineWidth = LineWidths.SPRING_ENDS;
+        
+        c.beginPath();
+        c.fillStyle = c.strokeStyle;
+        c.arc(Units.sim_canv_x(pos_2), Units.sim_canv_y(pos_2), 0.3 * connection_obj2_radius, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
+        c.closePath();
+
+        // endline:
+        c.lineCap = Extras.SPRING_EXTREME_ENDCAPS;
+        // border 1:
+        const border1_start = Units.sim_canv(Vector2.addVectors(spring_start, Vector2.scaleVector(dirT, 0.5* width)));
+        const border1_end = Units.sim_canv(Vector2.addVectors(spring_start, Vector2.scaleVector(dirT, - 0.5* width)));
+
+        c.beginPath();
+
+        c.lineWidth = LineWidths.SPRING_EXTREME_SEGMENTS + LineWidths.SPRING_EXTREME_SEGMENTS_BORDER;
+        c.strokeStyle = Colours.OUTER_SPRING_SEGMENTS;
+        c.moveTo(border1_start.x, border1_start.y);
+        c.lineTo(border1_end.x, border1_end.y);
+        c.stroke();
+
+        // interiour
+        c.lineWidth = LineWidths.SPRING_EXTREME_SEGMENTS;
+        c.strokeStyle = Colours.INNER_SPRING_SEGMENTS;
+        c.moveTo(border1_start.x, border1_start.y);
+        c.lineTo(border1_end.x, border1_end.y);
+        c.stroke();
+
+        c.closePath();
+
+        c.fillStyle = "rgba(156, 58, 58, 1)";
+        c.strokeStyle = "#000000";
+        c.lineWidth = 2;
+
+        // border 2
+        const border2_start = Units.sim_canv(Vector2.addVectors(spring_end, Vector2.scaleVector(dirT, 0.5* width)));
+        const border2_end = Units.sim_canv(Vector2.addVectors(spring_end, Vector2.scaleVector(dirT, - 0.5* width)));
+
+        c.beginPath();
+
+        c.lineWidth = LineWidths.SPRING_EXTREME_SEGMENTS + LineWidths.SPRING_EXTREME_SEGMENTS_BORDER;
+        c.strokeStyle = Colours.OUTER_SPRING_SEGMENTS;
+        c.moveTo(border2_start.x, border2_start.y);
+        c.lineTo(border2_end.x, border2_end.y);
+        c.stroke();
+
+        // interiour
+        c.lineWidth = LineWidths.SPRING_EXTREME_SEGMENTS;
+        c.strokeStyle = Colours.INNER_SPRING_SEGMENTS;
+        c.moveTo(border2_start.x, border2_start.y);
+        c.lineTo(border2_end.x, border2_end.y);
+        c.stroke();
+
+        c.closePath();
+
+    }
+
 }
 
 export class FixedRotationConstraint {
@@ -430,8 +742,6 @@ export class FixedOmegaConstraint {
         c.stroke();
         c.fill();
         c.closePath();
-
-        obj.render(c);
 
         // triangles:
         const o = 1 / 2 * Units.scale_c_s * LineWidths.INNER_FIXED_OMEGA_CONSTRAINT

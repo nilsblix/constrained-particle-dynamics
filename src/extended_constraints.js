@@ -37,7 +37,7 @@ export class FixedPosConstraint {
         const connection_obj_pos3 = Vector2.addVectors(obj.pos, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos4 = Vector2.addVectors(horizontal_pos2, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         
-        obj.render(c);
+        // obj.render(c);
 
         // draw the connecting things
         // settings

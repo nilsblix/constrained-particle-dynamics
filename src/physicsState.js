@@ -4,7 +4,7 @@ import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGen
 // import {DynamicObject} from "./dynamicObject.js";
 import {Units} from "./main.js"; 
 import { Colours, LineWidths, Extras } from "./render_settings.js";
-import {FixedXConstraint, FixedYConstraint, LinkConstraint, FixedRotationConstraint, FixedOmegaConstraint} from "./core_constraints.js";
+import {FixedXConstraint, FixedYConstraint, LinkConstraint, OffsetLinkConstraint, FixedRotationConstraint, FixedOmegaConstraint} from "./core_constraints.js";
 import {FixedPosConstraint} from "./extended_constraints.js";
 
 export class PhysicsState {
@@ -232,47 +232,86 @@ export class PhysicsState {
     }
 
     render(c) { // c is the canvas context
+        // constraints
+        let index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof LinkConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
+                index_phys_const++;
+            } 
+            index_phys_const++;
+        }
+
+        index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedOmegaConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
+                index_phys_const++;
+            } 
+            index_phys_const++;
+        }
 
         // objects
         for (let i = 0; i < this.#m_objects.length; i++) {
             this.#m_objects[i].render(c);
         }
 
-        // constraints
-        let index_phys_const = 0;
-        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-            if (this.#m_renderedConstraints[i] instanceof LinkConstraint) {
-                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
-                index_phys_const++;
-                // this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            } else if (this.#m_renderedConstraints[i] instanceof FixedOmegaConstraint) {
-                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            }
-            index_phys_const++;
-        }
-
-        // constraints 2
         index_phys_const = 0;
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-            if (this.#m_renderedConstraints[i] instanceof FixedYConstraint) {
-                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof OffsetLinkConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
                 index_phys_const++;
-                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            } else if (this.#m_renderedConstraints[i] instanceof FixedXConstraint) {
-                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            }
+            } 
             index_phys_const++;
         }
 
         index_phys_const = 0;
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-            if (this.#m_renderedConstraints[i] instanceof FixedRotationConstraint) {
-                this.#m_renderedConstraints[i].render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-            } else if (this.#m_renderedConstraints[i] instanceof FixedPosConstraint) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedRotationConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
                 index_phys_const++;
-            }
+            } 
+            index_phys_const++;
+        }
+
+        index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedYConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
+                index_phys_const++;
+            } 
+            index_phys_const++;
+        }
+
+        index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedXConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
+                index_phys_const++;
+            } 
+            index_phys_const++;
+        }
+
+        index_phys_const = 0;
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+            } else if (con instanceof FixedPosConstraint) {
+                index_phys_const++;
+            } 
             index_phys_const++;
         }
 
@@ -449,6 +488,12 @@ export class PhysicsState {
         this.addRenderedConstraint(con);
     }
 
+    addOffsetLinkConstraint(state_1, state_2) {
+        const con = new OffsetLinkConstraint(state_1, state_2, this.#m_objects);
+        this.addConstraint(con);
+        this.addRenderedConstraint(con);
+    }
+
     addFixedRotConstraint(id) {
         const con = new FixedRotationConstraint(id, this.#m_objects[id].theta);
         this.addConstraint(con);
@@ -465,7 +510,7 @@ export class PhysicsState {
         return this.#m_objects[id].pos;
     }
 
-    getClosestObject(pos) {
+    getClosestEntity(pos) {
         // dynamicObject
         for (let i = 0; i < this.#m_objects.length; i++) {
             const v = Vector2.subtractVectors(this.#m_objects[i].pos, pos);

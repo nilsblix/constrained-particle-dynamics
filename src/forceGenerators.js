@@ -107,7 +107,8 @@ export class SpringJoint {
                             t_param: state_2.t_param, 
                             applied_pos: state_2.applied_pos};
 
-        this.rest_length = Vector2.distance(state_1.applied_pos, state_2.applied_pos);
+        // this.rest_length = Vector2.distance(state_1.applied_pos, state_2.applied_pos);
+        this.rest_length = 0;
     }
 
     setStiffness(value) {

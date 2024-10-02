@@ -15,7 +15,7 @@ export const entity_manager = {
     cubic_bezier_active: false,
     cubic_bezier_curve: null,
     standard_interactable_radius: 0.1,
-    num_objects_in_bezier: 10,
+    num_objects_in_bezier: 20,
     object_bezier_mass: 1,
     angular_motor_vel: 20,
 
@@ -196,8 +196,8 @@ export const entity_manager = {
         if (this.cubic_bezier_active)
             this.cubic_bezier_curve.render(c, this.num_objects_in_bezier);
 
-        if (this.drawing_link_constraint || this.drawing_spring_joint && this.draw_state.applied_pos != null) {
-            const p1 = this.drawing_link_constraint ? physicsState.getObjectPositionById(this.draw_state.entity) : this.draw_state.applied_pos;
+        if ((this.drawing_link_constraint || this.drawing_spring_joint) && this.draw_state.applied_pos != null) {
+            const p1 = this.drawing_link_constraint ? this.draw_state.entity instanceof DynamicObject ? this.draw_state.applied_pos : physicsState.getObjectPositionById(this.draw_state.entity) : this.draw_state.applied_pos;
             const p2 = mouse.sim_pos;
             c.lineCap = "round";
             c.strokeStyle = Colours.INNER_CUBIC_BEZIER_SUPPORTING_LINES;

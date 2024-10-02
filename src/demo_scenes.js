@@ -289,7 +289,7 @@ export function setupScene(physicsState, solver, version) {
             physicsState.addLinkConstraint(26, 27);
 
             // physicsState.addFixedRotConstraint(27);
-            physicsState.addFixedOmegaConstraint(27, 0.3);
+            // physicsState.addFixedOmegaConstraint(27, 0.3);
 
 
 

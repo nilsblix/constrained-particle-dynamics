@@ -382,9 +382,9 @@
                     slider.step = 0.05;
                 } else if (option == "linear damping") {
                     slider.min = 0;
-                    slider.max = 2;
+                    slider.max = 5;
                     slider.value = slider_values.linear_damping;
-                    slider.step = 0.005;
+                    slider.step = 0.01;
                 } else if (option == "mouse spring") {
                     slider.min = 0;
                     slider.max = 100;
@@ -392,12 +392,12 @@
                     slider.step = 0.05;
                 } else if (option == "spring joint") {
                     slider.min = 0;
-                    slider.max = 100;
+                    slider.max = 400;
                     slider.value = slider_values.spring_joint;
                     slider.step = 0.05;
                 } else if (option == "omega constraint") {
                     slider.min = 0;
-                    slider.max = 150;
+                    slider.max = 200;
                     slider.value = slider_values.omega_constraint;
                     slider.step = 0.05;
                 }
