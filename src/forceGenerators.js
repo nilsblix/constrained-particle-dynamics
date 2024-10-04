@@ -1,4 +1,4 @@
-import { LinkConstraint } from "./core_constraints.js";
+import { LinkConstraint, OffsetLinkConstraint } from "./core_constraints.js";
 import {Vector2} from "./linear_algebra.js";
 import {Units} from "./main.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
@@ -197,9 +197,6 @@ export class SpringJoint {
     }
 
     getEnergyApplied(m_objects) {
-        const obj1 = m_objects[this.id1];
-        const obj2 = m_objects[this.id2];
-
         let energy = 0;
 
         const applied_pos_1 = this.state_1.applied_pos;
@@ -433,7 +430,6 @@ export class MouseSpring {
         if (dist == 0) 
             return;
         
-        const linear_dir =  (Vector2.subtractVectors(this.mouse_pos, this.object.pos)).normalized();
         const applied_dir = (Vector2.subtractVectors(this.mouse_pos, applied_pos)).normalized();
 
         const force = this.#stiffness_const * displacement;
@@ -485,11 +481,66 @@ export class MouseSpring {
         
     }
 
+    #apply_to_offsetLinkConstraint(m_objects) {
+        const obj1 = m_objects[this.object.state_1.id];
+        const obj2 = m_objects[this.object.state_2.id];
+
+        this.#rest_length = 0.2;
+
+        const A_applied = Vector2.addVectors(obj1.pos, this.object.state_1.offset);
+        const B_applied = Vector2.addVectors(obj2.pos, this.object.state_2.offset);
+
+        const A_B_applied = Vector2.subtractVectors(A_applied, B_applied);
+        const applied_pos = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B_applied, this.t_linkConstraint));
+        const dist = Vector2.distance(this.mouse_pos, applied_pos);
+        const displacement = dist - this.#rest_length;
+
+        if (dist == 0)
+            return;
+
+        const force = this.#stiffness_const * displacement;
+        const v = Vector2.scaleVector(Vector2.subtractVectors(this.mouse_pos, applied_pos), 1 / dist);
+        const force_vec = Vector2.scaleVector(v, force);
+
+        const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
+        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, obj1.m / (obj1.m + obj2.m)));
+
+
+        // link's translational forces
+        obj1.force = Vector2.addVectors(obj1.force, force_vec);
+        obj2.force = Vector2.addVectors(obj2.force, force_vec);
+
+        obj1.tau += Vector2.cross(this.object.state_1.offset, force_vec);
+        obj2.tau += Vector2.cross(this.object.state_2.offset, force_vec);
+        
+        // link's rotational forces (adds to objects translational force)
+        const link_torque = Vector2.cross(Vector2.subtractVectors(applied_pos, COM), force_vec);
+
+        const v1 = Vector2.subtractVectors(A_applied, COM).normalized();
+        const link_torque_dir_1 = new Vector2(- v1.y, v1.x);
+        const rot_force_1 = Vector2.scaleVector(link_torque_dir_1, link_torque);
+        // translational force
+        obj1.force = Vector2.addVectors(obj1.force, rot_force_1);
+        // rotational force
+        obj1.tau += Vector2.cross(this.object.state_1.offset, rot_force_1);
+
+        const v2 = Vector2.subtractVectors(B_applied, COM).normalized();
+        const link_torque_dir_2 = new Vector2(- v2.y, v2.x);
+        const rot_force_2 = Vector2.scaleVector(link_torque_dir_2, link_torque);
+        // translational force
+        obj2.force = Vector2.addVectors(obj2.force, rot_force_2);
+        // rotational force
+        obj2.tau += Vector2.cross(this.object.state_2.offset, rot_force_2);
+
+    }
+
     apply(m_objects) {
         if (this.object instanceof DynamicObject) 
             this.#apply_to_dynamicObject(m_objects);
         else if (this.object instanceof LinkConstraint)
             this.#apply_to_linkConstraint(m_objects);
+        else if (this.object instanceof OffsetLinkConstraint) 
+            this.#apply_to_offsetLinkConstraint(m_objects);
     }
 
     getClosestObject(m_objects, m_constraints) {
@@ -507,22 +558,41 @@ export class MouseSpring {
         }
         // for linkConstraints
         for (let i = 0; i < m_constraints.length; i++) {
-            if (!(m_constraints[i] instanceof LinkConstraint))
-                continue;
-            const A = m_objects[m_constraints[i].id1];
-            const B = m_objects[m_constraints[i].id2];
-            // finish this, make sure its working
-            const C_B = Vector2.subtractVectors(this.mouse_pos, B.pos);
-            const A_B = Vector2.subtractVectors(A.pos, B.pos);
-            const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
-            const proj = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, t));
-            const dist2 = Vector2.subtractVectors(proj, this.mouse_pos).sqr_magnitude();
-            const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
-            if (dist2 < sim_line_width * sim_line_width) {
-                this.object = m_constraints[i];
-                this.t_linkConstraint = t;
+            const con = m_constraints[i];
+            if (con instanceof LinkConstraint) {
+                const A = m_objects[con.id1];
+                const B = m_objects[con.id2];
+                // finish this, make sure its working
+                const C_B = Vector2.subtractVectors(this.mouse_pos, B.pos);
+                const A_B = Vector2.subtractVectors(A.pos, B.pos);
+                const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
+                const proj = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, t));
+                const dist2 = Vector2.subtractVectors(proj, this.mouse_pos).sqr_magnitude();
+                const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
+                if (dist2 < sim_line_width * sim_line_width) {
+                    this.object = con;
+                    this.t_linkConstraint = t;
 
-                return true;
+                    return true;
+                }
+            } else if (con instanceof OffsetLinkConstraint) {
+                const A = m_objects[con.state_1.id];
+                const B = m_objects[con.state_2.id];
+                const A_applied = Vector2.addVectors(A.pos, con.state_1.offset);
+                const B_applied = Vector2.addVectors(B.pos, con.state_2.offset);
+                // finish this, make sure its working
+                const C_B = Vector2.subtractVectors(this.mouse_pos, B_applied);
+                const A_B = Vector2.subtractVectors(A_applied, B_applied);
+                const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
+                const proj = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B, t));
+                const dist2 = Vector2.subtractVectors(proj, this.mouse_pos).sqr_magnitude();
+                const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
+                if (dist2 < sim_line_width * sim_line_width) {
+                    this.object = con;
+                    this.t_linkConstraint = t;
+
+                    return true;
+                }
             }
         }
 
@@ -530,9 +600,6 @@ export class MouseSpring {
     }
 
     getEnergyApplied(m_objects) {
-        // TODO
-        // change this so that it works with linkconst also
-
         if (!this.active)
             return 0;
 
@@ -561,7 +628,27 @@ export class MouseSpring {
 
             const force = this.#stiffness_const * displacement;
 
-            energy += 0.5 * force * displacement;
+            // what the fuck kind of sorcery is this shit? why is the energy function not the integral of force????
+            // check spring also for the same thing
+            // energy += 0.5 * force * displacement;
+            energy += force * displacement;
+
+            return energy;
+        } else if (this.object instanceof OffsetLinkConstraint) {
+            let energy = 0;
+
+            const obj1 = m_objects[this.object.state_1.id];
+            const obj2 = m_objects[this.object.state_2.id];
+
+            const A_applied = Vector2.addVectors(obj1.pos, this.object.state_1.offset);
+            const B_applied = Vector2.addVectors(obj2.pos, this.object.state_2.offset);
+
+            const A_B = Vector2.subtractVectors(A_applied, B_applied);
+            const applied_pos = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B, this.t_linkConstraint));
+            const dist = Vector2.distance(this.mouse_pos, applied_pos);
+            const displacement = dist - this.#rest_length;
+
+            energy += 1 * this.#stiffness_const * displacement * displacement;
 
             return energy;
         }
@@ -579,6 +666,13 @@ export class MouseSpring {
             const B = m_objects[this.object.id2];
             const A_B = Vector2.subtractVectors(A.pos, B.pos);
             end_pos = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
+        } else if (this.object instanceof OffsetLinkConstraint) {
+            const A = m_objects[this.object.state_1.id];
+            const B = m_objects[this.object.state_2.id];
+            const A_applied = Vector2.addVectors(A.pos, this.object.state_1.offset);
+            const B_applied = Vector2.addVectors(B.pos, this.object.state_2.offset);
+            const A_B = Vector2.subtractVectors(A_applied, B_applied);
+            end_pos = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B, this.t_linkConstraint));
         }
 
         const num_segments = Extras.MOUSESPRING_NUM_SEGMENTS;
@@ -768,6 +862,23 @@ export class MouseSpring {
         c.lineTo(border2_end.x, border2_end.y);
         c.stroke();
 
+        c.closePath();
+
+        if (!(this.object instanceof OffsetLinkConstraint))
+            return;
+
+        const obj1 = m_objects[this.object.state_1.id];
+        const obj2 = m_objects[this.object.state_2.id];
+        const temp = Vector2.subtractVectors(obj1.pos, obj2.pos);
+        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(temp, obj1.m / (obj1.m + obj2.m)));
+
+        c.fillStyle = Colours.INNER_MOUSE_SPRING_MOUSE_CIRCLE;
+        c.strokeStyle = "#000000";
+        c.lineWidth = LineWidths.DYNAMIC_OBJECT;
+        c.beginPath();
+        c.arc(Units.sim_canv_x(COM), Units.sim_canv_y(COM), Units.scale_s_c * 0.1, 0, 2 * Math.PI);
+        c.stroke();
+        c.fill();
         c.closePath();
 
     }

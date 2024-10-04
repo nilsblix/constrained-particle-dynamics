@@ -374,7 +374,9 @@ export class PhysicsState {
             energy += this.#m_forceGenerators[i].getEnergyApplied(this.#m_objects);
         }
 
-        energy += this.#m_mouseSpring.getEnergyApplied(this.#m_objects);
+        const m_energy = this.#m_mouseSpring.getEnergyApplied(this.#m_objects);
+        console.log(m_energy);
+        energy += m_energy;
 
         return energy;
 
@@ -537,7 +539,7 @@ export class PhysicsState {
                 if (dist2 < sim_line_width * sim_line_width) {
                     return {entity: con, offset: null, prev_theta: null, t_param: t, applied_pos: proj};
                 }
-            }
+            } 
         }
 
         return {entity: null, offset: null, prev_theta: null, t_param: null, applied_pos: null};
