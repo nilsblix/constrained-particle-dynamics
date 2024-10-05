@@ -29,6 +29,7 @@ export class PhysicsState {
     #m_linear_damping_MU = 0.5;
     #m_spring_joint_stiffness = 5;
     #m_omega_constraint_value = 20;
+    #lagrange_mult_limit = 1 * 10 ** 4;
 
     constructor() {
         this.mouseSpringActive = false;
@@ -228,6 +229,8 @@ export class PhysicsState {
             // not really part of physics_step, more for debugging and data displayed
             this.#updateDebugValues();
 
+            this.handleBreakages();
+
         }
     }
 
@@ -237,7 +240,7 @@ export class PhysicsState {
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
             const con = this.#m_renderedConstraints[i];
             if (con instanceof LinkConstraint) {
-                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
             } else if (con instanceof FixedPosConstraint) {
                 index_phys_const++;
             } 
@@ -264,7 +267,7 @@ export class PhysicsState {
         for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
             const con = this.#m_renderedConstraints[i];
             if (con instanceof OffsetLinkConstraint) {
-                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
             } else if (con instanceof FixedPosConstraint) {
                 index_phys_const++;
             } 
@@ -327,6 +330,20 @@ export class PhysicsState {
 
     }
 
+    handleBreakages() {
+        for (let i = 0; i < this.#m_constraints.length; i++) {
+            const con = this.#m_constraints[i];
+            const lagrange_mult = this.#CM.lambda.elements[i];
+            if (con instanceof LinkConstraint || con instanceof OffsetLinkConstraint) {
+                if (lagrange_mult < - this.#lagrange_mult_limit) {
+                    this.removeConstraint(con);
+                    // const rendered_id = this.#m_renderedConstraints.indexOf(con);'
+                    this.removeRenderedConstraint(con);
+                }
+            } 
+        }
+    }
+
     addObject(obj) {
         this.#m_objects.push(obj);
     }
@@ -348,7 +365,8 @@ export class PhysicsState {
     }
 
     removeConstraint(con) {
-        this.#m_constraints.remove(con);
+        const id = this.#m_constraints.indexOf(con);
+        this.#m_constraints.splice(id, 1);
     }
 
     addRenderedConstraint(con) {
@@ -356,7 +374,8 @@ export class PhysicsState {
     }
 
     removeRenderedConstraint(con) {
-        this.#m_renderedConstraints.remove(con);
+        const id = this.#m_renderedConstraints.indexOf(con);
+        this.#m_renderedConstraints.splice(id, 1);
     }
 
     #getSystemEnergy() {
@@ -375,7 +394,6 @@ export class PhysicsState {
         }
 
         const m_energy = this.#m_mouseSpring.getEnergyApplied(this.#m_objects);
-        console.log(m_energy);
         energy += m_energy;
 
         return energy;
@@ -400,6 +418,10 @@ export class PhysicsState {
 
     setOmegaConstraintValue(value) {
         this.#m_omega_constraint_value = value;
+    }
+
+    setLagrangeLimit(value) {
+        this.#lagrange_mult_limit = 10 ** value;
     }
 
     getObjIndexContainingPos(pos) {

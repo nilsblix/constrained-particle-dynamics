@@ -206,7 +206,7 @@ export class SpringJoint {
         const dist = Vector2.distance(applied_pos_1, applied_pos_2);
         const displacement = dist - this.rest_length;
         const force = this.#stiffness_const * displacement;
-        energy += 0.5 * force * displacement;
+        energy += 1/2 * force * displacement;
 
         return energy;
         

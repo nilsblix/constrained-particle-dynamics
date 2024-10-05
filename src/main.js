@@ -115,10 +115,10 @@ let keyboard = {
 const constants_values = {
     gravity: 8,
     linear_damping: 0.2,
-    mouse_spring: 70,
+    mouse_spring: 100,
     spring_joint: 70,
-    omega_constraint: 50
-
+    omega_constraint: 50,
+    lagrange_limit: 7,
 }
 
 // var frame = 0;
@@ -138,7 +138,7 @@ function updateDisplayedDebugs() {
     document.getElementById("steps").innerHTML = solver.sim_steps.toFixed(0);
 
     document.getElementById("physics_frame_time").innerHTML = solver.physics_frame_time.toFixed(1);
-    document.getElementById("system dt").innerHTML = solver.dt.toFixed(4);
+    document.getElementById("system dt").innerHTML = (solver.dt * 10 ** 3).toFixed(3);
     document.getElementById("render_frame_time").innerHTML = solver.render_frame_time.toFixed(1);
     document.getElementById("CFS_ms").innerHTML = physicsState.averaging.averaged_cfsdt.toFixed(1);
     document.getElementById("CFS_accumulated_error").innerHTML = physicsState.CFS_accumulated_error.toFixed(2);
@@ -172,6 +172,9 @@ function updateSliderValues() {
         physicsState.setOmegaConstraintValue(slider.value * solver.dt);
         entity_manager.angular_motor_vel = slider.value * solver.dt;
         constants_values.omega_constraint = slider.value;
+    } else if (selected == "lagrange limit") {
+        physicsState.setLagrangeLimit(slider.value);
+        constants_values.lagrange_limit = slider.value;
     }
 }
 
@@ -275,6 +278,7 @@ function start() {
     physicsState.setMouseSpringStiffness(constants_values.mouse_spring);
     physicsState.setSpringJointStiffness(constants_values.spring_joint);
     physicsState.setOmegaConstraintValue(constants_values.omega_constraint * solver.dt);
+    physicsState.setLagrangeLimit(constants_values.lagrange_limit);
     entity_manager.angular_motor_vel = constants_values.omega_constraint * solver.dt;
 
 }

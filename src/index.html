@@ -245,6 +245,7 @@
                 <option value="mouse spring">Mouse Spring Stiffness</option>
                 <option value="spring joint">Spring Joint Stiffness</option>
                 <option value="omega constraint">Rotation Motor Speed</option>
+                <option value="lagrange limit">Maximum strain (10^)</option>
             </select>
         </div>
 
@@ -285,6 +286,7 @@
             <p>&nbsp &nbsp (s) x: Fixed X</p>
             <p>&nbsp &nbsp (s) y: Fixed Y</p>
             <p>&nbsp &nbsp (s) l: Link</p>
+            <p>&nbsp &nbsp (s) j: Offset Link</p>
             <p>&nbsp &nbsp (s) t: Fixed Rotation</p>
             <p>&nbsp &nbsp (s) m: Fixed Omega (motor)</p>
             <p>&nbsp Bezier Curve:</p>
@@ -362,9 +364,10 @@
         let slider_values = {
             gravity: 8,
             linear_damping: 0.2,
-            mouse_spring: 70,
+            mouse_spring: 100,
             spring_joint: 70,
             omega_constraint: 50,
+            lagrange_limit: 7
         };
 
         function showSlider() {
@@ -387,7 +390,7 @@
                     slider.step = 0.01;
                 } else if (option == "mouse spring") {
                     slider.min = 0;
-                    slider.max = 100;
+                    slider.max = 200;
                     slider.value = slider_values.mouse_spring;
                     slider.step = 0.05;
                 } else if (option == "spring joint") {
@@ -400,6 +403,11 @@
                     slider.max = 200;
                     slider.value = slider_values.omega_constraint;
                     slider.step = 0.05;
+                } else if (option == "lagrange limit") {
+                    slider.min = 1;
+                    slider.max = 15;
+                    slider.value = slider_values.lagrange_limit;
+                    slider.step = 0.1;
                 }
 
             } else {
@@ -424,6 +432,8 @@
                 slider_values.spring_joint = slider.value;
             } else if (option == "omega constraint") {
                 slider_values.omega_constraint = slider.value;
+            } else if (option == "lagrange limit") {
+                slider_values.lagrange_limit = slider.value;
             }
 
             const slider_value = document.getElementById("sliderValue");

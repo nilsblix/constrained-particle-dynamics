@@ -276,7 +276,7 @@ export class LinkConstraint { // constrains two particles to be a fixed distance
         return [wrt_x1, wrt_y1, wrt_x2, wrt_y2];
     }
 
-    render(c, m_objects, lagrange_mult) {  
+    render(c, m_objects, lagrange_mult, lagrange_mult_limit) {  
         c.lineCap = Extras.LINKCONSTRAINT_ENDCAPS;       
 
         const pos1 = Units.sim_canv(m_objects[this.id1].pos);
@@ -294,8 +294,12 @@ export class LinkConstraint { // constrains two particles to be a fixed distance
 
         // interiour
 
-        const c_value =  Extras.LINKCONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINKCONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
-                                                           :  0
+        let c_value = 0;
+        if (Extras.LINKCONSTRAINT_STRESS_BOOL && lagrange_mult) 
+            c_value = 255 * (Math.abs(lagrange_mult) / lagrange_mult_limit);
+
+        // const c_value =  Extras.LINKCONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINKCONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
+                                                        //    :  0
         // const c_value = 0;
         const color = lagrange_mult < 0
             ? "rgba("     + (255 - c_value) + ", " + 255             + ", " + (255 - c_value) + ", 1)" :
@@ -444,7 +448,7 @@ export class OffsetLinkConstraint {
 
     }
 
-    render(c, m_objects, lagrange_mult) {
+    render(c, m_objects, lagrange_mult, lagrange_mult_limit) {
         c.lineCap = Extras.LINKCONSTRAINT_ENDCAPS;       
 
         const width = 0.2;
@@ -465,8 +469,10 @@ export class OffsetLinkConstraint {
 
         // interiour
 
-        const c_value =  Extras.LINKCONSTRAINT_STRESS_BOOL ? lagrange_mult ? Extras.LINKCONSTRAINT_STRESS_MULTIPLIER * Math.abs(lagrange_mult) : 0
-                                                           :  0
+        let c_value = 0;
+        if (Extras.LINKCONSTRAINT_STRESS_BOOL && lagrange_mult) 
+            c_value = 255 * (Math.abs(lagrange_mult) / lagrange_mult_limit);
+        
         // const c_value = 0;
         const color = lagrange_mult < 0
             ? "rgba("     + (255 - c_value) + ", " + 255             + ", " + (255 - c_value) + ", 1)" :
