@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,414 +35,534 @@
             margin: 8px auto 0 auto;
         }
 
-        .container {
+        /* Make the whole window semi-transparent */
+        .mod-debug-window {
+            position: absolute;
+            background-color: #0c0e11;
+            opacity: 0.9;
+            border: 2px solid #ffffff;
+            /* width: 300px; */
+            padding: 5px;
+            border-radius: 1px;
+            border-width: 1px;
+            cursor: default;
+            display: none;
+            /* Start hidden */
+
+            font-family: basis33;
+            user-select: none;
+        }
+
+        /* Keep the header fully opaque */
+        .mod-debug-header {
+            /* background-color: #1d1d1f; */
+            padding: 8px;
+            font-size: 13px;
+            color: white;
+            display: flex;
+            border: none;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            opacity: 1;
+            font-family: QuinqueFive;
+            /* Fully opaque */
+        }
+
+        /* Close button */
+        .mod-close-button {
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+        }
+
+        .mod-close-button:hover {
+            color: #888;
+        }
+
+        .mod-reset-button {
+            cursor: pointer;
+            color: #fff;
+            font-size: 8px;
+            margin-right: 8px;
+        }
+
+        .mod-reset-button:hover {
+            color: #888;
+        }
+
+        /* Labels */
+        .mod-label {
+            margin-top: 10px;
+            margin-bottom: 2px;
+            color: #ffffff;
+            font-size: 15px;
+            opacity: 1;
+            /* Fully opaque */
+            margin-left: 3px;
+        }
+
+        .mod-label p {
+            margin-top: 3px;
+            margin-bottom: 3px; 
+        }
+
+        /* Slider styles */
+        .mod-slider-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* background-color: #2d4b75; */
+            /* padding: 5px; */
+            border-radius: 3px;
+            margin-bottom: 5px;
+            opacity: 1;
+            /* Fully opaque */
+        }
+
+        .mod-slider-label {
+            color: #fff;
+            font-size: 15px;
+        }
+
+        .mod-slider {
+            appearance: none;
+            margin-right: 5px;
+            width: 100%;
+            height: 15px;
+            background: #1d1d1f;
+            outline: none;
+            opacity: 1;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .mod-slider:hover {
+            background-color: #35373b;
+        }
+
+        .mod-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 12px;
+            background-color: #ffffff;
+            border-radius: 0%;
+            cursor: pointer;
+        }
+
+        /* Checkbox styles */
+        .mod-checkbox-label {
+            appearance: none;
             display: flex;
             align-items: center;
-            margin: 5px;
-            /* font-family: 'Courier New', Courier, monospace; */
-            /* font-family: basis33; */
-            font-family: QuinqueFive;
-            height: 20px;
-            font-size: 8px;
+            font-size: 15px;
+            margin-bottom: 0px;
             color: #ffffff;
-
-            z-index: 1;
         }
-        .dropdown-container {
-            margin-right: 20px;
-            /* background-color: aqua; */
-            /* font-family: fantasy; */
-        }  
-        #option {
+
+        .mod-checkbox-label input {
             appearance: none;
-            background-color: transparent;
-            width: 220px;
-            height: 20px;
-            border: none;
-            color: #ffffff;
-            font-family: inherit;
-            font-size: 8px;
+            margin-right: 8px;
+            width: 14px;
+            height: 14px;
+            background-color: #1d1d1f;
             border: 1px solid #ffffff;
-            border-radius: 2px;
-
-            text-align: center;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .slider-container {
-            display: none;
-            font-size: 8px;
-            height: 10px;
-        }
-
-        .slider-value {
-            /* font-weight: bold; */
-            margin-left: 10px;
-        }
-
-        .constants-slider {
-            flex-direction: row;
-            -webkit-appearance: none;
-            appearance: none;
-            /* font-size: 14px; */
-            /* width: 90%; */
-            /* background: #ff0000; */
-            height: inherit;
-            background: none; 
-            opacity: 1; 
-            border-radius: 0px;
-            outline: double 1px white;
-            -webkit-transition: .2s; 
-            transition: opacity .2s background .2s;
-        }
-        .constants-slider:hover {
-            opacity: 1;
-            background: #4c4c4c;
-        }
-        .constants-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 3px;
-            height: 10px;
-            /* border-radius: 50%;  */
-            background:rgb(255, 72, 72);
-            outline: double 1px #000000;
             cursor: pointer;
         }
-        .constants-slider::-moz-range-thumb {
-            width: 3px;
-            height: 10px;
-            /* border-radius: 50%; */
-            background: rgb(255, 255, 255);
-            cursor: pointer;
-            text-align: center;
-        }  
 
-        .keybinds-dropdown {
+        input[type="checkbox"]:checked {
+            background-color: #ffffff;
+        }
+
+        .top-left-label {
             position: absolute;
-            top: 80px;
-            left: 90px;
-            font-family: basis33;
-
-            background-color: #1a1e21; /* Set a green background color for the button */
-
-            color: white; /* Set the text color to white */
-            font-size: 8px; /* Increase the font size */
-
-        }
-
-        .keybinds-button {
-            background-color: inherit;
-            opacity: 1;
-            color: inherit;
-            padding: 8px 8px;
-            border: 1px solid rgb(255, 255, 255); /* Remove the border */
-            cursor: pointer; 
-            font-size: inherit;
-            border-radius: inherit;
-            min-width: 100px;
-
             font-family: QuinqueFive;
+            font-size: 10px;
+            color: #fff;
 
-            user-select: none;
+            margin-left: 3px;
+            margin-top: 3px;
         }
-
-        .keybinds-content {
-            display: none;
-            position: absolute;
-            margin: 5px 10px;
-            background-color: rgba(0,0,0,0);
-            border: none;
-            padding: none;
-            min-width: 400px;
-            z-index: 1; /* Ensures it's above the canvas */
-            font-size: 19px;
-
-            user-select: none;
-
-            pointer-events: none;
-        }
-
-        .keybinds-content p {
-            margin: 0;
-            padding: 1px;
-        }
-
-        .keybinds-button:hover {
-            background-color: #979797;
-        }
-        
-        .debugs-dropdown {
-            display: block;
-            position: absolute;
-            top: 80px;
-            left: 90px;
-            font-family: basis33;
-
-            background-color: #1a1e21; /* Set a green background color for the button */
-
-            color: white; /* Set the text color to white */
-            font-size: 8px; /* Increase the font size */
-
-        }
-
-        .debugs-button {
-            display: true;
-
-            background-color: inherit;
-            opacity: 1;
-            color: inherit;
-            padding: 8px 8px;
-            border: 1px solid rgb(255, 255, 255); /* Remove the border */
-            cursor: pointer; 
-            font-size: inherit;
-            border-radius: inherit;
-
-            min-width: 100px;
-
-            font-family: QuinqueFive;
-
-            user-select: none;
-        }
-
-        .debugs-content {
-            display: none;
-            position: absolute;
-            margin: 5px 10px;
-            background-color: rgba(0,0,0,0);
-            border: none;
-            padding: inherit;
-            min-width: 400px;
-            z-index: 1; /* Ensures it's above the canvas */
-            font-size: 19px;
-
-            user-select: none;
-
-            pointer-events: none;
-        }
-
-        .debugs-content p {
-            margin: 0;
-            padding: 1px;
-        }
-
-        .debugs-button:hover {
-            background-color: #979797;
-        }
-        
 
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- dropdown -->
-        <div class="dropdown-container">
-            <label for="option">SIMULATION CONSTANTS:&nbsp</label>
-            <select id="option" onchange="showSlider()">
-                <option value="">--Select an option--</option>
-                <option value="gravity">Gravity</option>
-                <option value="linear damping">Linear Damping</option>
-                <option value="mouse spring">Mouse Spring Stiffness</option>
-                <option value="spring joint">Spring Joint Stiffness</option>
-                <option value="omega constraint">Rotation Motor Speed</option>
-                <option value="lagrange limit">Maximum strain (10^)</option>
-            </select>
+
+    <!-- top left text showing primitive keybinds -->
+    <p class="top-left-label">[q][a][z][w]</p>
+
+    <!-- Debug window -->
+    <div id="mod-settings-window" class="mod-debug-window" style="width: 300px">
+        <!-- Header with Close Button -->
+        <div id="mod-settings-header" class="mod-debug-header">
+            // SETTINGS
+            <span id="settings-reset-button" class="mod-reset-button">r</span>
+            <span id="settings-close-button" class="mod-close-button">✕</span>
         </div>
 
-        <!-- slider -->
-        <div class="slider-container" id="slider-container">
-            <label for="rangeSlider">VALUE:&nbsp&nbsp</label>
-            <div style="display: flex; align-items: center;">
-                <input class="constants-slider" type="range" id="rangeSlider" min="-1.5" max="1.5" step="0.05" value="1" oninput="updateSliderValue()">
-                <span class="slider-value" id="sliderValue">&nbsp;1</span>
-            </div>
+        <!-- Gravity Slider -->
+        <div class="mod-label">Gravity</div>
+        <div class="mod-slider-container">
+            <input id="settings-gravity-slider" class="mod-slider" type="range" min="-10" max="10" step="0.01"
+                value="8">
+            <div id="settings-gravity-value" class="mod-slider-label">8</div>
+        </div>
+
+        <!-- Linear Damping Slider -->
+        <div class="mod-label">Linear Damping</div>
+        <div class="mod-slider-container">
+            <input id="settings-linear-damping-slider" class="mod-slider" type="range" min="0" max="5" step="0.005"
+                value="0.4">
+            <div id="settings-linear-damping-value" class="mod-slider-label">0.4</div>
+        </div>
+
+        <!-- Mouse Spring Slider -->
+        <div class="mod-label">Mouse Spring Stiffness</div>
+        <div class="mod-slider-container">
+            <input id="settings-mouse-spring-slider" class="mod-slider" type="range" min="0" max="200" step="0.01"
+                value="100">
+            <div id="settings-mouse-spring-value" class="mod-slider-label">100</div>
+        </div>
+
+        <!-- Spring Joint Slider -->
+        <div class="mod-label">Spring Joint Stiffness</div>
+        <div class="mod-slider-container">
+            <input id="settings-spring-joint-slider" class="mod-slider" type="range" min="0" max="300" step="1"
+                value="100">
+            <div id="settings-spring-joint-value" class="mod-slider-label">100</div>
+        </div>
+
+        <!-- Omega Constraint Slider -->
+        <div class="mod-label">Rotation Velocity Const.</div>
+        <div class="mod-slider-container">
+            <input id="settings-omega-constraint-slider" class="mod-slider" type="range" min="0" max="150" step="0.1"
+                value="90">
+            <div id="settings-omega-constraint-value" class="mod-slider-label">90</div>
+        </div>
+
+        <!-- Lagrange Mult (strain) Slider -->
+        <div class="mod-label">Maximum strain (10^)</div>
+        <div class="mod-slider-container">
+            <input id="settings-lagrange-limit-slider" class="mod-slider" type="range" min="0" max="10" step="0.01"
+                value="8">
+            <div id="settings-lagrange-limit-value" class="mod-slider-label">8</div>
+        </div>
+
+        <!-- Rendering Checkbox -->
+        <!-- <label class="mod-checkbox-label"> -->
+        <!-- <input id="mod-rendering-checkbox" type="checkbox" checked> -->
+        <!-- Rendering -->
+        <!-- </label> -->
+
+    </div>
+
+    <div id="profiling-window" class="mod-debug-window" style="width: 220px">
+        <div id="mod-profiling-header" class="mod-debug-header">
+            // PROFILING
+            <span id="profiling-close-button" class="mod-close-button">✕</span>
+        </div>
+
+        <div class="mod-label">
+            <p> SYSTEM DT = <span id="system-dt">0.000</span> MS </p>
+            <p> PDT = <span id="system-pdt">0.000</span> MS </p>
+            <p> RDT = <span id="system-rdt">0.000</span> MS </p>
+            <p> CFS DT = <span id="system-cfsdt">0.000</span> MS </p>
+            <p> CFS ERR = <span id="system-cfs-err">0.000</span> </p>
+            <p> ENERGY = <span id="system-energy">0.000</span> </p>
+            <p> C-EVAL = <span id="system-c-eval">0.000</span> </p>
+            <p> C-DOT-EVAL = <span id="system-c-dot-eval">0.000</span> </p>
         </div>
     </div>
 
-    <div class ="keybinds-dropdown">
-        <button class="keybinds-button">Keybinds</button>
-        <div class="keybinds-content"keybinds-content>
-            <p>General:</p>
-            <p>&nbsp (s) s: Toggle Sim</p>
-            <p>&nbsp LArr: Step one sim-frame</p>
-            <p>&nbsp UArr: Slow Motion</p>
-            <p>&nbsp (b) R: Reset Scene</p>
+    <div id="info-window" class="mod-debug-window" style="width: 220px">
+        <div id="mod-info-header" class="mod-debug-header">
+            // INFO
+            <span id="info-close-button" class="mod-close-button">✕</span>
+        </div>
 
-            <p>Demo Scenes: </p>
-            <p>&nbsp 1: Pratt Truss</p>
-            <p>&nbsp 2: King Post Truss</p>
-            <p>&nbsp 3: Large Bridge</p>
-            <p>&nbsp 4: Crane</p>
+        <div class="mod-label">
+            <p> // GENERAL INFO </p>
+            <p> SIMULATING = <span id="system-simulating">FALSE</span> </p>
+            <p> FR = <span id="system-fr">0.000</span> FPS </p>
+            <p> SR = <span id="system-sr">0.000</span> HZ </p>
+            <p> STEPS = <span id="system-steps">0.000</span> </p>
+            <p> &nbsp </p>
+            <p> // PHYSICS INFO </p>
+            <p> NUM MASS OBJECTS = <span id="physics-mass-objects">0.000</span> </p>
+            <p> NUM FORCEGENERATORS = <span id="physics-force-generators">0.000</span> </p>
+            <p> NUM CONSTRAINTS = <span id="physics-constraints">0.000</span> </p>
+
+        </div>
+    </div>
+
+    <div id="keybinds-window" class="mod-debug-window" style="width: 300px">
+        <div id="mod-keybinds-header" class="mod-debug-header">
+            // KEYBINDS
+            <span id="keybinds-close-button" class="mod-close-button">✕</span>
+        </div>
+
+        <div class="mod-label">
+            <p>GENERAL:</p>
+            <p>&nbsp (s) s: TOGGLE SIM</p>
+            <p>&nbsp LArr: STEP ONE-SIM FRAME</p>
+            <p>&nbsp UArr: SLOW MOTION</p>
+            <p>&nbsp (b) R: RESET SCENE</p>
+
+            <p>DEMO SCENES: </p>
+            <p>&nbsp 1: PRATT TRUSS</p>
+            <p>&nbsp 2: KING POST TRUSS</p>
+            <p>&nbsp 3: LARGE BRIDGE</p>
+            <p>&nbsp 4: CRANE</p>
 
             <p>Editor: </p>
-            <p>&nbsp (s) i: Toggle</p>
-            <p>&nbsp (b) I: Snap To Grid</p>
-            <p>&nbsp (s) backspace: Delete latest entity</p>
+            <p>&nbsp (s) i: TOGGLE</p>
+            <p>&nbsp (b) I: SNAP TO GRID</p>
+            <p>&nbsp (s) backspace: DELETE LATEST ENTITY</p>
             <p>&nbsp Objects:</p>
-            <p>&nbsp &nbsp 1 --> 4: Spawn Particle</p>
+            <p>&nbsp &nbsp 1 --> 4: SPAWN MASS OBJECT</p>
             <p>&nbsp Force Generators: </p>
-            <p>&nbsp &nbsp (s) k: Spring Joint</p>
+            <p>&nbsp &nbsp (s) k: SPRING JOINT</p>
             <p>&nbsp Constraints:</p>
-            <p>&nbsp &nbsp (s) x: Fixed X</p>
-            <p>&nbsp &nbsp (s) y: Fixed Y</p>
-            <p>&nbsp &nbsp (s) l: Link</p>
-            <p>&nbsp &nbsp (s) j: Offset Link</p>
-            <p>&nbsp &nbsp (s) t: Fixed Rotation</p>
-            <p>&nbsp &nbsp (s) m: Fixed Omega (motor)</p>
+            <p>&nbsp &nbsp (s) x: FIXED X</p>
+            <p>&nbsp &nbsp (s) y: FIXED Y</p>
+            <p>&nbsp &nbsp (s) p: FIXED POS</p>
+            <p>&nbsp &nbsp (s) l: LINK</p>
+            <p>&nbsp &nbsp (s) j: OFFSET LINK</p>
+            <p>&nbsp &nbsp (s) t: FIXED ROTATION</p>
+            <p>&nbsp &nbsp (s) m: FIXED OMEGA (motor)</p>
             <p>&nbsp Bezier Curve:</p>
-            <p>&nbsp &nbsp (b) B: Toggle</p>
-            <p>&nbsp &nbsp Left Mouse + Mouse Pos: C-Point pos</p>
-            <p>&nbsp &nbsp (b) S: Spawn Objects</p>
+            <p>&nbsp &nbsp (b) B: TOGGLE</p>
+            <p>&nbsp &nbsp LEFT MOUSE + MOUSE POS: C-POINT POS</p>
+            <p>&nbsp &nbsp (b) S: SPAWN MASS OBJECTS</p>
 
-            <p>Auxiliary Binds:</p>
-            <p>&nbsp Left Mouse + Mouse Pos: Mouse Spring</p>
+            <p>AUXILIARY BINDS:</p>
+            <p>&nbsp LEFT MOUSE + MOUSE POS: MOUSE SPRING</p>
         </div>
     </div>
 
-    <div class ="debugs-dropdown">
-        <button class="debugs-button">Debugs</button>
-         <div class="debugs-content"debugs-content>
-            <p> // INFO </p>
-            <p> FR = <span id="fps">0.000</span> FPS </p>
-            <p> SR = <span id="simulation_rate">0.000</span> HZ </p>
-            <p> STEPS = <span id="steps">0.000</span> </p>
-            <p> &nbsp </p>
-
-            <p> // PROFILING </p>
-            <p> SYSTEM DT = <span id="system dt">0.000</span> MS </p>
-            <p> PDT = <span id="physics_frame_time">0.000</span> MS </p>
-            <p> RDT = <span id="render_frame_time">0.000</span> MS </p>
-            <p> CFS DT = <span id="CFS_ms">0.000</span> MS </p>
-            <p> CFS ERR = <span id="CFS_accumulated_error">0.000</span> </p>
-            <p> ENERGY = <span id="system_energy">0.000</span> </p>
-            <p> C-EVAL = <span id="C_value">0.000</span> </p>
-            <p> C-DOT-EVAL = <span id="C_dot_value">0.000</span> </p>
-            <p> &nbsp </p>
-
-            <p> // PHYSICS INFO </p>
-            <p> Q LENGTH = <span id="q length">0.000</span> </p>
-            <p> LAMBDA LENGTH = <span id="lambda length">0.000</span> </p>
-
-        </div>
-    </div>
-
-    <!-- keybinds dropdown -->
+    <!-- SETTINGS -->
     <script>
-        const keybinds_content = document.querySelector('.keybinds-content');
-        const keybinds_button = document.querySelector('.keybinds-dropdown button');
 
-        const debugs_dropdown = document.querySelector('.debugs-dropdown');
-    
-        keybinds_button.addEventListener('click', () => {
-            if (keybinds_content.style.display === 'block') {
-                keybinds_content.style.display = 'none';
-                debugs_dropdown.style.display = 'block';
-            } else {
-                keybinds_content.style.display = 'block';
-                debugs_dropdown.style.display = 'none';
+        const start_values = {
+            gravity: 8,
+            linear_damping: 0.4,
+            mouse_spring: 100,
+            spring_joint: 100,
+            omega_constraint: 90,
+            lagrange_limit: 8,
+        }
+
+        const settings_close_btn = document.getElementById("settings-close-button");
+        const settings_reset_btn = document.getElementById("settings-reset-button");
+        const mod_settings_window = document.getElementById('mod-settings-window');
+
+        mod_settings_window.style.display = "none";
+
+        settings_close_btn.addEventListener('click', () => {
+            mod_settings_window.style.display = 'none';
+        });
+
+        function setSlider(slider_id, value_id, value) {
+            const _slider = document.getElementById(slider_id);
+            _slider.value = value;
+
+            const _value = document.getElementById(value_id);
+            _value.innerHTML = value;
+        }
+
+        settings_reset_btn.addEventListener("click", () => {
+            setSlider("settings-gravity-slider", "settings-gravity-value", start_values.gravity);
+            setSlider("settings-linear-damping-slider", "settings-linear-damping-value", start_values.linear_damping);
+            setSlider("settings-mouse-spring-slider", "settings-mouse-spring-value", start_values.mouse_spring);
+            setSlider("settings-spring-joint-slider", "settings-spring-joint-value", start_values.spring_joint);
+            setSlider("settings-omega-constraint-slider", "settings-omega-constraint-value", start_values.omega_constraint);
+            setSlider("settings-lagrange-limit-slider", "settings-lagrange-limit-value", start_values.lagrange_limit);
+        })
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "q") {
+                if (mod_settings_window.style.display == "block") {
+                    mod_settings_window.style.display = "none";
+                } else if (mod_settings_window.style.display == "none") {
+                    mod_settings_window.style.display = "block";
+                }
             }
         });
+
+        const mod_settings_header = document.getElementById('mod-settings-header');
+        let settings_dragging = false;
+        let settings_off_x = 0, settings_off_y = 0;
+
+        mod_settings_header.addEventListener('mousedown', (e) => {
+            settings_dragging = true;
+            settings_off_x = e.clientX - mod_settings_window.offsetLeft;
+            settings_off_y = e.clientY - mod_settings_window.offsetTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (settings_dragging) {
+                mod_settings_window.style.left = `${e.clientX - settings_off_x}px`;
+                mod_settings_window.style.top = `${e.clientY - settings_off_y}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            settings_dragging = false;
+        });
+
+        function updateSlider(slider_id, value_id) {
+            const _slider = document.getElementById(slider_id);
+            const _value = document.getElementById(value_id);
+            _slider.addEventListener('input', () => {
+                _value.innerText = parseFloat(_slider.value).toFixed(2);
+            });
+        }
+
+        updateSlider("settings-gravity-slider", "settings-gravity-value");
+        updateSlider("settings-linear-damping-slider", "settings-linear-damping-value");
+        updateSlider("settings-mouse-spring-slider", "settings-mouse-spring-value");
+        updateSlider("settings-spring-joint-slider", "settings-spring-joint-value");
+        updateSlider("settings-omega-constraint-slider", "settings-omega-constraint-value");
+        updateSlider("settings-lagrange-limit-slider", "settings-lagrange-limit-value");
+
+
     </script>
 
-    <!-- debug dropdown -->
+    <!-- PROFILING -->
     <script>
-        const debugs_content = document.querySelector('.debugs-content');
-        const debugs_button = document.querySelector('.debugs-dropdown button');
+        const profiling_close_btn = document.getElementById("profiling-close-button");
+        const mod_profiling_window = document.getElementById('profiling-window');
 
-        debugs_button.addEventListener('click', () => {
-            if (debugs_content.style.display === 'block') {
-                debugs_content.style.display = 'none';
-            } else {
-                debugs_content.style.display = 'block';
+        mod_profiling_window.style.display = "none";
+
+        profiling_close_btn.addEventListener('click', () => {
+            mod_profiling_window.style.display = 'none';
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "a") {
+                if (mod_profiling_window.style.display == "block") {
+                    mod_profiling_window.style.display = "none";
+                } else if (mod_profiling_window.style.display == "none") {
+                    mod_profiling_window.style.display = "block";
+                }
             }
         });
-    </script>    
 
-<!-- simulation constants slider -->
+        const mod_profiling_header = document.getElementById('mod-profiling-header');
+        let profiling_dragging = false;
+        let profiling_off_x = 0, profiling_off_y = 0;
+
+        mod_profiling_header.addEventListener('mousedown', (e) => {
+            profiling_dragging = true;
+            profiling_off_x = e.clientX - mod_profiling_window.offsetLeft;
+            profiling_off_y = e.clientY - mod_profiling_window.offsetTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (profiling_dragging) {
+                mod_profiling_window.style.left = `${e.clientX - profiling_off_x}px`;
+                mod_profiling_window.style.top = `${e.clientY - profiling_off_y}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            profiling_dragging = false;
+        });
+
+    </script>
+
+    <!-- INFO -->
     <script>
-        // if the start values should change, don't forget to also change the values in start() (main.js)
-        let slider_values = {
-            gravity: 8,
-            linear_damping: 0.2,
-            mouse_spring: 100,
-            spring_joint: 70,
-            omega_constraint: 50,
-            lagrange_limit: 7
-        };
+        const info_close_btn = document.getElementById("info-close-button");
+        const mod_info_window = document.getElementById('info-window');
 
-        function showSlider() {
-            const option = document.getElementById("option").value;
-            const slider_container = document.getElementById("slider-container");
-            const slider = document.getElementById("rangeSlider");
-            
-            if (option) {
-                slider_container.style.display = "flex";
-                
-                if (option == "gravity") {
-                    slider.min = -10;
-                    slider.max = 10;
-                    slider.value = slider_values.gravity;
-                    slider.step = 0.05;
-                } else if (option == "linear damping") {
-                    slider.min = 0;
-                    slider.max = 5;
-                    slider.value = slider_values.linear_damping;
-                    slider.step = 0.01;
-                } else if (option == "mouse spring") {
-                    slider.min = 0;
-                    slider.max = 200;
-                    slider.value = slider_values.mouse_spring;
-                    slider.step = 0.05;
-                } else if (option == "spring joint") {
-                    slider.min = 0;
-                    slider.max = 400;
-                    slider.value = slider_values.spring_joint;
-                    slider.step = 0.05;
-                } else if (option == "omega constraint") {
-                    slider.min = 0;
-                    slider.max = 200;
-                    slider.value = slider_values.omega_constraint;
-                    slider.step = 0.05;
-                } else if (option == "lagrange limit") {
-                    slider.min = 1;
-                    slider.max = 15;
-                    slider.value = slider_values.lagrange_limit;
-                    slider.step = 0.1;
+        mod_info_window.style.display = "none";
+
+        info_close_btn.addEventListener('click', () => {
+            mod_info_window.style.display = 'none';
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "z") {
+                if (mod_info_window.style.display == "block") {
+                    mod_info_window.style.display = "none";
+                } else if (mod_info_window.style.display == "none") {
+                    mod_info_window.style.display = "block";
                 }
-
-            } else {
-                slider_container.style.display = "none";
             }
+        });
 
-            updateSliderValue();
+        const mod_info_header = document.getElementById('mod-info-header');
+        let info_dragging = false;
+        let info_off_x = 0, info_off_y = 0;
 
-        }
+        mod_info_header.addEventListener('mousedown', (e) => {
+            info_dragging = true;
+            info_off_x = e.clientX - mod_info_window.offsetLeft;
+            info_off_y = e.clientY - mod_info_window.offsetTop;
+        });
 
-        function updateSliderValue() {
-            const option = document.getElementById("option").value;
-            const slider = document.getElementById("rangeSlider");
-
-            if (option == "gravity") {
-                slider_values.gravity = slider.value;
-            } else if (option == "linear damping") {
-                slider_values.linear_damping = slider.value;
-            } else if (option == "mouse spring") {
-                slider_values.mouse_spring = slider.value;
-            } else if (option == "spring joint") {
-                slider_values.spring_joint = slider.value;
-            } else if (option == "omega constraint") {
-                slider_values.omega_constraint = slider.value;
-            } else if (option == "lagrange limit") {
-                slider_values.lagrange_limit = slider.value;
+        document.addEventListener('mousemove', (e) => {
+            if (info_dragging) {
+                mod_info_window.style.left = `${e.clientX - info_off_x}px`;
+                mod_info_window.style.top = `${e.clientY - info_off_y}px`;
             }
+        });
 
-            const slider_value = document.getElementById("sliderValue");
-            slider_value.innerText = slider.value;
-        }
+        document.addEventListener('mouseup', () => {
+            info_dragging = false;
+        });
+
+    </script>
+
+    <!-- KEYBINDS -->
+    <script>
+        const keybinds_close_btn = document.getElementById("keybinds-close-button");
+        const mod_keybinds_window = document.getElementById('keybinds-window');
+
+        mod_keybinds_window.style.display = "none";
+
+        keybinds_close_btn.addEventListener('click', () => {
+            mod_keybinds_window.style.display = 'none';
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "w") {
+                if (mod_keybinds_window.style.display == "block") {
+                    mod_keybinds_window.style.display = "none";
+                } else if (mod_keybinds_window.style.display == "none") {
+                    mod_keybinds_window.style.display = "block";
+                }
+            }
+        });
+
+        const mod_keybinds_header = document.getElementById('mod-keybinds-header');
+        let keybinds_dragging = false;
+        let keybinds_off_x = 0, keybinds_off_y = 0;
+
+        mod_keybinds_header.addEventListener('mousedown', (e) => {
+            keybinds_dragging = true;
+            keybinds_off_x = e.clientX - mod_keybinds_window.offsetLeft;
+            keybinds_off_y = e.clientY - mod_keybinds_window.offsetTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (keybinds_dragging) {
+                mod_keybinds_window.style.left = `${e.clientX - keybinds_off_x}px`;
+                mod_keybinds_window.style.top = `${e.clientY - keybinds_off_y}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            keybinds_dragging = false;
+        });
+
     </script>
 
     <canvas id="myCanvas" style="border: 1px solid white"></canvas>
     <script src="./main.js" type="module"></script>
 </body>
+
 </html>

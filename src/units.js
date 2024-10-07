@@ -1,7 +1,7 @@
 import { Vector2 } from "./linear_algebra.js";
 
 export function initUnits(canvas) {
-    const x_offset = 80; // px
+    const x_offset = 20; // px
     canvas.width = window.innerWidth - x_offset;
     Units.init(canvas);
     canvas.height = Units.scale_s_c * Units.HEIGHT;

@@ -93,9 +93,9 @@ function setSimConstants() {
 
 function renderBackground(canvas, c) {
     // colors
-    const backgroundColor = "#1a1e21";
-    const big_line_color = "rgba(90, 90, 90, 1)"
-    const small_line_color = "rgba(40, 40, 40, 1)"
+    const backgroundColor = "#0c0e11";
+    const big_line_color = "#202123"
+    const small_line_color = "#141819"
     // vars
     const lines_x = Units.render_num_lines_x;
     const lines_y = Units.render_num_lines_y;
@@ -131,7 +131,7 @@ function renderBackground(canvas, c) {
 
     // big lines
     c.strokeStyle = big_line_color;
-    c.lineWidth = 0.8;
+    c.lineWidth = 1.2;
     for (let i = 0; i < lines_x; i++) {
         const clip_space = i / lines_x;
         c.beginPath();
@@ -183,14 +183,6 @@ function renderBackground(canvas, c) {
 }
 
 export function start(window, canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const keybinds_wrapper = document.querySelector('.keybinds-dropdown');
-    keybinds_wrapper.style.top = `${rect.top}px`;
-    keybinds_wrapper.style.left = `${rect.left}px`;
-
-    const debugs_wrapper = document.querySelector('.debugs-dropdown');
-    debugs_wrapper.style.top = `${keybinds_wrapper.getBoundingClientRect().bottom - 1}px`;
-    debugs_wrapper.style.left = `${rect.left}px`;
 
     solver.simulating = false;
     physicsState.initConstraintManager();
@@ -228,6 +220,7 @@ export function update(canvas, c) {
 
     } else if (keyboard.arrow_up) {
         physicsState.step_simulation(solver.dt / solver.sim_steps, 1);
+        solver.simulating = true;
     }
 
     // render
@@ -248,6 +241,9 @@ export function update(canvas, c) {
     //debugs
     measureFrameRate(performance.now());
     updateGUI(physicsState, solver, entity_manager, handle_FPS, constants_values);
+
+    if (keyboard.arrow_up)
+        solver.simulating = false;
 
     requestAnimationFrame(() => update(canvas, c));
 
