@@ -250,6 +250,9 @@ export class PhysicsState {
                 this.#m_objects[con.id2].render(c);
             } else if (con instanceof FixedPosConstraint) {
                 physics_id++;
+            } else if (con instanceof FixedOmegaConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
+                this.#m_objects[con.id].render(c);
             }
 
             physics_id++;
@@ -261,10 +264,7 @@ export class PhysicsState {
 
             for (let k = 0; k < this.#m_renderedConstraints.length; k++) {
                 const con = this.#m_renderedConstraints[k];
-                if ((con instanceof FixedOmegaConstraint) && con.id == i) {
-                    con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
-                    this.#m_objects[i].render(c);
-                } else if (con instanceof LinkConstraint) {
+                if (con instanceof LinkConstraint) {
                     // con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
                 } else if (con instanceof OffsetLinkConstraint) {
                     // con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
@@ -298,100 +298,6 @@ export class PhysicsState {
             physics_id++;
         }
 
-        // 2___________________________________________________________________
-
-        // for (let i = 0; i < this.#m_objects.length; i++) {
-        //     this.#m_objects[i].render(c);
-        // }
-
-        // let index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     // render constraints behind object
-        //     if (con instanceof FixedOmegaConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof LinkConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
-        //     } 
-
-        //     // render the object
-        //     if      (con instanceof FixedOmegaConstraint)    {this.#m_objects[con.id].render(c);} 
-        //     else if (con instanceof LinkConstraint)          {this.#m_objects[con.id1].render(c); this.#m_objects[con.id2].render(c);} 
-        //     // else if (con instanceof OffsetLinkConstraint)    {this.#m_objects[con.state_1.id].render(c); this.#m_objects[con.state_2.id].render(c);} 
-        //     // else if (con instanceof FixedPosConstraint)      {this.#m_objects[con.id].render(c);} 
-        //     // else if (con instanceof FixedXConstraint)        {this.#m_objects[con.p_id].render(c);} 
-        //     // else if (con instanceof FixedYConstraint)        {this.#m_objects[con.p_id].render(c);} 
-        //     // else if (con instanceof FixedRotationConstraint) {this.#m_objects[con.id].render(c);}
-
-        //     // render constraints in front of object
-        //     if (con instanceof OffsetLinkConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedXConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedYConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedRotationConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     }
-        //     index_phys_const++;
-        // }
-
-        // ORIGINAL___________________________________________________________________
-
-        // // constraints
-        // let index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof FixedOmegaConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
-
-        // // objects
-        // for (let i = 0; i < this.#m_objects.length; i++) {
-        //     this.#m_objects[i].render(c);
-        // }
-
-        // index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof LinkConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
-        //         this.#m_objects[con.id1].render(c);
-        //         this.#m_objects[con.id2].render(c);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
-
-        // index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof FixedRotationConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
-
-        // index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof OffsetLinkConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
-
         // force generators
         for (let i = 0; i < this.#m_forceGenerators.length; i++) {
             this.#m_forceGenerators[i].render(c, this.#m_objects)
@@ -401,39 +307,6 @@ export class PhysicsState {
         if (this.#m_mouseSpring.active) {
             this.#m_mouseSpring.render(c, this.#m_objects);
         }
-
-        // index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof FixedYConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
-
-        // index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof FixedXConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
-
-        // index_phys_const = 0;
-        // for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
-        //     const con = this.#m_renderedConstraints[i];
-        //     if (con instanceof FixedPosConstraint) {
-        //         con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const]);
-        //     } else if (con instanceof FixedPosConstraint) {
-        //         index_phys_const++;
-        //     } 
-        //     index_phys_const++;
-        // }
 
     }
 
