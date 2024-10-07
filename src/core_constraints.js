@@ -1,5 +1,5 @@
 import {SparseMatrixBlock, SparseMatrix, Vector, Vector2} from "./linear_algebra.js";
-import {Units} from "./main.js";
+import {Units} from "./units.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 /*

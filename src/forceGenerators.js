@@ -1,6 +1,6 @@
 import { LinkConstraint, OffsetLinkConstraint } from "./core_constraints.js";
 import {Vector2} from "./linear_algebra.js";
-import {Units} from "./main.js";
+import {Units} from "./units.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 import { DynamicObject } from "./dynamicObject.js";
 
@@ -862,23 +862,6 @@ export class MouseSpring {
         c.lineTo(border2_end.x, border2_end.y);
         c.stroke();
 
-        c.closePath();
-
-        if (!(this.object instanceof OffsetLinkConstraint))
-            return;
-
-        const obj1 = m_objects[this.object.state_1.id];
-        const obj2 = m_objects[this.object.state_2.id];
-        const temp = Vector2.subtractVectors(obj1.pos, obj2.pos);
-        const COM = Vector2.addVectors(obj2.pos, Vector2.scaleVector(temp, obj1.m / (obj1.m + obj2.m)));
-
-        c.fillStyle = Colours.INNER_MOUSE_SPRING_MOUSE_CIRCLE;
-        c.strokeStyle = "#000000";
-        c.lineWidth = LineWidths.DYNAMIC_OBJECT;
-        c.beginPath();
-        c.arc(Units.sim_canv_x(COM), Units.sim_canv_y(COM), Units.scale_s_c * 0.1, 0, 2 * Math.PI);
-        c.stroke();
-        c.fill();
         c.closePath();
 
     }

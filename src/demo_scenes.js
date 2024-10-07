@@ -1,4 +1,4 @@
-import {Units} from "./main.js";
+import {Units} from "./units.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {Vector2} from "./linear_algebra.js";
 

@@ -2,7 +2,7 @@ import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
 import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js";
 import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
-import {Units} from "./main.js"; 
+import {Units} from "./units.js";
 import { Colours, LineWidths, Extras } from "./render_settings.js";
 import {FixedXConstraint, FixedYConstraint, LinkConstraint, OffsetLinkConstraint, FixedRotationConstraint, FixedOmegaConstraint} from "./core_constraints.js";
 import {FixedPosConstraint} from "./extended_constraints.js";
