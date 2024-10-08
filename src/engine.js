@@ -4,7 +4,7 @@ import { DynamicObject } from "./dynamicObject.js";
 import { setupScene } from "./demo_scenes.js";
 import { entity_manager } from "./entity_manager.js";
 import { Units } from "./units.js";
-import { updateGUI } from "./gui_helper.js";
+import { updateGUI, handleSavedStates} from "./gui_helper.js";
 
 var physicsState = new PhysicsState();
 let solver = {
@@ -16,6 +16,13 @@ let solver = {
     standard_radius: 0.05,
     physicsState_is_null: true,
 };
+
+let saves = {
+    state_1: null,
+    state_2: null,
+    state_3: null,
+    state_4: null,
+}
 
 let mouse = {
     canv_pos: new Vector2(0, 0),
@@ -201,6 +208,8 @@ function reset(window, canvas) {
 }
 
 export function update(canvas, c) {
+
+    handleSavedStates(physicsState, saves);
 
     if (entity_manager.active && entity_manager.cubic_bezier_active) {
         entity_manager.update(mouse);

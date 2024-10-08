@@ -38,9 +38,9 @@
         /* Make the whole window semi-transparent */
         .mod-debug-window {
             position: absolute;
+            border: 2px solid #ffffff;
             background-color: #0c0e11;
             opacity: 0.9;
-            border: 2px solid #ffffff;
             /* width: 300px; */
             padding: 5px;
             border-radius: 1px;
@@ -56,21 +56,26 @@
         /* Keep the header fully opaque */
         .mod-debug-header {
             /* background-color: #1d1d1f; */
+            background-color: #3d85e1;
             padding: 8px;
-            font-size: 13px;
+            height: 5px;
+            font-size: 10px;
             color: white;
             display: flex;
             border: none;
             justify-content: space-between;
+            /* justify-content: right; */
             align-items: center;
             cursor: move;
             opacity: 1;
             font-family: QuinqueFive;
+            text-align: center;
             /* Fully opaque */
         }
 
         /* Close button */
         .mod-close-button {
+            margin-left: auto;
             cursor: pointer;
             color: white;
             font-size: 14px;
@@ -84,7 +89,9 @@
             cursor: pointer;
             color: #fff;
             font-size: 8px;
-            margin-right: 8px;
+            margin-left: auto;
+            margin-left: 20%;
+            margin-right: 0px;
         }
 
         .mod-reset-button:hover {
@@ -130,22 +137,23 @@
             margin-right: 5px;
             width: 100%;
             height: 15px;
-            background: #1d1d1f;
+            /* background: #1d1d1f; */
+            background: #21324e;
             outline: none;
             opacity: 1;
-            -webkit-transition: .2s;
-            transition: opacity .2s;
         }
 
         .mod-slider:hover {
-            background-color: #35373b;
+            /* background-color: #35373b; */
+            background-color: #314b75;
         }
 
         .mod-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 10px;
             height: 12px;
-            background-color: #ffffff;
+            /* background-color: #ffffff; */
+            background-color: #3d85e1;
             border-radius: 0%;
             cursor: pointer;
         }
@@ -165,13 +173,37 @@
             margin-right: 8px;
             width: 14px;
             height: 14px;
-            background-color: #1d1d1f;
+            /* background-color: #1d1d1f; */
+            background-color: #21324e;
             border: 1px solid #ffffff;
             cursor: pointer;
         }
 
         input[type="checkbox"]:checked {
-            background-color: #ffffff;
+            /* background-color: #ffffff; */
+            background-color: #3d85e1;
+        }
+
+        .mod-button-label {
+            appearance: none;
+            display: flex;
+            align-items: center;
+            font-size: 15px;
+            margin-bottom: 2px;
+            color: #ffffff;
+
+            user-select: none;
+        }
+
+        .mod-button-label input {
+            appearance: none;
+            margin-right: 8px;
+            width: 14px;
+            height: 14px;
+            /* background-color: #1d1d1f; */
+            background-color: #21324e;
+            border: 1px solid #ffffff;
+            cursor: pointer;
         }
 
         .top-left-label {
@@ -196,7 +228,7 @@
     <div id="mod-settings-window" class="mod-debug-window" style="width: 300px">
         <!-- Header with Close Button -->
         <div id="mod-settings-header" class="mod-debug-header">
-            // SETTINGS
+            <span>// SETTINGS </span>
             <span id="settings-reset-button" class="mod-reset-button">r</span>
             <span id="settings-close-button" class="mod-close-button">✕</span>
         </div>
@@ -292,8 +324,30 @@
             <p> NUM MASS OBJECTS = <span id="physics-mass-objects">0.000</span> </p>
             <p> NUM FORCEGENERATORS = <span id="physics-force-generators">0.000</span> </p>
             <p> NUM CONSTRAINTS = <span id="physics-constraints">0.000</span> </p>
-
+            <p> &nbsp </p>
         </div>
+
+        <div class="mod-label">
+            <p> // SAVED PHYSICS STATES <span id="info-reset-saved-states-button" class="mod-reset-button" style="font-size: 15px;">R</span> </p>
+        </div>
+
+        <label class="mod-button-label">
+            <input id="info-saved-state-1-button" type="button">
+            State 1
+        </label>
+        <label class="mod-button-label">
+            <input id="info-saved-state-2-button" type="button">
+            State 2
+        </label>
+        <label class="mod-button-label">
+            <input id="info-saved-state-3-button" type="button">
+            State 3
+        </label>
+        <label class="mod-button-label">
+            <input id="info-saved-state-4-button" type="button">
+            State 4
+        </label>
+
     </div>
 
     <div id="keybinds-window" class="mod-debug-window" style="width: 300px">

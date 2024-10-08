@@ -61,3 +61,44 @@ function updateSliderValues(physicsState, solver, entity_manager, constants_valu
     constants_values.lagrange_limit = lagrange_limit_slider.value;
 
 }
+
+export function handleSavedStates(physicsState, saves) {
+    const on_color = "#3d85e1"
+    const off_color = "#21324e";
+
+    function handleButton(button, key) {
+        button.onclick = () => {
+            if (saves[key] == null) {
+                saves[key] = window.structuredClone(physicsState);
+                button.style.backgroundColor = on_color;
+                console.log("saved state");
+            } else {
+                Object.assign(physicsState, saves[key]);
+                console.log("loaded into physicsState");
+            }
+        };
+    }
+
+    const btn_1 = document.getElementById("info-saved-state-1-button");
+    const btn_2 = document.getElementById("info-saved-state-2-button");
+    const btn_3 = document.getElementById("info-saved-state-3-button");
+    const btn_4 = document.getElementById("info-saved-state-4-button");
+
+    handleButton(btn_1, "saves.state_1");
+    handleButton(btn_2, "saves.state_2");
+    handleButton(btn_3, "saves.state_3");
+    handleButton(btn_4, "saves.state_4");
+
+    const reset_btn = document.getElementById("info-reset-saved-states-button");
+    reset_btn.onclick = () => {
+        saves.state_1 = null;
+        btn_1.style.backgroundColor = off_color;
+        saves.state_2 = null;
+        btn_2.style.backgroundColor = off_color;
+        saves.state_3 = null;
+        btn_3.style.backgroundColor = off_color;
+        saves.state_4 = null;
+        btn_4.style.backgroundColor = off_color;
+    };
+
+}
