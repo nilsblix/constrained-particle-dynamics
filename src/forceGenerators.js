@@ -90,9 +90,7 @@ export class LinearDamping {
 
 }
 
-export class SpringJoint {
-    #stiffness_const = 5;
-    
+export class SpringJoint {    
     // t has to be from index 2 to index 1
     constructor(state_1, state_2, m_objects) { // state = {Entity entity, Vector2 offset, float prev_theta, float t_param, Vector2 applied_pos}
         this.state_1 = {    entity: state_1.entity, 
@@ -109,10 +107,12 @@ export class SpringJoint {
 
         // this.rest_length = Vector2.distance(state_1.applied_pos, state_2.applied_pos);
         this.rest_length = 0;
+
+        this.stiffness_const = 5;
     }
 
     setStiffness(value) {
-        this.#stiffness_const = value;
+        this.stiffness_const = value;
     }
 
     #getLinkConstraintAppliedPos(state, m_objects) { // assumes that entity is of a LinkConstraint
@@ -180,7 +180,7 @@ export class SpringJoint {
     apply(m_objects) {
         const dist = Vector2.distance(this.state_1.applied_pos, this.state_2.applied_pos);
         const displacement = dist - this.rest_length;
-        const force = this.#stiffness_const * displacement;
+        const force = this.stiffness_const * displacement;
 
         if (this.state_1.entity instanceof DynamicObject) {
             this.#apply_to_dynamicObject(this.state_1, this.state_2.applied_pos, force);
@@ -205,7 +205,7 @@ export class SpringJoint {
         // simple spring hookes law
         const dist = Vector2.distance(applied_pos_1, applied_pos_2);
         const displacement = dist - this.rest_length;
-        const force = this.#stiffness_const * displacement;
+        const force = this.stiffness_const * displacement;
         energy += 1/2 * force * displacement;
 
         return energy;
@@ -396,43 +396,43 @@ export class SpringJoint {
 }
 
 export class MouseSpring {
-    #rest_length = 0;
-    #stiffness_const = 10;
-    #prev_theta = 0;
-
     constructor() {
         this.object = null;
         this.t_linkConstraint = null;
         this.mouse_pos = new Vector2(0,0);
         this.active = false;
         this.offset = new Vector2(0,0);
+
+        this.rest_length = 0;
+        this.stiffness_const = 10;
+        this.prev_theta = 0;
     }
 
     setStiffness(value) {
-        this.#stiffness_const = value;
+        this.stiffness_const = value;
     }
 
     #apply_to_dynamicObject(m_objects) {
-        this.#rest_length = this.object.radius;
+        this.rest_length = this.object.radius;
 
         const offset_magnitude = this.offset.magnitude();
         const offset_angle = Math.atan2(this.offset.y, this.offset.x);
-        const delta = this.object.theta - this.#prev_theta;
+        const delta = this.object.theta - this.prev_theta;
         this.offset.x = Math.cos(offset_angle + delta) * offset_magnitude;
         this.offset.y = Math.sin(offset_angle + delta) * offset_magnitude;
 
-        this.#prev_theta = this.object.theta;
+        this.prev_theta = this.object.theta;
 
         const applied_pos = Vector2.addVectors(this.object.pos, this.offset);
         const dist = Vector2.distance(this.mouse_pos, applied_pos);
-        const displacement = dist - this.#rest_length;
+        const displacement = dist - this.rest_length;
 
         if (dist == 0) 
             return;
         
         const applied_dir = (Vector2.subtractVectors(this.mouse_pos, applied_pos)).normalized();
 
-        const force = this.#stiffness_const * displacement;
+        const force = this.stiffness_const * displacement;
 
         // translational force
         const linear_force_vec = Vector2.scaleVector(applied_dir, force);
@@ -447,17 +447,17 @@ export class MouseSpring {
         const obj1 = m_objects[this.object.id1];
         const obj2 = m_objects[this.object.id2];
 
-        this.#rest_length = 0.2;
+        this.rest_length = 0.2;
 
         const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
         const applied_pos = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
         const dist = Vector2.distance(this.mouse_pos, applied_pos);
-        const displacement = dist - this.#rest_length;
+        const displacement = dist - this.rest_length;
 
         if (dist == 0)
             return;
 
-        const force = this.#stiffness_const * displacement;
+        const force = this.stiffness_const * displacement;
         const v = Vector2.scaleVector(Vector2.subtractVectors(this.mouse_pos, applied_pos), 1 / dist);
         const force_vec = Vector2.scaleVector(v, force);
 
@@ -485,7 +485,7 @@ export class MouseSpring {
         const obj1 = m_objects[this.object.state_1.id];
         const obj2 = m_objects[this.object.state_2.id];
 
-        this.#rest_length = 0.2;
+        this.rest_length = 0.2;
 
         const A_applied = Vector2.addVectors(obj1.pos, this.object.state_1.offset);
         const B_applied = Vector2.addVectors(obj2.pos, this.object.state_2.offset);
@@ -493,12 +493,12 @@ export class MouseSpring {
         const A_B_applied = Vector2.subtractVectors(A_applied, B_applied);
         const applied_pos = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B_applied, this.t_linkConstraint));
         const dist = Vector2.distance(this.mouse_pos, applied_pos);
-        const displacement = dist - this.#rest_length;
+        const displacement = dist - this.rest_length;
 
         if (dist == 0)
             return;
 
-        const force = this.#stiffness_const * displacement;
+        const force = this.stiffness_const * displacement;
         const v = Vector2.scaleVector(Vector2.subtractVectors(this.mouse_pos, applied_pos), 1 / dist);
         const force_vec = Vector2.scaleVector(v, force);
 
@@ -552,7 +552,7 @@ export class MouseSpring {
             if (dist2 < rad * rad) {
                 this.object = m_objects[i];
                 this.offset = Vector2.subtractVectors(this.mouse_pos, m_objects[i].pos);
-                this.#prev_theta = m_objects[i].theta;
+                this.prev_theta = m_objects[i].theta;
                 return true;
             }
         }
@@ -610,8 +610,8 @@ export class MouseSpring {
 
             // simple spring hookes law
             const dist = Vector2.distance(this.mouse_pos, applied_pos);
-            const displacement = dist - this.#rest_length;
-            const force = this.#stiffness_const * displacement;
+            const displacement = dist - this.rest_length;
+            const force = this.stiffness_const * displacement;
             energy += 0.5 * force * displacement;
 
             return energy;
@@ -624,9 +624,9 @@ export class MouseSpring {
             const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
             const applied_pos = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
             const dist = Vector2.distance(this.mouse_pos, applied_pos);
-            const displacement = dist - this.#rest_length;
+            const displacement = dist - this.est_length;
 
-            const force = this.#stiffness_const * displacement;
+            const force = this.stiffness_const * displacement;
 
             // what the fuck kind of sorcery is this shit? why is the energy function not the integral of force????
             // check spring also for the same thing
@@ -646,9 +646,9 @@ export class MouseSpring {
             const A_B = Vector2.subtractVectors(A_applied, B_applied);
             const applied_pos = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B, this.t_linkConstraint));
             const dist = Vector2.distance(this.mouse_pos, applied_pos);
-            const displacement = dist - this.#rest_length;
+            const displacement = dist - this.rest_length;
 
-            energy += 1 * this.#stiffness_const * displacement * displacement;
+            energy += 1 * this.stiffness_const * displacement * displacement;
 
             return energy;
         }

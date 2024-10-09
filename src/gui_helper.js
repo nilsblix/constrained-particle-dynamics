@@ -68,13 +68,22 @@ export function handleSavedStates(physicsState, saves) {
 
     function handleButton(button, key) {
         button.onclick = () => {
-            if (saves[key] == null) {
-                saves[key] = window.structuredClone(physicsState);
+            if (saves[key] === -1) {
+                // saves[key] = _.cloneDeep(physicsState);
+                // saves[key] = Object.assign(Object.create(Object.getPrototypeOf(physicsState)), physicsState);
+                // saves[key] = _.cloneDeep(physicsState.deepClone());
+                // saves[key] = JSON.stringify(physicsState);
+                saves[key] = physicsState.JSONstringify();
                 button.style.backgroundColor = on_color;
-                console.log("saved state");
+                console.log("saved state: " + key);
+                console.log(key + ": " + saves[key])
+                // console.log("some vec2: " + saves[key].getObjectPositionById(0).toString());
             } else {
-                Object.assign(physicsState, saves[key]);
-                console.log("loaded into physicsState");
+                // physicsState = _.cloneDeep(saves[key]);
+                // physicsState = Object.assign(Object.create(Object.getPrototypeOf(saves[key])), saves[key]);
+                // physicsState.loadDeepClone(_.cloneDeep(saves[key]));
+                physicsState = JSON.parse(saves[key]);
+                console.log("loaded into physicsState: " + key);
             }
         };
     }
@@ -84,21 +93,28 @@ export function handleSavedStates(physicsState, saves) {
     const btn_3 = document.getElementById("info-saved-state-3-button");
     const btn_4 = document.getElementById("info-saved-state-4-button");
 
-    handleButton(btn_1, "saves.state_1");
-    handleButton(btn_2, "saves.state_2");
-    handleButton(btn_3, "saves.state_3");
-    handleButton(btn_4, "saves.state_4");
+    handleButton(btn_1, "state_1");
+    handleButton(btn_2, "state_2");
+    handleButton(btn_3, "state_3");
+    handleButton(btn_4, "state_4");
 
     const reset_btn = document.getElementById("info-reset-saved-states-button");
     reset_btn.onclick = () => {
-        saves.state_1 = null;
+
+        console.log("before: " + saves.state_1);
+
+        saves.state_1 = -1;
         btn_1.style.backgroundColor = off_color;
-        saves.state_2 = null;
+        saves.state_2 = -1;
         btn_2.style.backgroundColor = off_color;
-        saves.state_3 = null;
+        saves.state_3 = -1;
         btn_3.style.backgroundColor = off_color;
-        saves.state_4 = null;
+        saves.state_4 = -1;
         btn_4.style.backgroundColor = off_color;
+
+    
+        console.log("after: " + saves);
+
     };
 
 }

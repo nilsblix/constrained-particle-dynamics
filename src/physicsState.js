@@ -1,14 +1,14 @@
-import {Vector2, Vector, SparseMatrix} from "./linear_algebra.js";
-import {ConstraintManager, ConstraintForceSolver} from "./constraint_solvers.js";
-import {Gravity, Wind, SpringJoint, LinearDamping, MouseSpring} from "./forceGenerators.js";
+import { Vector2, Vector, SparseMatrix } from "./linear_algebra.js";
+import { ConstraintManager, ConstraintForceSolver } from "./constraint_solvers.js";
+import { Gravity, Wind, SpringJoint, LinearDamping, MouseSpring } from "./forceGenerators.js";
 // import {DynamicObject} from "./dynamicObject.js";
-import {Units} from "./units.js";
+import { Units } from "./units.js";
 import { Colours, LineWidths, Extras } from "./render_settings.js";
-import {FixedXConstraint, FixedYConstraint, LinkConstraint, OffsetLinkConstraint, FixedRotationConstraint, FixedOmegaConstraint} from "./core_constraints.js";
-import {FixedPosConstraint} from "./extended_constraints.js";
+import { FixedXConstraint, FixedYConstraint, LinkConstraint, OffsetLinkConstraint, FixedRotationConstraint, FixedOmegaConstraint } from "./core_constraints.js";
+import { FixedPosConstraint } from "./extended_constraints.js";
 
 export class PhysicsState {
-   
+
     // physics depend on these:
     #m_objects = [];
     #m_constraints = [];
@@ -32,20 +32,19 @@ export class PhysicsState {
     #lagrange_mult_limit = 1 * 10 ** 4;
 
     constructor() {
-        this.mouseSpringActive = false;
         this.addForceGenerator(new Gravity());
         // this.addForceGenerator(new Wind());
         this.addForceGenerator(new LinearDamping());
 
         // debugs:
         this.averaging = {
-            swap_frames: 10, 
+            swap_frames: 10,
 
             averaged_cfsdt: -1,
 
             cfsdt_sum: 0,
             cfsdt_frames: 0,
-        
+
             check_swap_cfsdt() {
                 if (this.cfsdt_sum > this.swap_frames) {
                     this.cfsdt_sum /= this.cfsdt_frames;
@@ -56,15 +55,103 @@ export class PhysicsState {
             },
 
         }
-        
+
         this.CFS_accumulated_error = 0;
         this.system_energy = 0;
         this.C_value = 0;
         this.C_dot_value = 0;
-        this.s_mouse_pos = new Vector2(0,0);
+        this.s_mouse_pos = new Vector2(0, 0);
 
         // init functions:
         this.initConstraintManager();
+    }
+
+    JSONstringify() {
+
+        function clone(a) {
+            return a;
+        }
+
+        return JSON.stringify({
+            ["#m_objects"]: this.#m_objects,
+            ["m_forceGenerators"]: this.#m_forceGenerators,
+            ["m_constraints"]: this.#m_constraints,
+            ["CM"]: this.#CM,
+            ["CFS"]: this.#CFS,
+            ["m_renderedConstraints"]: this.#m_renderedConstraints,
+
+            ["swap_frames"]: clone(this.averaging.swap_frames),
+            ["averaged_cfsdt"]: clone(this.averaging.averaged_cfsdt),
+            ["cfsdt_sum"]: clone(this.averaging.cfsdt_sum),
+            ["cfsdt_frames"]: clone(this.averaging.cfsdt_frames),
+
+            ["CFS_accumulated_error"]: clone(this.CFS_accumulated_error),
+            ["system_energy"]: clone(this.system_energy),
+            ["C_value"]: clone(this.C_value),
+            ["C_dot_value"]: clone(this.C_dot_value),
+            ["s_mouse_pos"]: clone(this.s_mouse_pos),
+        });
+    }
+
+    deepClone() {
+
+        function clone(a) {
+            return a;
+        }
+
+        return {
+            m_objects: clone(this.#m_objects),
+            m_forceGenerators: clone(this.#m_forceGenerators),
+            m_constraints: clone(this.#m_constraints),
+            m_mouseSpring: clone(this.#m_mouseSpring),
+            // q_elem: this.#CM.q.elements,
+            // q_dot_elem: this.#CM.q_dot.elements,
+            // Q_elem: this.#CM.Q.elements,
+            // W_elem: this.#CM.W.elements,
+            // lambda_elem: this.#CM.lambda.elements,
+            // J_elem: 
+            CM: clone(this.#CM),
+            CFS: clone(this.#CFS),
+            m_renderedConstraints: clone(this.#m_renderedConstraints),
+
+            swap_frames: clone(this.averaging.swap_frames),
+            averaged_cfsdt: clone(this.averaging.averaged_cfsdt),
+            cfsdt_sum: clone(this.averaging.cfsdt_sum),
+            cfsdt_frames: clone(this.averaging.cfsdt_frames),
+
+            CFS_accumulated_error: clone(this.CFS_accumulated_error),
+            system_energy: clone(this.system_energy),
+            C_value: clone(this.C_value),
+            C_dot_value: clone(this.C_dot_value),
+            s_mouse_pos: clone(this.s_mouse_pos),
+        }
+    }
+
+    loadDeepClone(a) { // a is a deep clone
+
+        function assign(target, source) {
+            Object.assign(target, source);
+            // target = structuredClone(source);
+            // target = _.cloneDeep(source);3
+        }
+
+        assign(this.#m_objects, a.m_objects);
+        assign(this.#m_forceGenerators, a.m_forceGenerators);
+        assign(this.#m_constraints = a.m_constraints);
+        assign(this.#m_mouseSpring, a.m_mouseSpring);
+        assign(this.#CM, a.CM);
+        assign(this.#CFS, a.CFS);
+        assign(this.#m_renderedConstraints, a.m_renderedConstraints);
+        assign(this.averaging.swap_frames, a.swap_frames);
+        assign(this.averaging.averaged_cfsdt, a.averaged_cfsdt);
+        assign(this.averaging.cfsdt_sum, a.cfsdt_sum);
+        assign(this.averaging.cfsdt_frames, a.cfsdt_frames);
+        assign(this.CFS_accumulated_error = a.CFS_accumulated_error);
+        assign(this.system_energy, a.system_energy);
+        assign(this.C_value, a.C_value);
+        assign(this.C_dot_value, a.C_dot_value);
+        assign(this.s_mouse_pos, a.s_mouse_pos);
+
     }
 
     #updateDebugValues() {
@@ -91,34 +178,34 @@ export class PhysicsState {
     }
 
     #updateConstraintManager() {
-        this.#CM.q =        new Vector(3 * this.#m_objects.length);
-        this.#CM.q_dot =    new Vector(3 * this.#m_objects.length);
-        this.#CM.Q =        new Vector(3 * this.#m_objects.length);
-        this.#CM.W =        new Vector(3 * this.#m_objects.length);
+        this.#CM.q = new Vector(3 * this.#m_objects.length);
+        this.#CM.q_dot = new Vector(3 * this.#m_objects.length);
+        this.#CM.Q = new Vector(3 * this.#m_objects.length);
+        this.#CM.W = new Vector(3 * this.#m_objects.length);
         for (let i = 0; i < this.#m_objects.length; i++) {
-            this.#CM.q.elements[3 * i] =        this.#m_objects[i].pos.x;
-            this.#CM.q.elements[3 * i + 1] =    this.#m_objects[i].pos.y;
-            this.#CM.q.elements[3 * i + 2] =    this.#m_objects[i].theta;
+            this.#CM.q.elements[3 * i] = this.#m_objects[i].pos.x;
+            this.#CM.q.elements[3 * i + 1] = this.#m_objects[i].pos.y;
+            this.#CM.q.elements[3 * i + 2] = this.#m_objects[i].theta;
 
-            this.#CM.q_dot.elements[3 * i] =        this.#m_objects[i].vel.x;
-            this.#CM.q_dot.elements[3 * i + 1] =    this.#m_objects[i].vel.y;
-            this.#CM.q_dot.elements[3 * i + 2] =    this.#m_objects[i].omega;
+            this.#CM.q_dot.elements[3 * i] = this.#m_objects[i].vel.x;
+            this.#CM.q_dot.elements[3 * i + 1] = this.#m_objects[i].vel.y;
+            this.#CM.q_dot.elements[3 * i + 2] = this.#m_objects[i].omega;
 
-            this.#CM.Q.elements[3 * i] =        this.#m_objects[i].force.x;
-            this.#CM.Q.elements[3 * i + 1] =    this.#m_objects[i].force.y;
-            this.#CM.Q.elements[3 * i + 2] =    this.#m_objects[i].tau;
+            this.#CM.Q.elements[3 * i] = this.#m_objects[i].force.x;
+            this.#CM.Q.elements[3 * i + 1] = this.#m_objects[i].force.y;
+            this.#CM.Q.elements[3 * i + 2] = this.#m_objects[i].tau;
 
-            this.#CM.W.elements[3 * i] =        this.#m_objects[i].w;
-            this.#CM.W.elements[3 * i + 1] =    this.#m_objects[i].w;
+            this.#CM.W.elements[3 * i] = this.#m_objects[i].w;
+            this.#CM.W.elements[3 * i + 1] = this.#m_objects[i].w;
             // this.#CM.W.elements[3 * i + 2] =    this.#m_objects[i].w;
-            this.#CM.W.elements[3 * i + 2] =    1 / this.#m_objects[i].I;
+            this.#CM.W.elements[3 * i + 2] = 1 / this.#m_objects[i].I;
         }
 
-        this.#CM.C =        new Vector(this.#m_constraints.length);
-        this.#CM.C_dot =    new Vector(this.#m_constraints.length);
+        this.#CM.C = new Vector(this.#m_constraints.length);
+        this.#CM.C_dot = new Vector(this.#m_constraints.length);
 
-        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
-        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
+        this.#CM.J = new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
+        this.#CM.J_dot = new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
 
         for (let ith_row = 0; ith_row < this.#m_constraints.length; ith_row++) {
             this.#CM.C.elements[ith_row] = this.#m_constraints[ith_row].C_i(this.#CM.q);
@@ -127,7 +214,7 @@ export class PhysicsState {
             this.#CM.J.elements.push(
                 ...this.#m_constraints[ith_row].J_i(this.#CM.q, ith_row)
             );
-            
+
             this.#CM.J_dot.elements.push(
                 ...this.#m_constraints[ith_row].J_i_dot(this.#CM.q, this.#CM.q_dot, ith_row)
             );
@@ -137,8 +224,8 @@ export class PhysicsState {
         // this.#CM.A = this.#CM.getA();
 
         // check if lambda's length is correct
-            // should only change when main.add_to_physics is active is applying its functions
-        if (       this.#CM.lambda.elements.length < this.#m_constraints.length) {
+        // should only change when main.add_to_physics is active is applying its functions
+        if (this.#CM.lambda.elements.length < this.#m_constraints.length) {
             while (this.#CM.lambda.elements.length < this.#m_constraints.length) {
                 this.#CM.lambda.extend(0);
             }
@@ -153,16 +240,16 @@ export class PhysicsState {
     initConstraintManager() {
         this.#CM = new ConstraintManager();
 
-        this.#CM.q =        new Vector(3 * this.#m_objects.length);
-        this.#CM.q_dot =    new Vector(3 * this.#m_objects.length);
-        this.#CM.Q =        new Vector(3 * this.#m_objects.length);
-        this.#CM.W =        new Vector(3 * this.#m_objects.length);
-        this.#CM.lambda =   new Vector(this.#m_constraints.length);
-        this.#CM.J =        new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
-        this.#CM.J_dot =    new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
+        this.#CM.q = new Vector(3 * this.#m_objects.length);
+        this.#CM.q_dot = new Vector(3 * this.#m_objects.length);
+        this.#CM.Q = new Vector(3 * this.#m_objects.length);
+        this.#CM.W = new Vector(3 * this.#m_objects.length);
+        this.#CM.lambda = new Vector(this.#m_constraints.length);
+        this.#CM.J = new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
+        this.#CM.J_dot = new SparseMatrix(this.#m_constraints.length, 3 * this.#m_objects.length);
         this.#CM.accumulated_error = 0;
-        this.#CM.C =        new Vector(this.#m_constraints.length);
-        this.#CM.C_dot =    new Vector(this.#m_constraints.length);
+        this.#CM.C = new Vector(this.#m_constraints.length);
+        this.#CM.C_dot = new Vector(this.#m_constraints.length);
 
         this.#CM.lambda = Vector.set_zero_vector(this.#CM.lambda);
     }
@@ -194,7 +281,7 @@ export class PhysicsState {
                 this.#m_forceGenerators[i].apply(this.#m_objects);
             }
 
-            if (this.#m_mouseSpring.active) 
+            if (this.#m_mouseSpring.active)
                 this.#m_mouseSpring.apply(this.#m_objects);
 
             // resolve constraints
@@ -202,7 +289,7 @@ export class PhysicsState {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
-                    this.#CM.lambda = this.#CFS.CGM(this.#CM, 96) // last int is iteration-count
+                this.#CM.lambda = this.#CFS.CGM(this.#CM, 96) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.averaging.cfsdt_sum += CFS_et - CFS_st;
                 this.averaging.cfsdt_frames++;
@@ -320,8 +407,17 @@ export class PhysicsState {
                     // const rendered_id = this.#m_renderedConstraints.indexOf(con);'
                     this.removeRenderedConstraint(con);
                 }
-            } 
+            }
         }
+
+        for (let i = 0; i < this.#m_forceGenerators.length; i++) {
+            const gen = this.#m_forceGenerators[i];
+            if (gen instanceof SpringJoint) {
+                if ((gen.state_1.entity instanceof LinkConstraint) || (gen.state_1.entity instanceof OffsetLinkConstraint))
+                    this.removeForceGenerator(gen);
+            }
+        }
+
     }
 
     addObject(obj) {
@@ -366,7 +462,7 @@ export class PhysicsState {
         for (let i = 0; i < this.#m_objects.length; i++) {
             energy += this.#m_objects[i].calculateKineticEnergy();
         }
-        
+
 
         // work done against forceGenerators forces
         for (let i = 0; i < this.#m_forceGenerators.length; i++) {
@@ -409,7 +505,7 @@ export class PhysicsState {
             const v = Vector2.subtractVectors(this.#m_objects[i].pos, pos);
             const dist2 = v.x * v.x + v.y * v.y;
             const rad = this.#m_objects[i].radius;
-            if (dist2 < rad * rad) 
+            if (dist2 < rad * rad)
                 return i;
         }
         return -1;
@@ -452,7 +548,7 @@ export class PhysicsState {
             this.#m_constraints.pop();
         }
     }
-    
+
     addSpringJointWithStates(state_1, state_2) {
         const gen = new SpringJoint(state_1, state_2, this.#m_objects);
         this.addForceGenerator(gen);
@@ -461,8 +557,8 @@ export class PhysicsState {
     addSpringJoint(id1, id2) {
         const obj1 = this.#m_objects[id1];
         const obj2 = this.#m_objects[id2];
-        const state_1 = {entity: obj1, offset: Vector2.zero, prev_theta: obj1.theta, t_param: null, applied_pos: obj1.pos};
-        const state_2 = {entity: obj2, offset: Vector2.zero, prev_theta: obj2.theta, t_param: null, applied_pos: obj2.pos};
+        const state_1 = { entity: obj1, offset: Vector2.zero, prev_theta: obj1.theta, t_param: null, applied_pos: obj1.pos };
+        const state_2 = { entity: obj2, offset: Vector2.zero, prev_theta: obj2.theta, t_param: null, applied_pos: obj2.pos };
         const gen = new SpringJoint(state_1, state_2, this.#m_objects);
         this.addForceGenerator(gen);
     }
@@ -503,7 +599,7 @@ export class PhysicsState {
         this.addConstraint(con);
         this.addRenderedConstraint(con);
     }
-    
+
     addFixedOmegaConstraint(id, vel) {
         const con = new FixedOmegaConstraint(id, this.#m_objects[id].theta, vel);
         this.addConstraint(con);
@@ -522,7 +618,7 @@ export class PhysicsState {
             const rad = this.#m_objects[i].radius;
             if (dist2 < rad * rad) {
                 const offset = Vector2.subtractVectors(pos, this.#m_objects[i].pos);
-                return {entity: this.#m_objects[i], offset: offset, prev_theta: this.#m_objects[i].theta, t_param: null, applied_pos: pos};
+                return { entity: this.#m_objects[i], offset: offset, prev_theta: this.#m_objects[i].theta, t_param: null, applied_pos: pos };
             }
         }
 
@@ -539,15 +635,15 @@ export class PhysicsState {
                 const dist2 = Vector2.subtractVectors(proj, pos).sqr_magnitude();
                 const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
                 if (dist2 < sim_line_width * sim_line_width) {
-                    return {entity: con, offset: null, prev_theta: null, t_param: t, applied_pos: proj};
+                    return { entity: con, offset: null, prev_theta: null, t_param: t, applied_pos: proj };
                 }
-            } 
+            }
         }
 
-        return {entity: null, offset: null, prev_theta: null, t_param: null, applied_pos: null};
+        return { entity: null, offset: null, prev_theta: null, t_param: null, applied_pos: null };
 
     }
 
-    
+
 
 }

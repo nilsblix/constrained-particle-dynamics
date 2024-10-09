@@ -18,10 +18,10 @@ let solver = {
 };
 
 let saves = {
-    state_1: null,
-    state_2: null,
-    state_3: null,
-    state_4: null,
+    state_1: -1,
+    state_2: -1,
+    state_3: -1,
+    state_4: -1,
 }
 
 let mouse = {
@@ -209,8 +209,6 @@ function reset(window, canvas) {
 
 export function update(canvas, c) {
 
-    handleSavedStates(physicsState, saves);
-
     if (entity_manager.active && entity_manager.cubic_bezier_active) {
         entity_manager.update(mouse);
     }
@@ -249,6 +247,8 @@ export function update(canvas, c) {
 
     //debugs
     measureFrameRate(performance.now());
+    
+    handleSavedStates(physicsState, saves);
     updateGUI(physicsState, solver, entity_manager, handle_FPS, constants_values);
 
     if (keyboard.arrow_up)
