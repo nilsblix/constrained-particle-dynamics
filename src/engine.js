@@ -6,6 +6,10 @@ import { entity_manager } from "./entity_manager.js";
 import { Units } from "./units.js";
 import { updateGUI, handleSavedStates} from "./gui_helper.js";
 
+function roundToNearest(value, base) {
+    return Math.round(value / base) * base;
+}
+
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 120,
@@ -208,6 +212,9 @@ function reset(window, canvas) {
 }
 
 export function update(canvas, c) {
+
+    solver.dt = 1 / roundToNearest(handle_FPS.fps, 60);
+    // solver.dt = 1 / 60;
 
     if (entity_manager.active && entity_manager.cubic_bezier_active) {
         entity_manager.update(mouse);
