@@ -224,7 +224,7 @@ export class SparseMatrix {
 
     static mat_mult_vec(A, x) {
         if (A.j_length != x.elements.length) {
-            throw new Error("mat_mult_vec: lengths are not the same");
+            throw new Error("mat_mult_vec: lengths are not the same. Matrix Length: [" + A.i_length + " x " + A.j_length + "] Vector Length: " + x.elements.length);
         }
 
         const b = new Vector(A.i_length);
@@ -237,7 +237,7 @@ export class SparseMatrix {
 
     static matT_mult_vec(A, x) {
         if (A.i_length !== x.elements.length) {
-            throw new Error("matT_mult_vec: lengths are not the same");
+            throw new Error("matT_mult_vec: lengths are not the same. Matrix Length: [" + A.i_length + " x " + A.j_length + "] Vector Length: " + x.elements.length);
         }
 
         const b = new Vector(A.j_length);

@@ -19,7 +19,7 @@ export class ConstraintManager {
         this.b = new Vector(0);
     }
 
-    A(x) { // return JWJ_T * x
+    A(x) { // return JWJ_T * x        
         let Ax = SparseMatrix.matT_mult_vec(this.J, x);
         Ax = Vector.elem_by_elem_mult_vec(this.W, Ax);
         Ax = SparseMatrix.mat_mult_vec(this.J, Ax);

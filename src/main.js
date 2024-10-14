@@ -1,3 +1,5 @@
+"use strict";
+
 import {initUnits} from "./units.js";
 import {start, update, handleInputs} from "./engine.js";
 

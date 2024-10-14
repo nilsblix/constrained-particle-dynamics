@@ -93,7 +93,7 @@ export class PhysicsState {
         });
     }
 
-    deepClone() {
+    toObject() {
 
         function clone(a) {
             return a;
@@ -127,7 +127,7 @@ export class PhysicsState {
         }
     }
 
-    loadDeepClone(a) { // a is a deep clone
+    loadStateObject(a) { // a is a deep clone
 
         function assign(target, source) {
             Object.assign(target, source);
@@ -137,7 +137,7 @@ export class PhysicsState {
 
         assign(this.#m_objects, a.m_objects);
         assign(this.#m_forceGenerators, a.m_forceGenerators);
-        assign(this.#m_constraints = a.m_constraints);
+        assign(this.#m_constraints, a.m_constraints);
         assign(this.#m_mouseSpring, a.m_mouseSpring);
         assign(this.#CM, a.CM);
         assign(this.#CFS, a.CFS);
@@ -146,7 +146,7 @@ export class PhysicsState {
         assign(this.averaging.averaged_cfsdt, a.averaged_cfsdt);
         assign(this.averaging.cfsdt_sum, a.cfsdt_sum);
         assign(this.averaging.cfsdt_frames, a.cfsdt_frames);
-        assign(this.CFS_accumulated_error = a.CFS_accumulated_error);
+        assign(this.CFS_accumulated_error, a.CFS_accumulated_error);
         assign(this.system_energy, a.system_energy);
         assign(this.C_value, a.C_value);
         assign(this.C_dot_value, a.C_dot_value);
@@ -225,15 +225,17 @@ export class PhysicsState {
 
         // check if lambda's length is correct
         // should only change when main.add_to_physics is active is applying its functions
-        if (this.#CM.lambda.elements.length < this.#m_constraints.length) {
-            while (this.#CM.lambda.elements.length < this.#m_constraints.length) {
-                this.#CM.lambda.extend(0);
-            }
-        } else if (this.#CM.lambda.elements.length > this.#m_constraints.length) {
-            while (this.#CM.lambda.elements.length > this.#m_constraints.length) {
-                this.#CM.lambda.truncate();
-            }
-        }
+        // TEMPORARY COMMENTS
+        this.#CM.lambda = new Vector(this.#m_constraints.length);
+        // if (this.#CM.lambda.elements.length < this.#m_constraints.length) {
+        //     while (this.#CM.lambda.elements.length < this.#m_constraints.length) {
+        //         this.#CM.lambda.extend(0);
+        //     }
+        // } else if (this.#CM.lambda.elements.length > this.#m_constraints.length) {
+        //     while (this.#CM.lambda.elements.length > this.#m_constraints.length) {
+        //         this.#CM.lambda.truncate();
+        //     }
+        // }
 
     }
 
@@ -289,6 +291,9 @@ export class PhysicsState {
                 this.#updateConstraintManager();
 
                 let CFS_st = performance.now();
+                // TEMPORARY
+                // console.log("C length: " + this.#CM.C.elements.length);
+                console.log("lambda length: " + this.#CM.lambda.elements.length);
                 this.#CM.lambda = this.#CFS.CGM(this.#CM, 96) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.averaging.cfsdt_sum += CFS_et - CFS_st;

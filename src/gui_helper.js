@@ -1,3 +1,5 @@
+import {PhysicsState} from "./physicsState.js";
+
 function roundToNearest(value, base) {
     return Math.round(value / base) * base;
 }
@@ -73,7 +75,11 @@ export function handleSavedStates(physicsState, saves) {
                 // saves[key] = Object.assign(Object.create(Object.getPrototypeOf(physicsState)), physicsState);
                 // saves[key] = _.cloneDeep(physicsState.deepClone());
                 // saves[key] = JSON.stringify(physicsState);
-                saves[key] = physicsState.JSONstringify();
+
+                // saves[key] = physicsState.JSONstringify();
+
+                saves[key] = JSON.parse(JSON.stringify(physicsState.toObject()));
+
                 button.style.backgroundColor = on_color;
                 console.log("saved state: " + key);
                 console.log(key + ": " + saves[key])
@@ -82,7 +88,12 @@ export function handleSavedStates(physicsState, saves) {
                 // physicsState = _.cloneDeep(saves[key]);
                 // physicsState = Object.assign(Object.create(Object.getPrototypeOf(saves[key])), saves[key]);
                 // physicsState.loadDeepClone(_.cloneDeep(saves[key]));
-                physicsState = JSON.parse(saves[key]);
+                // physicsState = JSON.parse(saves[key]);
+
+                // physicsState.loadDeepClone(JSON.parse(saves[key]));
+
+                setClassInstance(physicsState, saves[key]);
+
                 console.log("loaded into physicsState: " + key);
             }
         };
@@ -118,3 +129,64 @@ export function handleSavedStates(physicsState, saves) {
     };
 
 }
+
+export function setClassInstance(class_instance, source_object) {
+
+    function isInstanceOfClass(obj) {
+        // Check if the object is an instance of a class (non-plain object)
+        if (typeof obj === 'object' && obj !== null) {
+          return obj.constructor !== Object;
+        }
+        return false; // Not an object or it's null
+      }
+      
+    function isPlainObject(obj) {
+        // Check if the object is a plain object (direct instance of Object)
+        return Object.prototype.toString.call(obj) === '[object Object]';
+    }
+
+    function getObject(val) {
+        if (isInstanceOfClass(val)) {
+            if (val instanceof PhysicsState)
+                return val.toObject();
+            else
+                return JSON.parse(JSON.stringify(val));
+        } else if (isPlainObject(val))
+            return val;
+        else 
+            return {val};
+    }
+
+    const a = getObject(class_instance);
+    const b = getObject(source_object);
+
+    for (let [key_a, data_a] of Object.entries(a)) {
+        for (let [key_b, data_b] of Object.entries(b)) {
+            if (key_a === key_b) {
+                console.log("key names: a ==> " + key_a + " b ==> " + key_b);
+                // data_a = JSON.parse(JSON.stringify(data_b));
+
+                // if (isNotPrimitive(key_a)) {
+                //     Object.assign(data_a, JSON.parse(JSON.stringify(data_b))); 
+                // } else {
+                //     setClassInstance()
+                // }
+
+                if (isInstanceOfClass(data_a) && isInstanceOfClass(data_b)) {
+                    console.log("recursion " + "A class: " + data_a.constructor.name + " B class: " + data_b.constructor.name);
+                    setClassInstance(data_a, data_b);
+                } else {
+                    console.log("assigned")
+                    // Object.assign(data_a, JSON.parse(JSON.stringify(data_b)));
+                    class_instance[key_a] = JSON.parse(JSON.stringify(data_b));
+                    // Object.assign(class_instance[key_a, JSON.parse(JSON.stringify(data_b))])
+                }
+
+            }
+        }
+    }
+
+}
+
+
+
