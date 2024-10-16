@@ -347,18 +347,31 @@
         </div>
 
         <div class="mod-label">
-            <p> // GENERAL INFO </p>
+            <p> // GENERAL INFO | SR ~ 1000 HZ</p>
             <p> SIMULATING = <span id="system-simulating">FALSE</span> </p>
             <p> FR = <span id="system-fr">0.000</span> FPS </p>
             <p> SR = <span id="system-sr">0.000</span> HZ </p>
-            <p> STEPS = <span id="system-steps">0.000</span> </p>
-            <p> &nbsp </p>
+        </div>
+
+        <div class="mod-label">SUB STEPS</div>
+        <div class="mod-slider-container">
+            <input id="info-steps-slider" class="mod-slider" type="range" min="1" max="20" step="1"
+                value="8">
+            <div id="info-steps-value" class="mod-slider-label">8</div>
+        </div>
+
+        <!-- <p> STEPS = <span id="system-steps">0.000</span> </p>
+        <p> &nbsp </p> -->
+
+        <div class="mod-label">
+            <p>&nbsp;</p>
             <p> // PHYSICS INFO </p>
             <p> NUM MASS OBJECTS = <span id="physics-mass-objects">0.000</span> </p>
             <p> NUM FORCEGENERATORS = <span id="physics-force-generators">0.000</span> </p>
             <p> NUM CONSTRAINTS = <span id="physics-constraints">0.000</span> </p>
             <p> &nbsp </p>
         </div>
+        
 
         <div class="mod-label">
             <p> // SAVED PHYSICS STATES <span id="info-reset-saved-states-button" class="mod-reset-button" style="font-size: 15px;">R</span> </p>
@@ -597,6 +610,16 @@
             mod_info_window.style.display = 'none';
         });
 
+        function updateSlider(slider_id, value_id) {
+            const _slider = document.getElementById(slider_id);
+            const _value = document.getElementById(value_id);
+            _slider.addEventListener('input', () => {
+                _value.innerText = parseFloat(_slider.value).toFixed(0);
+            });
+        }
+
+        updateSlider("info-steps-slider", "info-steps-value");
+
         document.addEventListener("keydown", (event) => {
             if (event.key == "z") {
                 if (mod_info_window.style.display == "block") {
@@ -673,8 +696,6 @@
         });
 
     </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <canvas id="engineCanvas" style="border: 1px solid white"></canvas>
     <script src="./main.js" type="module"></script>

@@ -13,7 +13,7 @@ function roundToNearest(value, base) {
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 120,
-    sim_steps: 8,
+    sim_steps: 12,
     simulating: false,
     physics_frame_time: -1,
     render_frame_time: -1,
@@ -52,20 +52,17 @@ const constants_values = {
     lagrange_limit: 7,
 }
 
-const handle_FPS = {
-    last_time: 0,
-    fps: 0,
-}
-
 const averaging = { // cfs time is handled in physicsState class
-    swap_frames: 20,
+    swap_frames: 5,
     pdt_sum: 0,
     pdt_frames: 0,
     rdt_sum: 0,
     rdt_frames: 0,
+    systemdt_sum: 0,
+    systemdt_frames: 0,
 
     check_swap_pdt(solver) {
-        if (this.pdt_sum > this.swap_frames) {
+        if (this.pdt_frames > this.swap_frames) {
             this.pdt_sum /= this.pdt_frames;
             solver.physics_frame_time = this.pdt_sum;
             this.pdt_sum = 0;
@@ -74,13 +71,27 @@ const averaging = { // cfs time is handled in physicsState class
     },
 
     check_swap_rdt(solver) {
-        if (this.rdt_sum > this.swap_frames) {
+        if (this.rdt_frames > this.swap_frames) {
             this.rdt_sum /= this.rdt_frames;
             solver.render_frame_time = this.rdt_sum;
             this.rdt_sum = 0;
             this.rdt_frames = 0;
         }
-    }
+    },
+
+    check_swap_systemdt(solver) {
+        if (this.systemdt_frames > 3 * this.swap_frames) {
+            this.systemdt_sum /= this.systemdt_frames;
+            solver.dt = this.systemdt_sum;
+            this.systemdt_sum = 0;
+            this.systemdt_frames = 0;
+        }
+    },
+}
+
+const handle_FPS = {
+    last_time: 0,
+    fps: 0,
 }
 
 function measureFrameRate(timestamp) {
@@ -213,8 +224,9 @@ function reset(window, canvas) {
 
 export function update(canvas, c) {
 
-    solver.dt = 1 / roundToNearest(handle_FPS.fps, 60);
-    // solver.dt = 1 / 60;
+    averaging.systemdt_sum += 1 / handle_FPS.fps;
+    averaging.systemdt_frames++;
+    averaging.check_swap_systemdt(solver);
 
     if (entity_manager.active && entity_manager.cubic_bezier_active) {
         entity_manager.update(mouse);
