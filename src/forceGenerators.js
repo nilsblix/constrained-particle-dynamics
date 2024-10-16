@@ -624,7 +624,7 @@ export class MouseSpring {
             const A_B = Vector2.subtractVectors(obj1.pos, obj2.pos);
             const applied_pos = Vector2.addVectors(obj2.pos, Vector2.scaleVector(A_B, this.t_linkConstraint));
             const dist = Vector2.distance(this.mouse_pos, applied_pos);
-            const displacement = dist - this.est_length;
+            const displacement = dist - this.rest_length;
 
             const force = this.stiffness_const * displacement;
 
@@ -652,6 +652,8 @@ export class MouseSpring {
 
             return energy;
         }
+
+        return 0;
         
     }
 

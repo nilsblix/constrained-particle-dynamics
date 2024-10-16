@@ -270,6 +270,10 @@ export class PhysicsState {
             // console.log("Mouse Spring Deactivated");
             this.#m_mouseSpring.active = false;
         }
+
+        const obj = this.#m_mouseSpring.object;
+        if (this.#m_objects.indexOf(obj) == -1 && this.#m_forceGenerators.indexOf(obj) == -1 && this.#m_constraints.indexOf(obj) == -1)
+            this.#m_mouseSpring.active = false;
     }
 
     step_simulation(dt, steps = 1) {
@@ -293,7 +297,7 @@ export class PhysicsState {
                 let CFS_st = performance.now();
                 // TEMPORARY
                 // console.log("C length: " + this.#CM.C.elements.length);
-                console.log("lambda length: " + this.#CM.lambda.elements.length);
+                // console.log("lambda length: " + this.#CM.lambda.elements.length);
                 this.#CM.lambda = this.#CFS.CGM(this.#CM, 96) // last int is iteration-count
                 let CFS_et = performance.now();
                 this.averaging.cfsdt_sum += CFS_et - CFS_st;
@@ -415,11 +419,19 @@ export class PhysicsState {
             }
         }
 
+        const objects = this.#m_objects;
+        const gens = this.#m_forceGenerators;
+        const constraints = this.#m_constraints;
+        function entityExists(obj) {
+            return (objects.indexOf(obj) != -1 || gens.indexOf(obj) != -1 || constraints.indexOf(obj) != -1);
+        }
+
         for (let i = 0; i < this.#m_forceGenerators.length; i++) {
             const gen = this.#m_forceGenerators[i];
             if (gen instanceof SpringJoint) {
-                if ((gen.state_1.entity instanceof LinkConstraint) || (gen.state_1.entity instanceof OffsetLinkConstraint))
+                if (!entityExists(gen.state_1.entity) || !entityExists(gen.state_1.entity)) {
                     this.removeForceGenerator(gen);
+                }
             }
         }
 
@@ -438,7 +450,8 @@ export class PhysicsState {
     }
 
     removeForceGenerator(gen) {
-        this.#m_forceGenerators.remove(gen);
+        const id = this.#m_forceGenerators.indexOf(gen);
+        this.#m_forceGenerators.splice(id, 1);
     }
 
     addConstraint(con) {

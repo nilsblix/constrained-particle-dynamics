@@ -26,7 +26,7 @@
             background-color: #0e1012;
         }
 
-        #myCanvas {
+        #engineCanvas {
             /* position: absolute; */
             /* top: 0; */
             /* left: 0; */
@@ -100,7 +100,7 @@
 
         /* Labels */
         .mod-label {
-            margin-top: 10px;
+            margin-top: 5px;
             margin-bottom: 2px;
             color: #ffffff;
             font-size: 15px;
@@ -112,6 +112,24 @@
         .mod-label p {
             margin-top: 3px;
             margin-bottom: 3px; 
+        }
+
+        .mod-graph-canvas {
+            display: none;
+            align-items: center;
+            width: 200px;
+            height: 150px;
+            border: 1px solid white;
+        }
+
+        .mod-graph-toggle-button {
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+        }
+
+        .mod-graph-toggle-button:hover a{
+            color: #888;
         }
 
         /* Slider styles */
@@ -296,14 +314,29 @@
         </div>
 
         <div class="mod-label">
-            <p> SYSTEM DT = <span id="system-dt">0.000</span> MS </p>
-            <p> PDT = <span id="system-pdt">0.000</span> MS </p>
-            <p> RDT = <span id="system-rdt">0.000</span> MS </p>
-            <p> CFS DT = <span id="system-cfsdt">0.000</span> MS </p>
+            <p> <span id="system-dt-graph-toggle-button" class="mod-graph-toggle-button">+</span> SYSTEM DT = <span id="system-dt">0.000</span> MS </p>
+            <canvas id="system-dt-graph-canvas" class="mod-graph-canvas"></canvas>
+            
+            <p> <span id="system-pdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> PDT = <span id="system-pdt">0.000</span> MS </p>
+            <canvas id="system-pdt-graph-canvas" class="mod-graph-canvas"></canvas>
+            
+            <p> <span id="system-rdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> RDT = <span id="system-rdt">0.000</span> MS </p>
+            <canvas id="system-rdt-graph-canvas" class="mod-graph-canvas"></canvas>
+            
+            <p> <span id="system-cfsdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> CFS DT = <span id="system-cfsdt">0.000</span> MS </p>
+            <canvas id="system-cfsdt-graph-canvas" class="mod-graph-canvas"></canvas>
+
             <p> CFS ERR = <span id="system-cfs-err">0.000</span> </p>
-            <p> ENERGY = <span id="system-energy">0.000</span> </p>
-            <p> C-EVAL = <span id="system-c-eval">0.000</span> </p>
-            <p> C-DOT-EVAL = <span id="system-c-dot-eval">0.000</span> </p>
+           
+            <p> <span id="system-energy-graph-toggle-button" class="mod-graph-toggle-button">+</span> ENERGY = <span id="system-energy">0.000</span> </p> 
+            <canvas id="system-energy-graph-canvas" class="mod-graph-canvas"></canvas>
+            
+            <p> <span id="system-c-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-EVAL = <span id="system-c-eval">0.000</span> </p>
+            <canvas id="system-c-eval-graph-canvas" class="mod-graph-canvas"></canvas>
+            
+            <p> <span id="system-c-dot-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-DOT-EVAL = <span id="system-c-dot-eval">0.000</span> </p>
+            <canvas id="system-c-dot-eval-graph-canvas" class="mod-graph-canvas"></canvas>
+            
         </div>
     </div>
 
@@ -494,6 +527,32 @@
             mod_profiling_window.style.display = 'none';
         });
 
+        function handleGraphToggleButton(btn_id, canv_id) {
+            const btn = document.getElementById(btn_id);
+            const canv = document.getElementById(canv_id);
+
+            // btn.style.color = "#ffffff";
+            canv.style.display = "none";
+
+            btn.addEventListener("click", () => {
+                if (canv.style.display == "none") {
+                    canv.style.display = "flex";
+                    btn.innerHTML = "-";
+                } else if (canv.style.display == "flex") {
+                    canv.style.display = "none";
+                    btn.innerHTML = "+";
+                }
+            });
+        }
+
+        handleGraphToggleButton("system-dt-graph-toggle-button", "system-dt-graph-canvas");
+        handleGraphToggleButton("system-pdt-graph-toggle-button", "system-pdt-graph-canvas");
+        handleGraphToggleButton("system-rdt-graph-toggle-button", "system-rdt-graph-canvas");
+        handleGraphToggleButton("system-cfsdt-graph-toggle-button", "system-cfsdt-graph-canvas");
+        handleGraphToggleButton("system-energy-graph-toggle-button", "system-energy-graph-canvas");
+        handleGraphToggleButton("system-c-eval-graph-toggle-button", "system-c-eval-graph-canvas");
+        handleGraphToggleButton("system-c-dot-eval-graph-toggle-button", "system-c-dot-eval-graph-canvas");
+
         document.addEventListener("keydown", (event) => {
             if (event.key == "a") {
                 if (mod_profiling_window.style.display == "block") {
@@ -617,7 +676,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <canvas id="myCanvas" style="border: 1px solid white"></canvas>
+    <canvas id="engineCanvas" style="border: 1px solid white"></canvas>
     <script src="./main.js" type="module"></script>
 </body>
 

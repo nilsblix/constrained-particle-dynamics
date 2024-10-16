@@ -1,12 +1,22 @@
-import {PhysicsState} from "./physicsState.js";
+import { update } from "./engine.js";
+import { PhysicsState } from "./physicsState.js";
 
 function roundToNearest(value, base) {
     return Math.round(value / base) * base;
 }
 
+let frames = 0;
+
 export function updateGUI(physicsState, solver, entity_manager, handle_FPS, constants_values) {
     updateDisplayedDebugs(solver, handle_FPS, physicsState);
     updateSliderValues(physicsState, solver, entity_manager, constants_values);
+
+    frames++;
+    if (frames % 5 == 0) {
+        updateAllGraphs(physicsState, solver);
+        frames = 0;
+    }
+
 }
 
 function updateDisplayedDebugs(solver, handle_FPS, physicsState) {
@@ -123,7 +133,7 @@ export function handleSavedStates(physicsState, saves) {
         saves.state_4 = -1;
         btn_4.style.backgroundColor = off_color;
 
-    
+
         console.log("after: " + saves);
 
     };
@@ -135,11 +145,11 @@ export function setClassInstance(class_instance, source_object) {
     function isInstanceOfClass(obj) {
         // Check if the object is an instance of a class (non-plain object)
         if (typeof obj === 'object' && obj !== null) {
-          return obj.constructor !== Object;
+            return obj.constructor !== Object;
         }
         return false; // Not an object or it's null
-      }
-      
+    }
+
     function isPlainObject(obj) {
         // Check if the object is a plain object (direct instance of Object)
         return Object.prototype.toString.call(obj) === '[object Object]';
@@ -153,8 +163,8 @@ export function setClassInstance(class_instance, source_object) {
                 return JSON.parse(JSON.stringify(val));
         } else if (isPlainObject(val))
             return val;
-        else 
-            return {val};
+        else
+            return { val };
     }
 
     const a = getObject(class_instance);
@@ -188,5 +198,137 @@ export function setClassInstance(class_instance, source_object) {
 
 }
 
+const system_dt_data = [];
+const system_pdt_data = [];
+const system_rdt_data = [];
+const system_cfsdt_data = [];
+const system_energy_data = [];
+const system_c_eval_data = [];
+const system_c_dot_eval_data = [];
 
+function updateAllGraphs(physicsState, solver) {
+    function _max(_default, data) {
+        return Math.max(_default, Math.max.apply(Math, data))
+    }
 
+    function _min(_default, data) {
+        return Math.min(_default, Math.min.apply(Math, data));
+    }
+
+    function handleSingularGraph(graph_id, data, new_data, default_min_range, default_max_range) {
+        const max = _max(default_max_range, data);
+        const min = _min(default_min_range, data);
+        const canv = document.getElementById(graph_id);
+        updateGraph(solver.simulating, canv, data, new_data, min, default_min_range, max, default_max_range);
+    }
+
+    handleSingularGraph("system-dt-graph-canvas", system_dt_data, solver.dt * 10 ** 3, 0, 8); // 0.16 is 60 fps
+    handleSingularGraph("system-pdt-graph-canvas", system_pdt_data, solver.physics_frame_time, 0, 8);
+    handleSingularGraph("system-rdt-graph-canvas", system_rdt_data, solver.render_frame_time, 0, 8);
+    handleSingularGraph("system-cfsdt-graph-canvas", system_cfsdt_data, physicsState.averaging.averaged_cfsdt, 0, 8);
+    handleSingularGraph("system-energy-graph-canvas", system_energy_data, physicsState.system_energy, -1000, 1000);
+    handleSingularGraph("system-c-eval-graph-canvas", system_c_eval_data, physicsState.C_value, 0, 0.1);
+    handleSingularGraph("system-c-dot-eval-graph-canvas", system_c_dot_eval_data, physicsState.C_dot_value, 0, 0.13);
+}
+
+// todo make lower bound for vis upper and both lower graph bound
+
+function updateGraph(add_new_data, graph_canvas, data, new_data, min_data_range, default_min, max_data_range, default_max) {
+    const c = graph_canvas.getContext("2d");
+
+    // Graph settings
+    const graphWidth = graph_canvas.width;
+    const graphHeight = graph_canvas.height;
+    const maxDataPoints = 100;  // Maximum number of points to display
+
+    drawGraph(c, graphWidth, graphHeight, maxDataPoints, data, min_data_range, default_min, max_data_range, default_max);
+
+    // Generate new data point and push to array
+    if (add_new_data) {
+        data.push(new_data);
+    }
+
+    // Keep the data array within the maximum number of data points
+    if (data.length > maxDataPoints) {
+        data.shift(); // Remove the oldest data point to make room for the new one
+    }
+
+    // Redraw the graph
+    drawGraph(c, graphWidth, graphHeight, maxDataPoints, data, min_data_range, default_min, max_data_range, default_max);
+
+}
+
+// Function to draw subtle grid lines
+function drawGraph(ctx, graphWidth, graphHeight, maxDataPoints, data, min_data_range, default_min, max_data_range, default_max) {
+
+    // Graph style
+    // const lineColor = '#e8ca1e';
+    const lineColor = '#ffffff'; 
+    const backgroundColor = '#21324e';
+    const max_line_color = "#e64132";
+
+    // Clear the canvas with the background color
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, graphWidth, graphHeight);
+
+    function scaleY(value, min, max) {
+        return (1 - (value - min) / (max - min)) * graphHeight;
+    }
+
+    // // Draw vertical grid lines
+    // for (let x = 0; x < graphWidth; x += gridSize) {
+    //     ctx.beginPath();
+    //     ctx.moveTo(x, 0);
+    //     ctx.lineTo(x, graphHeight);
+    //     ctx.stroke();
+    // }
+
+    // // Draw horizontal grid lines
+    // for (let y = 0; y < graphHeight; y += gridSize) {
+    //     ctx.beginPath();
+    //     ctx.moveTo(0, y);
+    //     ctx.lineTo(graphWidth, y);
+    //     ctx.stroke();
+    // }
+
+    // // Draw the axis lines (centered on Y-axis)
+    // ctx.beginPath();
+    // ctx.moveTo(0, graphHeight / 2);  // X axis
+    // ctx.lineTo(graphWidth, graphHeight / 2);
+    // ctx.strokeStyle = axisColor;
+    // ctx.lineWidth = 0.5;
+    // ctx.stroke();
+
+    ctx.strokeStyle = max_line_color;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(0, scaleY(default_max, min_data_range, max_data_range));
+    ctx.lineTo(graphWidth, scaleY(default_max, min_data_range, max_data_range));
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.moveTo(0, scaleY(default_min, min_data_range, max_data_range));
+    ctx.lineTo(graphWidth, scaleY(default_min, min_data_range, max_data_range));
+    ctx.stroke();
+    ctx.closePath();
+
+    // Draw the graph data points
+    ctx.strokeStyle = lineColor;
+    ctx.lineWidth = 1;
+
+    // Loop over the data points and plot them
+    ctx.beginPath();
+    for (let i = 0; i < data.length; i++) {
+        const x = i * (graphWidth / maxDataPoints);
+        const y = scaleY(data[i], min_data_range, max_data_range);
+        if (i === 0) {
+            ctx.moveTo(x, y);  // Start point
+        } else {
+            ctx.lineTo(x, y);  // Connect points
+        }
+    }
+    ctx.stroke();
+    ctx.closePath();
+}
