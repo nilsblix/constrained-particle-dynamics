@@ -99,7 +99,7 @@ function measureFrameRate(timestamp) {
     handle_FPS.last_time = timestamp;
 }
 
-function setSimConstants() {
+function setSimConstants() {
     physicsState.setGravity(constants_values.gravity);
     physicsState.setLinearDampingMU(constants_values.linear_damping);
     physicsState.setMouseSpringStiffness(constants_values.mouse_spring);
