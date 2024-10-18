@@ -6,10 +6,6 @@ import { entity_manager } from "./entity_manager.js";
 import { Units } from "./units.js";
 import { updateGUI, handleSavedStates} from "./gui_helper.js";
 
-function roundToNearest(value, base) {
-    return Math.round(value / base) * base;
-}
-
 var physicsState = new PhysicsState();
 let solver = {
     dt: 1 / 120,

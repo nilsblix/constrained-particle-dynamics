@@ -1,4 +1,3 @@
-import { update } from "./engine.js";
 import { PhysicsState } from "./physicsState.js";
 
 function roundToNearest(value, base) {
@@ -93,7 +92,7 @@ export function handleSavedStates(physicsState, saves) {
 
                 // saves[key] = physicsState.JSONstringify();
 
-                saves[key] = JSON.parse(JSON.stringify(physicsState.toObject()));
+                saves[key] = physicsState.toObject();
 
                 button.style.backgroundColor = on_color;
                 console.log("saved state: " + key);
