@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/azlokfzr/public_html/constrained-particle-dynamics
+    - export DEPLOYPATH=/home/azlokfzr/public_html/constrained-particle-dynamics/
     - /bin/cp -R assets $DEPLOYPATH
     - /bin/cp -R src $DEPLOYPATH
