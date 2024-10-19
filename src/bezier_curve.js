@@ -145,8 +145,10 @@ export class InteractableObject { // object lives in sim-space
     render(c) {
         const canv_pos = Units.sim_canv(this.pos);
         const radius = this.radius * Units.scale_s_c;
+
+        const color = this.held_down ? Colours.INNER_INTERACTABLEOBJECT_HELD_DOWN : Colours.INNER_INTERACTABLEOBJECT;
     
-        c.fillStyle = Colours.INNER_INTERACTABLEOBJECT;
+        c.fillStyle = color;
         c.strokeStyle = Colours.OUTER_INTERACTABLEOBJECT;
         c.lineWidth = LineWidths.INTERACTABLEOBJECT;
             

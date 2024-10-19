@@ -240,7 +240,7 @@
 <body>
 
     <!-- top left text showing primitive keybinds -->
-    <p class="top-left-label">[q][a][z][w]</p>
+    <p class="top-left-label">[q][a][z][w][e]</p>
 
     <!-- Debug window -->
     <div id="mod-settings-window" class="mod-debug-window" style="width: 300px">
@@ -439,6 +439,36 @@
             <p>AUXILIARY BINDS:</p>
             <p>&nbsp LEFT MOUSE + MOUSE POS: MOUSE SPRING</p>
         </div>
+    </div>
+
+    <div id="mod-editor-window" class="mod-debug-window" style="width: 300px">
+        <!-- Header with Close Button -->
+        <div id="mod-editor-header" class="mod-debug-header">
+            <span>// EDITOR </span>
+            <span id="editor-close-button" class="mod-close-button">✕</span>
+        </div>
+
+        <div class="mod-label">DYNAMIC OBJECT RADIUS (sim-space)</div>
+        <div class="mod-slider-container">
+            <input id="editor-object-radius-slider" class="mod-slider" type="range" min="0.005" max="2" step="0.005"
+                value="0.2">
+            <div id="editor-object-radius-value" class="mod-slider-label">0.2</div>
+        </div>
+
+        <div class="mod-label">DYNAMIC OBJECT MASS</div>
+        <div class="mod-slider-container">
+            <input id="editor-object-mass-slider" class="mod-slider" type="range" min="0.5" max="64" step="0.5"
+                value="1">
+            <div id="editor-object-mass-value" class="mod-slider-label">1</div>
+        </div>
+
+        <div class="mod-label">NUM BEZIER OBJECTS</div>
+        <div class="mod-slider-container">
+            <input id="editor-num-bezier-slider" class="mod-slider" type="range" min="1" max="30" step="1"
+                value="15">
+            <div id="editor-num-bezier-value" class="mod-slider-label">15</div>
+        </div>
+
     </div>
 
     <!-- SETTINGS -->
@@ -695,6 +725,61 @@
             keybinds_dragging = false;
         });
 
+    </script>
+
+    <!-- EDITOR -->
+    <script>
+        const editor_close_btn = document.getElementById("editor-close-button");
+        const mod_editor_window = document.getElementById('mod-editor-window');
+
+        mod_editor_window.style.display = "none";
+
+        editor_close_btn.addEventListener('click', () => {
+            mod_editor_window.style.display = 'none';
+        });
+
+        function updateSlider(slider_id, value_id, num_decimals) {
+            const _slider = document.getElementById(slider_id);
+            const _value = document.getElementById(value_id);
+            _slider.addEventListener('input', () => {
+                _value.innerText = parseFloat(_slider.value).toFixed(num_decimals);
+            });
+        }
+
+        updateSlider("editor-object-radius-slider", "editor-object-radius-value", 3);
+        updateSlider("editor-object-mass-slider", "editor-object-mass-value", 2);
+        updateSlider("editor-num-bezier-slider", "editor-num-bezier-value,", 0);
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key == "e") {
+                if (mod_editor_window.style.display == "block") {
+                    mod_editor_window.style.display = "none";
+                } else if (mod_editor_window.style.display == "none") {
+                    mod_editor_window.style.display = "block";
+                }
+            }
+        });
+
+        const mod_editor_header = document.getElementById('mod-editor-header');
+        let editor_dragging = false;
+        let editor_off_x = 0, editor_off_y = 0;
+
+        mod_editor_header.addEventListener('mousedown', (e) => {
+            editor_dragging = true;
+            editor_off_x = e.clientX - mod_editor_window.offsetLeft;
+            editor_off_y = e.clientY - mod_editor_window.offsetTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (editor_dragging) {
+                mod_editor_window.style.left = `${e.clientX - editor_off_x}px`;
+                mod_editor_window.style.top = `${e.clientY - editor_off_y}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            editor_dragging = false;
+        });
     </script>
 
     <canvas id="engineCanvas" style="border: 1px solid white"></canvas>

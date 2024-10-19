@@ -2,7 +2,7 @@ import { Vector2 } from "./linear_algebra.js";
 import { PhysicsState } from "./physicsState.js";
 import { DynamicObject } from "./dynamicObject.js";
 import { setupScene } from "./demo_scenes.js";
-import { entity_manager } from "./entity_manager.js";
+import { editor } from "./editor.js";
 import { Units } from "./units.js";
 import { updateGUI, handleSavedStates} from "./gui_helper.js";
 
@@ -13,7 +13,6 @@ let solver = {
     simulating: false,
     physics_frame_time: -1,
     render_frame_time: -1,
-    standard_radius: 0.05,
     physicsState_is_null: true,
 };
 
@@ -106,7 +105,7 @@ function setSimConstants() {
     physicsState.setSpringJointStiffness(constants_values.spring_joint);
     physicsState.setOmegaConstraintValue(constants_values.omega_constraint * solver.dt);
     physicsState.setLagrangeLimit(constants_values.lagrange_limit);
-    entity_manager.angular_motor_vel = constants_values.omega_constraint * solver.dt;
+    editor.angular_motor_vel = constants_values.omega_constraint * solver.dt;
 }
 
 function renderBackground(canvas, c) {
@@ -169,34 +168,38 @@ function renderBackground(canvas, c) {
     }
 
     // draw when adding objects etc to the physics engine
-    if (!entity_manager.active)
+    if (!editor.active)
         return;
     // settings:
     c.fillStyle = "rgba(156, 58, 58, 1)";
     c.strokeStyle = "#000000";
     c.lineWidth = 3;
     // constants
-    if (entity_manager.snap_to_grid) {
-        const c_pos = Units.sim_canv(Units.snap_to_grid(mouse.sim_pos));
-        c.beginPath();
-        c.arc(c_pos.x, c_pos.y, 10, 0, 2 * Math.PI);
-        c.stroke();
-        c.fill();
-        c.closePath();
-    } else {
-        c.beginPath();
-        c.arc(mouse.canv_pos.x, mouse.canv_pos.y, 10, 0, 2 * Math.PI);
-        c.stroke();
-        c.fill();
-        c.closePath();
-    }
 
-    // c.beginPath();
-    // c.fillStyle = "#ff0000";
-    // const c_pos_2 = Units.sim_canv(new Vector2(1,2));
-    // c.arc(c_pos_2.x, c_pos_2.y, 10, 0, 2 * Math.PI);
-    // c.fill();
-    // c.closePath();
+    // draw the thing specifying if user is in editor or not
+        // draw a red mouse
+    const red_dot_at_mouse = editor.snap_to_grid ? Units.sim_canv(Units.snap_to_grid(mouse.sim_pos)) : mouse.canv_pos;
+    c.beginPath();
+    c.arc(red_dot_at_mouse.x, red_dot_at_mouse.y, 8, 0, 2 * Math.PI);
+    c.stroke();
+    c.fill();
+    c.closePath();
+        // draw small rectangle in the border
+
+    const num_boxes = 1;
+    const rect_width = num_boxes * canvas.width / Units.render_num_lines_x;
+    const rect_height = num_boxes * canvas.height / Units.render_num_lines_y;
+    const rect_x = canvas.width - rect_width;
+    const rect_y = canvas.height - rect_height;
+
+    // const rect_multiple_of_canv = 1 / 10;
+    // const rect_sides = new Vector2(rect_multiple_of_canv * canvas.width, rect_multiple_of_canv * canvas.height);
+    // const rect_pos = new Vector2(canvas.width - rect_sides.x, canvas.height - rect_sides.y);
+    c.beginPath();
+    c.rect(rect_x, rect_y, rect_width, rect_height);
+    c.stroke();
+    c.fill();
+    c.closePath();
 
 }
 
@@ -224,11 +227,11 @@ export function update(canvas, c) {
     averaging.systemdt_frames++;
     averaging.check_swap_systemdt(solver);
 
-    if (entity_manager.active && entity_manager.cubic_bezier_active) {
-        entity_manager.update(mouse);
+    if (editor.active && editor.cubic_bezier_active) {
+        editor.update(mouse);
     }
 
-    if (mouse.on_canvas && !entity_manager.active)
+    if (mouse.on_canvas && !editor.active)
         physicsState.updateMouse(mouse.sim_pos, mouse.left_down)
 
     // physics
@@ -252,8 +255,8 @@ export function update(canvas, c) {
 
     physicsState.render(c);
 
-    if (entity_manager.active)
-        entity_manager.render(c, physicsState, solver, mouse);
+    if (editor.active)
+        editor.render(c, physicsState, solver, mouse);
 
     let r_et = performance.now();
     averaging.rdt_sum += r_et - r_st;
@@ -264,7 +267,7 @@ export function update(canvas, c) {
     measureFrameRate(performance.now());
     
     handleSavedStates(physicsState, saves);
-    updateGUI(physicsState, solver, entity_manager, handle_FPS, constants_values);
+    updateGUI(physicsState, solver, editor, handle_FPS, constants_values);
 
     if (keyboard.arrow_up)
         solver.simulating = false;
@@ -282,16 +285,16 @@ export function handleInputs(window, canvas) {
             physicsState = new PhysicsState();
             reset(window, canvas);
         }
-        if (event.key == "1" && solver.physicsState_is_null && !entity_manager.active) {
+        if (event.key == "1" && solver.physicsState_is_null && !editor.active) {
             setupScene(physicsState, solver, "pratt truss");
         }
-        if (event.key == "2" && solver.physicsState_is_null && !entity_manager.active) {
+        if (event.key == "2" && solver.physicsState_is_null && !editor.active) {
             setupScene(physicsState, solver, "king post truss");
         }
-        if (event.key == "3" && solver.physicsState_is_null && !entity_manager.active) {
+        if (event.key == "3" && solver.physicsState_is_null && !editor.active) {
             setupScene(physicsState, solver, "large bridge structure");
         }
-        if (event.key == "4" && solver.physicsState_is_null && !entity_manager.active) {
+        if (event.key == "4" && solver.physicsState_is_null && !editor.active) {
             setupScene(physicsState, solver, "crane structure");
         }
         if (event.key == "ArrowRight" && !solver.simulating) {
@@ -305,86 +308,89 @@ export function handleInputs(window, canvas) {
         }
         // add to physics manager
         if (event.key == "i") {
-            entity_manager.active = !entity_manager.active;
-            if (entity_manager.recent_entities.length != 0)
+            editor.active = !editor.active;
+            if (editor.recent_entities.length != 0)
                 solver.physicsState_is_null = false;
         }
         if (event.key == "I") {
-            entity_manager.snap_to_grid = !entity_manager.snap_to_grid;
+            editor.snap_to_grid = !editor.snap_to_grid;
         }
-        if (event.key == "1" && entity_manager.active) {
-            entity_manager.dynamicObject(physicsState, solver, mouse, 1, 1);
+        if (event.key == "1" && editor.active) {
+            editor.dynamicObject(physicsState, mouse, 1, 1 * 0.05);
         }
-        if (event.key == "2" && entity_manager.active) {
-            entity_manager.dynamicObject(physicsState, solver, mouse, 4, 2);
+        if (event.key == "2" && editor.active) {
+            editor.dynamicObject(physicsState, mouse, 4, 2 * 0.05);
         }
-        if (event.key == "3" && entity_manager.active) {
-            entity_manager.dynamicObject(physicsState, solver, mouse, 9, 3);
+        if (event.key == "3" && editor.active) {
+            editor.dynamicObject(physicsState, mouse, 9, 3 * 0.05);
         }
-        if (event.key == "4" && entity_manager.active) {
-            entity_manager.dynamicObject(physicsState, solver, mouse, 32, 8);
+        if (event.key == "4" && editor.active) {
+            editor.dynamicObject(physicsState, mouse, 32, 8 * 0.05);
         }
-        if (event.key == "5" && entity_manager.active) {
-            entity_manager.dynamicObject(physicsState, solver, mouse, 64, 14);
+        if (event.key == "5" && editor.active) {
+            editor.dynamicObject(physicsState, mouse, 64, 14 * 0.05);
         }
-        if (event.key == "H" && entity_manager.active) {
-            entity_manager.addRagdoll(physicsState, solver, mouse);
+        if (event.key == "0" && editor.active) {
+            editor.dynamicObject(physicsState, mouse);
         }
-        if (event.key == "x" && entity_manager.active) {
-            entity_manager.fixedXConstraint(physicsState, solver, mouse);
+        if (event.key == "H" && editor.active) {
+            editor.addRagdoll(physicsState, solver, mouse);
         }
-        if (event.key == "y" && entity_manager.active) {
-            entity_manager.fixedYConstraint(physicsState, solver, mouse);
+        if (event.key == "x" && editor.active) {
+            editor.fixedXConstraint(physicsState, solver, mouse);
         }
-        if (event.key == "p" && entity_manager.active) {
-            entity_manager.fixedPosConstraint(physicsState, solver, mouse);
+        if (event.key == "y" && editor.active) {
+            editor.fixedYConstraint(physicsState, solver, mouse);
         }
-        if (event.key == "t" && entity_manager.active) {
-            entity_manager.fixedRotConstraint(physicsState, solver, mouse);
+        if (event.key == "p" && editor.active) {
+            editor.fixedPosConstraint(physicsState, solver, mouse);
         }
-        if (event.key == "m" && entity_manager.active) {
-            entity_manager.fixedRotOmegaConstraint(physicsState, solver, mouse);
+        if (event.key == "t" && editor.active) {
+            editor.fixedRotConstraint(physicsState, solver, mouse);
         }
-        if (event.key == "l" && entity_manager.active) {
+        if (event.key == "m" && editor.active) {
+            editor.fixedRotOmegaConstraint(physicsState, solver, mouse);
+        }
+        if (event.key == "l" && editor.active) {
             const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
             const mouse_over_dynamicObject = (id != -1);
-            if (mouse_over_dynamicObject && !entity_manager.drawing_link_constraint) {
-                entity_manager.draw_state.entity = id;
-                entity_manager.drawing_link_constraint = true;
+            if (mouse_over_dynamicObject && !editor.drawing_link_constraint) {
+                editor.draw_state.entity = id;
+                editor.drawing_link_constraint = true;
 
             }
         }
-        if (event.key == "k" && entity_manager.active) {
+        if (event.key == "k" && editor.active) {
             const info = physicsState.getClosestEntity(mouse.sim_pos);
-            if (info.entity != null && !entity_manager.drawing_spring_joint) {
-                entity_manager.drawing_spring_joint = true;
-                entity_manager.draw_state = info;
+            if (info.entity != null && !editor.drawing_spring_joint) {
+                editor.drawing_spring_joint = true;
+                editor.draw_state = info;
                 // info = (of type) {entity: null, offset: null, prev_theta: null, t_param: t, applied_pos: null};
             }
         }
-        if (event.key == "j" && entity_manager.active) {
+        if (event.key == "j" && editor.active) {
             const info = physicsState.getClosestEntity(mouse.sim_pos);
             // TEMPORARY: change this next line if offset link constraint can support other entities.
             if (!(info.entity instanceof DynamicObject))
                 return;
-            if (info.entity != null && !entity_manager.drawing_link_constraint) {
-                entity_manager.drawing_link_constraint = true;
-                entity_manager.draw_state = info;
+            if (info.entity != null && !editor.drawing_link_constraint) {
+                editor.drawing_link_constraint = true;
+                editor.draw_state = info;
             }
         }
-        if (event.key == "Backspace" && entity_manager.active) {
-            entity_manager.removeMostRecentEntity(physicsState);
+        if (event.key == "Backspace" && editor.active) {
+            editor.removeMostRecentEntity(physicsState);
         }
-        if (event.key == "B" && entity_manager.active) {
-            if (!entity_manager.cubic_bezier_active) {
-                entity_manager.cubic_bezier_active = true;
-                entity_manager.addCubicBezierCurve(mouse);
-            } else if (entity_manager.cubic_bezier_active) {
-                entity_manager.cubic_bezier_active = false;
+        if (event.key == "B" && editor.active) {
+            if (!editor.cubic_bezier_active) {
+                editor.cubic_bezier_active = true;
+                editor.addCubicBezierCurve(mouse);
+            } else if (editor.cubic_bezier_active) {
+                editor.cubic_bezier_active = false;
             }
         }
-        if (event.key == "S" && entity_manager.active && entity_manager.cubic_bezier_active) {
-            entity_manager.spawnViaCubicBezier(physicsState, solver, mouse);
+        if (event.key == "S" && editor.active && editor.cubic_bezier_active) {
+            editor.spawnViaCubicBezier(physicsState, solver, mouse);
         }
     });
 
@@ -392,38 +398,38 @@ export function handleInputs(window, canvas) {
         if (event.key == "ArrowUp" && !solver.simulating) {
             keyboard.arrow_up = false;
         }
-        if (event.key == "l" && entity_manager.active) {
+        if (event.key == "l" && editor.active) {
             const id = physicsState.getObjIndexContainingPos(mouse.sim_pos);
             const mouse_over_dynamicObject = (id != -1);
-            if (mouse_over_dynamicObject && entity_manager.drawing_link_constraint) {
-                if (id != entity_manager.draw_start_object) {
-                    physicsState.addLinkConstraint(entity_manager.draw_state.entity, id);
+            if (mouse_over_dynamicObject && editor.drawing_link_constraint) {
+                if (id != editor.draw_start_object) {
+                    physicsState.addLinkConstraint(editor.draw_state.entity, id);
                     const c_length = physicsState.getConstraintLength();
-                    entity_manager.recent_entities.push({ type: "Constraint", id: c_length - 1 });
+                    editor.recent_entities.push({ type: "Constraint", id: c_length - 1 });
                 }
             }
-            entity_manager.drawing_link_constraint = false;
+            editor.drawing_link_constraint = false;
         }
-        if (event.key == "k" && entity_manager.active) {
+        if (event.key == "k" && editor.active) {
             const info = physicsState.getClosestEntity(mouse.sim_pos);
-            if (info.entity != null && entity_manager.drawing_spring_joint && info.entity != entity_manager.draw_state.entity) {
-                physicsState.addSpringJointWithStates(entity_manager.draw_state, info);
+            if (info.entity != null && editor.drawing_spring_joint && info.entity != editor.draw_state.entity) {
+                physicsState.addSpringJointWithStates(editor.draw_state, info);
                 const gen_length = physicsState.getForceGeneratorsLength();
-                entity_manager.recent_entities.push({ type: "ForceGenerator", id: gen_length - 1 });
+                editor.recent_entities.push({ type: "ForceGenerator", id: gen_length - 1 });
             }
-            entity_manager.drawing_spring_joint = false;
+            editor.drawing_spring_joint = false;
         }
-        if (event.key == "j" && entity_manager.active) {
+        if (event.key == "j" && editor.active) {
             const info = physicsState.getClosestEntity(mouse.sim_pos);
             // TEMPORARY: change this next line if offset link constraint can support other entities.
             if (!(info.entity instanceof DynamicObject))
-                entity_manager.drawing_link_constraint = false;
-            if (info.entity != null && entity_manager.drawing_link_constraint && info.entity != entity_manager.draw_state.entity) {
-                physicsState.addOffsetLinkConstraint(entity_manager.draw_state, info);
+                editor.drawing_link_constraint = false;
+            if (info.entity != null && editor.drawing_link_constraint && info.entity != editor.draw_state.entity) {
+                physicsState.addOffsetLinkConstraint(editor.draw_state, info);
                 const con_length = physicsState.getConstraintLength();
-                entity_manager.recent_entities.push({ type: "Constraint", id: con_length - 1 });
+                editor.recent_entities.push({ type: "Constraint", id: con_length - 1 });
             }
-            entity_manager.drawing_link_constraint = false;
+            editor.drawing_link_constraint = false;
         }
     });
 

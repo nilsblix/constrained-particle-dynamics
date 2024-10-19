@@ -42,7 +42,7 @@ function updateDisplayedDebugs(solver, handle_FPS, physicsState) {
 
 }
 
-function updateSliderValues(physicsState, solver, entity_manager, constants_values) {
+function updateSliderValues(physicsState, solver, editor, constants_values) {
 
     // settings window
     const gravity_slider = document.getElementById("settings-gravity-slider");
@@ -54,6 +54,11 @@ function updateSliderValues(physicsState, solver, entity_manager, constants_valu
 
     // info window
     const info_steps_slider = document.getElementById("info-steps-slider");
+
+    // editor window
+    const object_radius_slider = document.getElementById("editor-object-radius-slider");
+    const object_mass_slider = document.getElementById("editor-object-mass-slider");
+    const num_bezier_slider = document.getElementById("editor-num-bezier-slider");
 
     physicsState.setGravity(gravity_slider.value);
     constants_values.gravity = gravity_slider.value;
@@ -68,13 +73,17 @@ function updateSliderValues(physicsState, solver, entity_manager, constants_valu
     constants_values.spring_joint = spring_joint_slider.value;
 
     physicsState.setOmegaConstraintValue(omega_constraint_slider.value * solver.dt);
-    entity_manager.angular_motor_vel = omega_constraint_slider.value * solver.dt;
+    editor.angular_motor_vel = omega_constraint_slider.value * solver.dt;
     constants_values.omega_constraint = omega_constraint_slider.value;
 
     physicsState.setLagrangeLimit(lagrange_limit_slider.value);
     constants_values.lagrange_limit = lagrange_limit_slider.value;
 
     solver.sim_steps = info_steps_slider.value;
+
+    editor.object_mass = object_mass_slider.value;
+    editor.object_radius = object_radius_slider.value;
+    editor.num_objects_in_bezier = num_bezier_slider.value;
 
 }
 

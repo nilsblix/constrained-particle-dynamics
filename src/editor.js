@@ -4,7 +4,7 @@ import {Vector2} from "./linear_algebra.js";
 import {CubicBezier} from "./bezier_curve.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 
-export const entity_manager = {
+export const editor = {
     // honestly update this shit. it is definately as fucked as can be. plz it looks SO ass.
     active: false,
     snap_to_grid: false,
@@ -15,13 +15,21 @@ export const entity_manager = {
     cubic_bezier_active: false,
     cubic_bezier_curve: null,
     standard_interactable_radius: 0.1,
+    object_mass: 1,
+    object_radius: 0.05,
     num_objects_in_bezier: 20,
     object_bezier_mass: 1,
     angular_motor_vel: 20,
 
-    dynamicObject(physicsState, solver, mouse, mass, radius_mult) {
+    dynamicObject(physicsState, mouse, mass = false, radius = false) {
         const pos = this.snap_to_grid ? Units.snap_to_grid(mouse.sim_pos) : mouse.sim_pos;
-        physicsState.addObject(new DynamicObject(pos, mass, radius_mult * solver.standard_radius)); // TEMPORARY: 20 and 5 should be 1
+        let obj;
+        if (mass && radius) {
+            obj = new DynamicObject(pos, mass, radius);
+        } else {
+            obj = new DynamicObject(pos, this.object_mass, this.object_radius)
+        }
+        physicsState.addObject(obj);
         const length = physicsState.getDynamicObjectsLength();
         this.recent_entities.push({type: "DynamicObject", id: length - 1});
     },
