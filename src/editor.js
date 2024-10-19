@@ -15,6 +15,7 @@ export const editor = {
     cubic_bezier_active: false,
     cubic_bezier_curve: null,
     standard_interactable_radius: 0.1,
+    standard_object_radius: 0.05,
     object_mass: 1,
     object_radius: 0.05,
     num_objects_in_bezier: 20,
@@ -87,7 +88,7 @@ export const editor = {
     // add other stuff to the scene -->>>
     addRagdoll(physicsState, solver, mouse) {
         const pos = this.snap_to_grid ? Units.snap_to_grid(mouse.sim_pos) : mouse.sim_pos;
-        const rad = solver.standard_radius;
+        const rad = this.standard_object_radius;
         const object_id_offset = physicsState.getDynamicObjectsLength();
         const constraint_id_offset = physicsState.getConstraintLength();
     

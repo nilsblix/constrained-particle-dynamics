@@ -316,19 +316,19 @@ export function handleInputs(window, canvas) {
             editor.snap_to_grid = !editor.snap_to_grid;
         }
         if (event.key == "1" && editor.active) {
-            editor.dynamicObject(physicsState, mouse, 1, 1 * 0.05);
+            editor.dynamicObject(physicsState, mouse, 1, 1 * editor.standard_object_radius);
         }
         if (event.key == "2" && editor.active) {
-            editor.dynamicObject(physicsState, mouse, 4, 2 * 0.05);
+            editor.dynamicObject(physicsState, mouse, 4, 2 * editor.standard_object_radius);
         }
         if (event.key == "3" && editor.active) {
-            editor.dynamicObject(physicsState, mouse, 9, 3 * 0.05);
+            editor.dynamicObject(physicsState, mouse, 9, 3 * editor.standard_object_radius);
         }
         if (event.key == "4" && editor.active) {
-            editor.dynamicObject(physicsState, mouse, 32, 8 * 0.05);
+            editor.dynamicObject(physicsState, mouse, 32, 8 * editor.standard_object_radius);
         }
         if (event.key == "5" && editor.active) {
-            editor.dynamicObject(physicsState, mouse, 64, 14 * 0.05);
+            editor.dynamicObject(physicsState, mouse, 64, 14 * editor.standard_object_radius);
         }
         if (event.key == "0" && editor.active) {
             editor.dynamicObject(physicsState, mouse);
