@@ -4,7 +4,7 @@ import { DynamicObject } from "./dynamicObject.js";
 import { setupScene } from "./demo_scenes.js";
 import { editor } from "./editor.js";
 import { Units } from "./units.js";
-import { updateGUI, handleSavedStates} from "./gui_helper.js";
+import { updateGUI, handleSavedStates, drawScaleIndicator} from "./gui_helper.js";
 
 var physicsState = new PhysicsState();
 let solver = {
@@ -203,7 +203,7 @@ function renderBackground(canvas, c) {
 
 }
 
-export function start(window, canvas) {
+export function start(window, canvas, c) {
 
     solver.simulating = false;
     physicsState.initConstraintManager();
@@ -235,7 +235,12 @@ export function update(canvas, c) {
         physicsState.updateMouse(mouse.sim_pos, mouse.left_down)
 
     // physics
-    if (solver.simulating) {
+    if (solver.dt > 100 * 1e-3) {
+        requestAnimationFrame(() => update(canvas, c));
+        // throw new Error("Skipped current frame as delta time was too high. The next frame will continue as normal");
+        return;
+    }
+    if (solver.simulating && document.hasFocus()) {
         let p_st = performance.now();
         physicsState.process_sim(solver.dt, solver.sim_steps);
         let p_et = performance.now();
@@ -243,7 +248,7 @@ export function update(canvas, c) {
         averaging.pdt_frames++;
         averaging.check_swap_pdt(solver);
 
-    } else if (keyboard.arrow_up) {
+    } else if (keyboard.arrow_up && document.hasFocus()) {
         physicsState.process_sim(solver.dt / solver.sim_steps, 1);
         solver.simulating = true;
     }
@@ -252,6 +257,7 @@ export function update(canvas, c) {
     let r_st = performance.now();
     c.clearRect(0, 0, canvas.width, canvas.height);
     renderBackground(canvas, c);
+    drawScaleIndicator(canvas, c);
 
     physicsState.render(c);
 
@@ -265,8 +271,9 @@ export function update(canvas, c) {
 
     //debugs
     measureFrameRate(performance.now());
-    
-    handleSavedStates(physicsState, saves);
+
+    // TEMPORARY: if i decide to pursue saved states: this is where it gets called/ updated
+    // handleSavedStates(physicsState, saves);
     updateGUI(canvas, physicsState, solver, editor, handle_FPS, constants_values, mouse);
 
     if (keyboard.arrow_up)
@@ -331,7 +338,7 @@ export function handleInputs(window, canvas) {
             editor.dynamicObject(physicsState, mouse, 32, 8 * editor.standard_object_radius);
         }
         if (event.key == "5" && editor.active) {
-            editor.dynamicObject(physicsState, mouse, 64, 14 * editor.standard_object_radius);
+            editor.dynamicObject(physicsState, mouse, 64, 16 * editor.standard_object_radius);
         }
         if (event.key == "0" && editor.active) {
             editor.dynamicObject(physicsState, mouse);

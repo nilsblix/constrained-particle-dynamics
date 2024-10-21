@@ -364,21 +364,56 @@ function handlePopupWindow(canvas, physicsState, mouse) {
 
         // `{10px}`; 
         const rad = state.entity.radius;
+        const window_rect = popup.getBoundingClientRect();
         let pos = Vector2.addVectors(state.entity.pos, new Vector2(-rad, 0));
         pos = Units.sim_canv(pos);
         pos = Vector2.addVectors(pos, new Vector2(rect.x, rect.y));
-        pos = Vector2.addVectors(pos, new Vector2(-100, - popup.getBoundingClientRect().height / 2));
+        pos = Vector2.addVectors(pos, new Vector2(- window_rect.width, - window_rect.height / 2));
 
         // const _ = Units.sim_canv(Vector2.addVectors(state.entity.pos, new Vector2(-rad, rad)));
         popup.style.left = pos.x + "px"; // `${Units.sim_canv_x(state.entity.pos.x) + rect.x}px`;
         popup.style.top = pos.y + "px";  // `${Units.sim_canv_y(state.entity.pos.y) + rect.y}px`;
 
-        document.getElementById("popup-mass").innerHTML = state.entity.m;
-        document.getElementById("popup-radius").innerHTML = state.entity.radius.toFixed(3);
+        document.getElementById("popup-mass").innerHTML = state.entity.m
+        document.getElementById("popup-radius").innerHTML = (new Number(rad)).toFixed(3);
         document.getElementById("popup-density").innerHTML = (state.entity.m / (Math.PI * rad * rad)).toFixed(1);
         document.getElementById("popup-vel").innerHTML = state.entity.vel.magnitude().toFixed(3);
         return;
     }
 
     popup.style.display = "none";
+}
+
+export function drawScaleIndicator(canvas, c) {
+    const text = document.getElementById("scale-indicator");
+    const canv_rect = canvas.getBoundingClientRect();
+    const text_rect = text.getBoundingClientRect();
+
+    c.strokeStyle = "#ffffff";
+    c.lineWidth = 2;
+   
+    text.style.display = "block";
+
+    const middle = Units.sim_canv(new Vector2(1/4, 7/20));
+    text.style.left = (middle.x + canv_rect.x - text_rect.width / 2) + "px";
+    text.style.top = (middle.y + canv_rect.y - text_rect.height / 2) + "px";
+    // text.style.middle = (middle.y + canv_rect.y) + "px";
+    // text.style.top = (middle.y) + "px";
+
+    // console.log("middle: " + middle.toString());
+
+    const a = Units.sim_canv(new Vector2(1/2, 1/5));
+    const b = Units.sim_canv(new Vector2(1/2, 3/10));
+    const p = Units.sim_canv(new Vector2(0, 1/4));
+    const d = Units.sim_canv(new Vector2(1/2, 1/4));
+
+    c.beginPath();
+    c.moveTo(a.x, a.y);
+    c.lineTo(b.x, b.y);
+    c.moveTo(p.x, p.y);
+    c.lineTo(d.x, d.y);
+    c.stroke();
+    c.closePath();
+
+
 }

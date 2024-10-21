@@ -8,7 +8,7 @@ const c = canvas.getContext("2d");
 
 initUnits(canvas);
 
-start(window, canvas);
+start(window, canvas, c);
 
 handleInputs(window, canvas);
 
