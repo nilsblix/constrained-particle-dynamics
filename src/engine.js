@@ -237,14 +237,14 @@ export function update(canvas, c) {
     // physics
     if (solver.simulating) {
         let p_st = performance.now();
-        physicsState.step_simulation(solver.dt, solver.sim_steps);
+        physicsState.process_sim(solver.dt, solver.sim_steps);
         let p_et = performance.now();
         averaging.pdt_sum += p_et - p_st;
         averaging.pdt_frames++;
         averaging.check_swap_pdt(solver);
 
     } else if (keyboard.arrow_up) {
-        physicsState.step_simulation(solver.dt / solver.sim_steps, 1);
+        physicsState.process_sim(solver.dt / solver.sim_steps, 1);
         solver.simulating = true;
     }
 
@@ -267,7 +267,7 @@ export function update(canvas, c) {
     measureFrameRate(performance.now());
     
     handleSavedStates(physicsState, saves);
-    updateGUI(physicsState, solver, editor, handle_FPS, constants_values);
+    updateGUI(canvas, physicsState, solver, editor, handle_FPS, constants_values, mouse);
 
     if (keyboard.arrow_up)
         solver.simulating = false;
@@ -297,9 +297,12 @@ export function handleInputs(window, canvas) {
         if (event.key == "4" && solver.physicsState_is_null && !editor.active) {
             setupScene(physicsState, solver, "crane structure");
         }
+        if (event.key == "5" && solver.physicsState_is_null && !editor.active) {
+            setupScene(physicsState, solver, "standard pratt truss");
+        }
         if (event.key == "ArrowRight" && !solver.simulating) {
             let p_st = performance.now();
-            physicsState.step_simulation(solver.dt / solver.sim_steps, 1);
+            physicsState.process_sim(solver.dt / solver.sim_steps, 1);
             let p_et = performance.now();
             solver.physics_frame_time = p_et - p_st;
         }

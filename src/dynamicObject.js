@@ -13,14 +13,12 @@ export class DynamicObject {
 
         // auxiliary stuff
         this.radius = drawing_radius;
-
+        
         // rotational dynamics
         this.theta = 0; // [rad] angular position
-        // TEMPORARY: 10 should be 0
         this.omega = 0; // [rad / s] angular velocity
         this.tau = 0;   // [rad / s^2] force accumulator, acc = alpha
         this.I = 1 / 2 * this.m * this.radius ** 2; // [kg * m^2] moment of ineartia
-
     }
 
     symplecticEulerTranslation(dt) { // translational 

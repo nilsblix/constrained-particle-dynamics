@@ -1,6 +1,7 @@
 import {Units} from "./units.js";
 import {DynamicObject} from "./dynamicObject.js";
 import {Vector2} from "./linear_algebra.js";
+import { editor } from "./editor.js";
 
 /*
     Things to know if one where to build a new demo scene
@@ -10,6 +11,66 @@ import {Vector2} from "./linear_algebra.js";
 export function setupScene(physicsState, solver, version) {
     switch (version) {
         case "null":
+            break;
+
+        case "standard pratt truss":
+            const pratt_truss_radius_2 = 0.05;
+            const height_pratt_truss_2 = Units.HEIGHT / 2;
+
+            const pratt_p_delta_2 = 0.6;
+
+            const a0 = new DynamicObject(new Vector2(2, height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a1 = new DynamicObject(new Vector2(3, height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a2 = new DynamicObject(new Vector2(3, 1 + height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a3 = new DynamicObject(new Vector2(4, height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a4 = new DynamicObject(new Vector2(4, 1 + height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a5 = new DynamicObject(new Vector2(5, height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a6 = new DynamicObject(new Vector2(5, 1 + height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a7 = new DynamicObject(new Vector2(6, height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a8 = new DynamicObject(new Vector2(6, 1 + height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a9 = new DynamicObject(new Vector2(7, height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a10 = new DynamicObject(new Vector2(7, 1 + height_pratt_truss_2), 1, pratt_truss_radius_2);
+            const a11 = new DynamicObject(new Vector2(8, height_pratt_truss_2), 1, pratt_truss_radius_2)
+            
+            physicsState.addObject(a0);
+            physicsState.addObject(a1);
+            physicsState.addObject(a2);
+            physicsState.addObject(a3);
+            physicsState.addObject(a4);
+            physicsState.addObject(a5);
+            physicsState.addObject(a6);
+            physicsState.addObject(a7);
+            physicsState.addObject(a8);
+            physicsState.addObject(a9);
+            physicsState.addObject(a10);
+            physicsState.addObject(a11);
+
+            physicsState.addFixedPosConstraint(0);
+            physicsState.addFixedYConstraint(11);
+
+            physicsState.addLinkConstraint(0, 2);
+            physicsState.addLinkConstraint(2, 4);
+            physicsState.addLinkConstraint(4, 6);
+            physicsState.addLinkConstraint(6, 8);
+            physicsState.addLinkConstraint(8, 10);
+            physicsState.addLinkConstraint(10, 11);
+            physicsState.addLinkConstraint(2, 3);
+            physicsState.addLinkConstraint(4, 5);
+            physicsState.addLinkConstraint(5, 8);
+            physicsState.addLinkConstraint(7, 10);
+            
+            physicsState.addLinkConstraint(1, 2);
+            physicsState.addLinkConstraint(3, 4);
+            physicsState.addLinkConstraint(5, 6);
+            physicsState.addLinkConstraint(7, 8);
+            physicsState.addLinkConstraint(9, 10);
+            physicsState.addLinkConstraint(0, 1);
+            physicsState.addLinkConstraint(1, 3);
+            physicsState.addLinkConstraint(3, 5);
+            physicsState.addLinkConstraint(5, 7);
+            physicsState.addLinkConstraint(7, 9);
+            physicsState.addLinkConstraint(9, 11);
+
             break;
 
         case "pratt truss":
@@ -296,26 +357,26 @@ export function setupScene(physicsState, solver, version) {
             break;
     
         case "crane structure" :
-            const c0 = new DynamicObject(new Vector2(3, 0.5), 1, solver.standard_radius);
-            const c1 = new DynamicObject(new Vector2(4, 0.5), 1, solver.standard_radius);
-            const c2 = new DynamicObject(new Vector2(3, 1.5), 1, solver.standard_radius);
-            const c3 = new DynamicObject(new Vector2(4, 1.5), 1, solver.standard_radius);
-            const c4 = new DynamicObject(new Vector2(3, 2.5), 1, solver.standard_radius);
-            const c5 = new DynamicObject(new Vector2(4, 2.5), 1, solver.standard_radius);
-            const c6 = new DynamicObject(new Vector2(3, 3.5), 1, solver.standard_radius);
-            const c7 = new DynamicObject(new Vector2(4, 3.5), 1, solver.standard_radius);
-            const c8 = new DynamicObject(new Vector2(3, 4.5), 1, solver.standard_radius);
-            const c9 = new DynamicObject(new Vector2(4, 4.5), 1, solver.standard_radius);
-            const c10 = new DynamicObject(new Vector2(5, 3.5), 1, solver.standard_radius);
-            const c11 = new DynamicObject(new Vector2(6, 3.5), 1, solver.standard_radius);
-            const c12 = new DynamicObject(new Vector2(7, 3.5), 1, solver.standard_radius);
-            const c13 = new DynamicObject(new Vector2(7, 4), 1, solver.standard_radius);
-            const c14 = new DynamicObject(new Vector2(6, 4 + 1/6), 1, solver.standard_radius);
-            const c15 = new DynamicObject(new Vector2(5, 4 + 1/3), 1, solver.standard_radius);
-            const c16 = new DynamicObject(new Vector2(2, 3.5), 1, solver.standard_radius);
-            const c17 = new DynamicObject(new Vector2(7, 3.2), 1, solver.standard_radius);
-            const c18 = new DynamicObject(new Vector2(7, 2.9), 1, solver.standard_radius);
-            const c19 = new DynamicObject(new Vector2(7, 2.6), 5, 3*solver.standard_radius);
+            const c0 = new DynamicObject(new Vector2(3, 0.5), 1, editor.standard_object_radius);
+            const c1 = new DynamicObject(new Vector2(4, 0.5), 1, editor.standard_object_radius);
+            const c2 = new DynamicObject(new Vector2(3, 1.5), 1, editor.standard_object_radius);
+            const c3 = new DynamicObject(new Vector2(4, 1.5), 1, editor.standard_object_radius);
+            const c4 = new DynamicObject(new Vector2(3, 2.5), 1, editor.standard_object_radius);
+            const c5 = new DynamicObject(new Vector2(4, 2.5), 1, editor.standard_object_radius);
+            const c6 = new DynamicObject(new Vector2(3, 3.5), 1, editor.standard_object_radius);
+            const c7 = new DynamicObject(new Vector2(4, 3.5), 1, editor.standard_object_radius);
+            const c8 = new DynamicObject(new Vector2(3, 4.5), 1, editor.standard_object_radius);
+            const c9 = new DynamicObject(new Vector2(4, 4.5), 1, editor.standard_object_radius);
+            const c10 = new DynamicObject(new Vector2(5, 3.5), 1, editor.standard_object_radius);
+            const c11 = new DynamicObject(new Vector2(6, 3.5), 1, editor.standard_object_radius);
+            const c12 = new DynamicObject(new Vector2(7, 3.5), 1, editor.standard_object_radius);
+            const c13 = new DynamicObject(new Vector2(7, 4), 1, editor.standard_object_radius);
+            const c14 = new DynamicObject(new Vector2(6, 4 + 1/6), 1, editor.standard_object_radius);
+            const c15 = new DynamicObject(new Vector2(5, 4 + 1/3), 1, editor.standard_object_radius);
+            const c16 = new DynamicObject(new Vector2(2, 3.5), 1, editor.standard_object_radius);
+            const c17 = new DynamicObject(new Vector2(7, 3.2), 1, editor.standard_object_radius);
+            const c18 = new DynamicObject(new Vector2(7, 2.9), 1, editor.standard_object_radius);
+            const c19 = new DynamicObject(new Vector2(7, 2.6), 5, 3*editor.standard_object_radius);
 
             physicsState.addObject(c0);
             physicsState.addObject(c1);

@@ -1,4 +1,7 @@
 import { PhysicsState } from "./physicsState.js";
+import { DynamicObject } from "./dynamicObject.js";
+import { Units } from "./units.js";
+import { Vector2 } from "./linear_algebra.js";
 
 function roundToNearest(value, base) {
     return Math.round(value / base) * base;
@@ -6,9 +9,10 @@ function roundToNearest(value, base) {
 
 let frames = 0;
 
-export function updateGUI(physicsState, solver, entity_manager, handle_FPS, constants_values) {
+export function updateGUI(canvas, physicsState, solver, entity_manager, handle_FPS, constants_values, mouse) {
     updateDisplayedDebugs(solver, handle_FPS, physicsState);
     updateSliderValues(physicsState, solver, entity_manager, constants_values);
+    handlePopupWindow(canvas, physicsState, mouse);
 
     frames++;
     if (frames % 5 == 0) {
@@ -244,8 +248,6 @@ function updateAllGraphs(physicsState, solver) {
     handleSingularGraph("system-c-dot-eval-graph-canvas", system_c_dot_eval_data, physicsState.C_dot_value, 0, 0.13);
 }
 
-// todo make lower bound for vis upper and both lower graph bound
-
 function updateGraph(add_new_data, graph_canvas, data, new_data, min_data_range, default_min, max_data_range, default_max) {
     const c = graph_canvas.getContext("2d");
 
@@ -271,7 +273,6 @@ function updateGraph(add_new_data, graph_canvas, data, new_data, min_data_range,
 
 }
 
-// Function to draw subtle grid lines
 function drawGraph(ctx, graphWidth, graphHeight, maxDataPoints, data, min_data_range, default_min, max_data_range, default_max) {
 
     // Graph style
@@ -344,4 +345,40 @@ function drawGraph(ctx, graphWidth, graphHeight, maxDataPoints, data, min_data_r
     }
     ctx.stroke();
     ctx.closePath();
+}
+
+function handlePopupWindow(canvas, physicsState, mouse) {
+    const rect = canvas.getBoundingClientRect();
+
+    const popup = document.getElementById("popup-window");
+    const state = physicsState.getClosestEntity(mouse.sim_pos);
+    if (!state.entity) {
+        popup.style.display = "none";
+        return;
+    }
+
+    if (state.entity instanceof DynamicObject) {
+        popup.style.display = "block";
+
+        popup.style.left = "700px";
+
+        // `{10px}`; 
+        const rad = state.entity.radius;
+        let pos = Vector2.addVectors(state.entity.pos, new Vector2(-rad, 0));
+        pos = Units.sim_canv(pos);
+        pos = Vector2.addVectors(pos, new Vector2(rect.x, rect.y));
+        pos = Vector2.addVectors(pos, new Vector2(-100, - popup.getBoundingClientRect().height / 2));
+
+        // const _ = Units.sim_canv(Vector2.addVectors(state.entity.pos, new Vector2(-rad, rad)));
+        popup.style.left = pos.x + "px"; // `${Units.sim_canv_x(state.entity.pos.x) + rect.x}px`;
+        popup.style.top = pos.y + "px";  // `${Units.sim_canv_y(state.entity.pos.y) + rect.y}px`;
+
+        document.getElementById("popup-mass").innerHTML = state.entity.m;
+        document.getElementById("popup-radius").innerHTML = state.entity.radius.toFixed(3);
+        document.getElementById("popup-density").innerHTML = (state.entity.m / (Math.PI * rad * rad)).toFixed(1);
+        document.getElementById("popup-vel").innerHTML = state.entity.vel.magnitude().toFixed(3);
+        return;
+    }
+
+    popup.style.display = "none";
 }

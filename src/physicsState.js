@@ -276,7 +276,7 @@ export class PhysicsState {
             this.#m_mouseSpring.active = false;
     }
 
-    step_simulation(dt, steps = 1) {
+    process_sim(dt, steps = 1) {
         this.#updateSimulationConstants();
 
         for (let s = 0; s < steps; s++) {
