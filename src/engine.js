@@ -257,9 +257,10 @@ export function update(canvas, c) {
     let r_st = performance.now();
     c.clearRect(0, 0, canvas.width, canvas.height);
     renderBackground(canvas, c);
-    drawScaleIndicator(canvas, c);
 
     physicsState.render(c);
+
+    drawScaleIndicator(canvas, c);
 
     if (editor.active)
         editor.render(c, physicsState, solver, mouse);
