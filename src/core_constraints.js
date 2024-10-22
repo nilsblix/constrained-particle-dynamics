@@ -41,34 +41,29 @@ export class FixedYConstraint {
 
         const obj_rad = obj.radius;
 
-        const small_circle_rad = obj_rad / 4;
-        const connection_circle_rad = obj_rad * Units.scale_s_c / 3; // Math.sqrt(2 * obj_rad * Units.scale_s_c);
+        const connection_circle_rad = Units.scale_s_c * (obj_rad) + Extras.FIXEDPOSCONSTRAINT_OUTSIDE_OBJECT_BORDER_WIDTH;
 
-        const correction_edges = Units.scale_c_s * (0.5*LineWidths.OUTER_FIXEDYCONSTRAINT_HORIZONTAL_LINE);
-        // const correction_edges = 0;
+        // const correction_edges = Units.scale_c_s * (0.5*Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT + Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT - Colours.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT);
+        const correction_edges = 0;
 
-        const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad));
-        const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.3 * obj_rad, 0));
-        const horizontal_pos3 = Vector2.addVectors(horizontal_pos2, new Vector2( 1.3 * obj_rad, 0));
-
-        const c1 = Vector2.addVectors(horizontal_pos1, new Vector2(0.2 * obj_rad, - correction_edges - small_circle_rad));
-        const c2 = Vector2.addVectors(horizontal_pos2, new Vector2(0, - correction_edges - small_circle_rad));
-        const c3 = Vector2.addVectors(horizontal_pos3, new Vector2(- 0.2 * obj_rad, - correction_edges - small_circle_rad));
+        const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad - 0.05));
+        const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.5 * obj_rad - 0.2, 0));
+        const horizontal_pos3 = Vector2.addVectors(horizontal_pos2, new Vector2( 1.5 * obj_rad + 0.2, 0));
 
         const connection_obj_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(- Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos2 = Vector2.addVectors(obj.pos, new Vector2(- Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos3 = Vector2.addVectors(obj.pos, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos4 = Vector2.addVectors(horizontal_pos2, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
-        
+
         // obj.render(c);
 
         // draw the connecting things
         // settings
-        c.fillStyle = Colours.INNER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
-        c.strokeStyle = Colours.OUTER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
+        c.fillStyle = Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT;
+        c.strokeStyle = Colours.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT;
         // non adjustable settings:
-        c.lineWidth = LineWidths.OUTER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
-        c.lineCap = Extras.FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT_ENDCAPS;
+        c.lineWidth = LineWidths.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT;
+        c.lineCap = "butt";
         // drawing
         c.beginPath();
         c.arc(Units.sim_canv_x(obj.pos), Units.sim_canv_y(obj.pos), connection_circle_rad, 0, 2 * Math.PI);
@@ -90,10 +85,10 @@ export class FixedYConstraint {
 
         // draw the horizontal line:
         // settings:
-        c.strokeStyle = Colours.OUTER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
-        c.lineCap = "round";
+        c.strokeStyle = Colours.OUTER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
+        c.lineCap = Extras.FIXEDPOSCONSTRAINT_HORIZONTAL_LINE_ENDCAPS;
         // non adjustable settings
-        c.lineWidth = LineWidths.OUTER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
+        c.lineWidth = LineWidths.OUTER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
         // draw commands
         // border
         c.beginPath();
@@ -103,8 +98,8 @@ export class FixedYConstraint {
         // c.fill();
         c.closePath();
         // fill (inner)
-        c.lineWidth = LineWidths.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
-        c.strokeStyle = Colours.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
+        c.lineWidth = LineWidths.INNER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
+        c.strokeStyle = Colours.INNER_FIXEDPOSCONSTRAINT_HORIZONTAL_LINE;
         c.beginPath();
         c.moveTo(Units.sim_canv_x(horizontal_pos1), Units.sim_canv_y(horizontal_pos1));
         c.lineTo(Units.sim_canv_x(horizontal_pos3), Units.sim_canv_y(horizontal_pos3));
@@ -112,28 +107,28 @@ export class FixedYConstraint {
         // c.fill();
         c.closePath();
 
-        // draw the three small circles
-        // settings:
-        c.fillStyle = Colours.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
-        c.strokeStyle = Colours.OUTER_FIXEDXCONSTRAINT_HORIZONTAL_LINE;
-        // non adjustable settings:
-        c.lineWidth = LineWidths.INNER_FIXEDYCONSTRAINT_HORIZONTAL_LINE;
-        // draw commands:
-        c.beginPath();
-        c.arc(Units.sim_canv_x(c1), Units.sim_canv_y(c1), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
-        c.stroke();
-        c.fill();
-        c.closePath();
-        c.beginPath();
-        c.arc(Units.sim_canv_x(c2), Units.sim_canv_y(c2), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
-        c.stroke();
-        c.fill();
-        c.closePath();
-        c.beginPath();
-        c.arc(Units.sim_canv_x(c3), Units.sim_canv_y(c3), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
-        c.stroke();
-        c.fill();
-        c.closePath();        
+        // draw the small 5 circles
+        const dist = Vector2.distance(horizontal_pos1, horizontal_pos3);
+        const small_circle_rad = (dist / 2) / 10;
+        for (let i = 0; i <= 5; i++) {
+            const t = i / 5;
+
+            let pos = Vector2.addVectors(horizontal_pos1, Vector2.scaleVector(Vector2.subtractVectors(horizontal_pos3, horizontal_pos1), t));
+            // project:
+            const r1 = horizontal_pos1.x + small_circle_rad;
+            const r2 = horizontal_pos3.x - small_circle_rad;
+            pos.x = r1 + (pos.x - horizontal_pos1.x) * (r2 - r1) / (horizontal_pos3.x - horizontal_pos1.x);
+            pos.y -= small_circle_rad + 1/2 * Units.scale_c_s * (LineWidths.OUTER_FIXEDYCONSTRAINT_HORIZONTAL_LINE);
+
+            c.fillStyle = Colours.INNER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
+            c.strokeStyle = Colours.OUTER_FIXEDYCONSTRAINT_CONNECTION_TO_OBJECT;
+            c.lineWidth = 1;
+            c.beginPath();
+            c.arc(Units.sim_canv_x(pos), Units.sim_canv_y(pos), Units.scale_s_c * small_circle_rad, 0, 2 * Math.PI);
+            c.stroke();
+            c.fill();
+            c.closePath();
+        } 
 
     }
 }

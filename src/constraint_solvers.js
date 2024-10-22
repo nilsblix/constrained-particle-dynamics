@@ -52,7 +52,7 @@ export class ConstraintForceSolver {
         let rk_mag2 = r.sqr_magnitude();
 
         if (rk_mag2 < this.#m_minError * this.#m_minError) {
-            console.log("Premature lambda found on iteration: 0 (before iterating)");
+            // console.log("Premature lambda found on iteration: 0 (before iterating)");
             return x;
         }
         // } else if (Math.sqrt(rk_mag2) > 1) {
@@ -72,7 +72,7 @@ export class ConstraintForceSolver {
             const rk1_mag2 = r.sqr_magnitude();
 
             if (rk1_mag2 < this.#m_minError * this.#m_minError) {
-                console.log("Premature lambda found on iteration: " + (k + 1) + " (while iterating)");
+                // console.log("Premature lambda found on iteration: " + (k + 1) + " (while iterating)");
                 break;
             }
 

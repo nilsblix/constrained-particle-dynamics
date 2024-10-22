@@ -334,64 +334,77 @@ export class PhysicsState {
 
         let physics_id = 0;
 
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
+                physics_id++;
+        }
+
+        physics_id = 0; // FIXED POS CONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint) {
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+                physics_id++;
+            }
+        }
+
+        physics_id = 0; // FIXED Y CONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
+                physics_id++;
+            else if (con instanceof FixedYConstraint)
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+        }
+
+        physics_id = 0; // LINKCONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
+                physics_id++;
+            else if (con instanceof LinkConstraint)
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+        }
+
+        physics_id = 0; // FIXED OMEGA CONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
+                physics_id++;
+            else if (con instanceof FixedOmegaConstraint)
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+        }
+
         for (let i = 0; i < this.#m_objects.length; i++) {
             this.#m_objects[i].render(c);
         }
 
-        for (let k = 0; k < this.#m_renderedConstraints.length; k++) {
-            const con = this.#m_renderedConstraints[k];
-            if (con instanceof LinkConstraint) {
-                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
-                this.#m_objects[con.id1].render(c);
-                this.#m_objects[con.id2].render(c);
-            } else if (con instanceof FixedPosConstraint) {
+        physics_id = 0; // FIXED X CONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
                 physics_id++;
-            } else if (con instanceof FixedOmegaConstraint) {
-                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
-                this.#m_objects[con.id].render(c);
-            }
-
-            physics_id++;
+            else if (con instanceof FixedXConstraint)
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
         }
 
-        for (let i = 0; i < this.#m_objects.length; i++) {
-            physics_id = 0;
-            // this.#m_objects[i].render(c);
-
-            for (let k = 0; k < this.#m_renderedConstraints.length; k++) {
-                const con = this.#m_renderedConstraints[k];
-                if (con instanceof LinkConstraint) {
-                    // con.render(c, this.#m_objects, this.#CM.lambda.elements[index_phys_const], this.#lagrange_mult_limit);
-                } else if (con instanceof OffsetLinkConstraint) {
-                    // con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
-                } else if ((con instanceof FixedPosConstraint) && con.id == i) {
-                    con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
-                    physics_id++;
-                } else if ((con instanceof FixedXConstraint) && con.p_id == i) {
-                    con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
-                } else if ((con instanceof FixedYConstraint) && con.p_id == i) {
-                    con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
-                } else if ((con instanceof FixedRotationConstraint) && con.id == i) {
-                    con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id]);
-                }
-
-                if (con instanceof FixedPosConstraint)
-                    physics_id++;
-
+        physics_id = 0; // FIXED ROTATION  CONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
                 physics_id++;
-            }
-
+            else if (con instanceof FixedRotationConstraint)
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
         }
 
-        physics_id = 0;
-        for (let k = 0; k < this.#m_renderedConstraints.length; k++) {
-            const con = this.#m_renderedConstraints[k];
-            if (con instanceof OffsetLinkConstraint) {
-                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
-            } else if (con instanceof FixedPosConstraint) {
+        physics_id = 0; // FIXED OFFSET LINK CONSTRAINT
+        for (let i = 0; i < this.#m_renderedConstraints.length; i++) {
+            const con = this.#m_renderedConstraints[i];
+            if (con instanceof FixedPosConstraint)
                 physics_id++;
-            }
-            physics_id++;
+            else if (con instanceof OffsetLinkConstraint)
+                con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
         }
 
         // force generators
@@ -651,7 +664,22 @@ export class PhysicsState {
                 const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
                 const proj = Vector2.addVectors(B.pos, Vector2.scaleVector(A_B, t));
                 const dist2 = Vector2.subtractVectors(proj, pos).sqr_magnitude();
-                const sim_line_width = Units.scale_c_s * LineWidths.OUTER_LINKCONSTRAINT;
+                const sim_line_width = Units.scale_c_s * LineWidths.INNER_LINKCONSTRAINT;
+                if (dist2 < sim_line_width * sim_line_width) {
+                    return { entity: con, offset: null, prev_theta: null, t_param: t, applied_pos: proj };
+                }
+            } else if (con instanceof OffsetLinkConstraint) {
+                const A = this.#m_objects[con.state_1.id];
+                const B = this.#m_objects[con.state_2.id];
+                const A_applied = Vector2.addVectors(A.pos, con.state_1.offset);
+                const B_applied = Vector2.addVectors(B.pos, con.state_2.offset);
+                // finish this, make sure its working
+                const C_B = Vector2.subtractVectors(pos, B_applied);
+                const A_B = Vector2.subtractVectors(A_applied, B_applied);
+                const t = Math.max(Math.min(C_B.dot(A_B) / A_B.sqr_magnitude(), 1), 0);
+                const proj = Vector2.addVectors(B_applied, Vector2.scaleVector(A_B, t));
+                const dist2 = Vector2.subtractVectors(proj, pos).sqr_magnitude();
+                const sim_line_width = Units.scale_c_s * LineWidths.INNER_LINKCONSTRAINT;
                 if (dist2 < sim_line_width * sim_line_width) {
                     return { entity: con, offset: null, prev_theta: null, t_param: t, applied_pos: proj };
                 }

@@ -1,6 +1,6 @@
-import {SparseMatrixBlock, SparseMatrix, Vector, Vector2} from "./linear_algebra.js";
-import {Units} from "./units.js";
-import {Colours, LineWidths, Extras} from "./render_settings.js";
+import { SparseMatrixBlock, SparseMatrix, Vector, Vector2 } from "./linear_algebra.js";
+import { Units } from "./units.js";
+import { Colours, LineWidths, Extras } from "./render_settings.js";
 
 // if you add an extended constraint, make sure to include it in all places in physicsState
 // where to do things with rendering/ add or remove constraints it is necessary to know
@@ -19,24 +19,25 @@ export class FixedPosConstraint {
     }
 
     render(c, m_objects, lagrange_mult) {
+
         const obj = m_objects[this.id];
 
         const obj_rad = obj.radius;
 
-        const connection_circle_rad = Units.scale_s_c * obj_rad / 3;
+        const connection_circle_rad = Units.scale_s_c * (obj_rad) + Extras.FIXEDPOSCONSTRAINT_OUTSIDE_OBJECT_BORDER_WIDTH;
 
         // const correction_edges = Units.scale_c_s * (0.5*Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT + Colours.INNER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT - Colours.OUTER_FIXEDPOSCONSTRAINT_CONNECTION_TO_OBJECT);
         const correction_edges = 0;
 
-        const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad));
-        const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.8 * obj_rad, 0));
-        const horizontal_pos3 = Vector2.addVectors(horizontal_pos2, new Vector2( 1.8 * obj_rad, 0));
+        const horizontal_pos2 = Vector2.addVectors(obj.pos, new Vector2(0, - correction_edges - obj_rad - 0.05));
+        const horizontal_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(-1.5 * obj_rad - 0.2, 0));
+        const horizontal_pos3 = Vector2.addVectors(horizontal_pos2, new Vector2( 1.5 * obj_rad + 0.2, 0));
 
         const connection_obj_pos1 = Vector2.addVectors(horizontal_pos2, new Vector2(- Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos2 = Vector2.addVectors(obj.pos, new Vector2(- Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos3 = Vector2.addVectors(obj.pos, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
         const connection_obj_pos4 = Vector2.addVectors(horizontal_pos2, new Vector2(Units.scale_c_s * connection_circle_rad, 0));
-        
+
         // obj.render(c);
 
         // draw the connecting things

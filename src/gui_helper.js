@@ -1,5 +1,6 @@
 import { PhysicsState } from "./physicsState.js";
 import { DynamicObject } from "./dynamicObject.js";
+import { FixedXConstraint, FixedYConstraint, LinkConstraint, OffsetLinkConstraint, FixedRotationConstraint, FixedOmegaConstraint } from "./core_constraints.js";
 import { Units } from "./units.js";
 import { Vector2 } from "./linear_algebra.js";
 
@@ -277,7 +278,7 @@ function drawGraph(ctx, graphWidth, graphHeight, maxDataPoints, data, min_data_r
 
     // Graph style
     // const lineColor = '#e8ca1e';
-    const lineColor = '#ffffff'; 
+    const lineColor = '#ffffff';
     const backgroundColor = '#21324e';
     const max_line_color = "#e64132";
 
@@ -352,32 +353,80 @@ function handlePopupWindow(canvas, physicsState, mouse) {
 
     const popup = document.getElementById("popup-window");
     const state = physicsState.getClosestEntity(mouse.sim_pos);
+
+    for (let i = 1; i <= 4; i++) { // 4 is max entry id
+        document.getElementById("popup-entry-" + i).style.display = "none";
+    }
+
     if (!state.entity) {
         popup.style.display = "none";
         return;
     }
 
-    if (state.entity instanceof DynamicObject) {
-        popup.style.display = "block";
+    const updateFigure = (id, name, value, unit) => {
+        document.getElementById("popup-name-" + id).innerHTML = name;
+        document.getElementById("popup-number-" + id).innerHTML = value;
+        document.getElementById("popup-unit-" + id).innerHTML = unit;
+        document.getElementById("popup-entry-" + id).style.display = "block";
+    }
 
-        popup.style.left = "700px";
-
-        // `{10px}`; 
-        const rad = state.entity.radius;
+    const updateWindowPosition = (type, entity_pos = null) => {
         const window_rect = popup.getBoundingClientRect();
-        let pos = Vector2.addVectors(state.entity.pos, new Vector2(-rad, 0));
+        let pos = type == "DynamicObject" ? Vector2.addVectors(state.entity.pos, new Vector2(-state.entity.radius, 0))
+            : Vector2.addVectors(entity_pos, new Vector2(-0.2, 0));
+
         pos = Units.sim_canv(pos);
         pos = Vector2.addVectors(pos, new Vector2(rect.x, rect.y));
         pos = Vector2.addVectors(pos, new Vector2(- window_rect.width, - window_rect.height / 2));
 
-        // const _ = Units.sim_canv(Vector2.addVectors(state.entity.pos, new Vector2(-rad, rad)));
-        popup.style.left = pos.x + "px"; // `${Units.sim_canv_x(state.entity.pos.x) + rect.x}px`;
-        popup.style.top = pos.y + "px";  // `${Units.sim_canv_y(state.entity.pos.y) + rect.y}px`;
+        popup.style.left = pos.x + "px";
+        popup.style.top = pos.y + "px";
 
-        document.getElementById("popup-mass").innerHTML = state.entity.m
-        document.getElementById("popup-radius").innerHTML = (new Number(rad)).toFixed(3);
-        document.getElementById("popup-density").innerHTML = (state.entity.m / (Math.PI * rad * rad)).toFixed(1);
-        document.getElementById("popup-vel").innerHTML = state.entity.vel.magnitude().toFixed(3);
+        // console.log("left: " + popup.style.left);
+        // console.log("top: " + popup.style.top);
+
+        popup.style.display = "block";
+
+    }
+
+    if (state.entity instanceof LinkConstraint) {
+        const p1 = physicsState.getObjectPositionById(state.entity.id1);
+        const p2 = physicsState.getObjectPositionById(state.entity.id2);
+        const pos = Vector2.scaleVector(Vector2.addVectors(p1, p2), 1 / 2)
+        
+        updateFigure(1, "LENGTH", new Number(state.entity.l0).toFixed(3), "m");
+        
+        updateWindowPosition("LinkConstraint", pos);
+
+        return;
+    }
+
+    if (state.entity instanceof OffsetLinkConstraint) {
+        const p1 = Vector2.addVectors(physicsState.getObjectPositionById(state.entity.state_1.id), state.entity.state_1.offset);
+        const p2 = Vector2.addVectors(physicsState.getObjectPositionById(state.entity.state_2.id), state.entity.state_2.offset);
+        const pos = Vector2.scaleVector(Vector2.addVectors(p1, p2), 1 / 2)
+        
+        updateFigure(1, "LENGTH", new Number(state.entity.l0).toFixed(3), "m");
+        
+        updateWindowPosition("LinkConstraint", pos);
+
+        return;
+    }
+
+    if (state.entity instanceof DynamicObject) {
+        const rad = state.entity.radius;
+
+        updateFigure(1, "MASS", state.entity.m, "kg");
+        updateFigure(2, "RADIUS", (new Number(rad)).toFixed(3), "m");
+        updateFigure(3, "DENSITY", (state.entity.m / (Math.PI * rad * rad)).toFixed(1), "k/m^2");
+        updateFigure(4, "VEL", state.entity.vel.magnitude().toFixed(3), "m/s");
+
+        updateWindowPosition("DynamicObject", state.entity.pos);
+
+        // document.getElementById("popup-mass").innerHTML = state.entity.m
+        // document.getElementById("popup-radius").innerHTML = (new Number(rad)).toFixed(3);
+        // document.getElementById("popup-density").innerHTML = (state.entity.m / (Math.PI * rad * rad)).toFixed(1);
+        // document.getElementById("popup-vel").innerHTML = state.entity.vel.magnitude().toFixed(3);
         return;
     }
 
@@ -391,10 +440,10 @@ export function drawScaleIndicator(canvas, c) {
 
     c.strokeStyle = "#ffffff";
     c.lineWidth = 2;
-   
+
     text.style.display = "block";
 
-    const middle = Units.sim_canv(new Vector2(1/4, 7/20));
+    const middle = Units.sim_canv(new Vector2(1 / 4, 7 / 20));
     text.style.left = (middle.x + canv_rect.x - text_rect.width / 2) + "px";
     text.style.top = (middle.y + canv_rect.y - text_rect.height / 2) + "px";
     // text.style.middle = (middle.y + canv_rect.y) + "px";
@@ -402,10 +451,16 @@ export function drawScaleIndicator(canvas, c) {
 
     // console.log("middle: " + middle.toString());
 
-    const a = Units.sim_canv(new Vector2(1/2, 1/5));
-    const b = Units.sim_canv(new Vector2(1/2, 3/10));
-    const p = Units.sim_canv(new Vector2(0, 1/4));
-    const d = Units.sim_canv(new Vector2(1/2, 1/4));
+    let p = Units.snap_to_grid(new Vector2(0, 1 / 4));
+    let d = Units.snap_to_grid(new Vector2(1 / 2, 1 / 4));
+
+    const a = Units.sim_canv(new Vector2(d.x, 1 / 5));
+    const b = Units.sim_canv(new Vector2(d.x, 3 / 10));
+
+    document.getElementById("scale-indicator-distance").innerHTML = Vector2.distance(p, d);
+
+    p = Units.sim_canv(p);
+    d = Units.sim_canv(d);
 
     c.beginPath();
     c.moveTo(a.x, a.y);

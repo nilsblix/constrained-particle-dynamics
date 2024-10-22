@@ -3,7 +3,7 @@ import { PhysicsState } from "./physicsState.js";
 import { DynamicObject } from "./dynamicObject.js";
 import { setupScene } from "./demo_scenes.js";
 import { editor } from "./editor.js";
-import { Units } from "./units.js";
+import { initUnits, Units } from "./units.js";
 import { updateGUI, handleSavedStates, drawScaleIndicator} from "./gui_helper.js";
 
 var physicsState = new PhysicsState();
@@ -111,8 +111,8 @@ function setSimConstants() {
 function renderBackground(canvas, c) {
     // colors
     const backgroundColor = "#0c0e11";
-    const big_line_color = "#202123"
-    const small_line_color = "#141819"
+    const big_line_color = "#27282e"
+    const small_line_color = "#1b1c1f"
     // vars
     const lines_x = Units.render_num_lines_x;
     const lines_y = Units.render_num_lines_y;
@@ -148,7 +148,7 @@ function renderBackground(canvas, c) {
 
     // big lines
     c.strokeStyle = big_line_color;
-    c.lineWidth = 1.2;
+    c.lineWidth = 1;
     for (let i = 0; i < lines_x; i++) {
         const clip_space = i / lines_x;
         c.beginPath();
@@ -222,6 +222,8 @@ function reset(window, canvas) {
 }
 
 export function update(canvas, c) {
+
+    initUnits(canvas);
 
     averaging.systemdt_sum += 1 / handle_FPS.fps;
     averaging.systemdt_frames++;

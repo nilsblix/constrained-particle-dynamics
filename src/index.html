@@ -236,7 +236,7 @@
 
         .mod-popup-window {
             position: absolute;
-            /* border: 2px solid #ffffff; */
+            border: 2px solid #ffffff;
             /* background-color: #ff0707; */
             background-color: rgba(0, 0, 0, 0);
             /* opacity: 0.9; */
@@ -263,10 +263,18 @@
             margin-left: 3px;
         }
 
+        .mod-popup-label-data-p {
+            display: none;
+        }
+
         .mod-popup-label p {
             margin-top: 3px;
             margin-bottom: 3px; 
         }
+
+        /* .mod-popup-label span {
+            display: none;
+        } */
 
         .scale-indicator {
             position: absolute;
@@ -290,7 +298,7 @@
             opacity: 1;
         }
 
-        .scale-indicator p {
+        .scale-indicator span {
             margin-top: 3px;
             margin-bottom: 3px; 
         }
@@ -304,7 +312,7 @@
     <p class="top-left-label">[q][a][z][w][e]</p>
 
     <div id="scale-indicator" class="scale-indicator" style="width: 50px; height: 20px;">
-        <p>0.5 m</p>
+        <span><span id="scale-indicator-distance">0.5</span> m </span>
     </div>
 
     <!-- Debug window -->
@@ -537,14 +545,21 @@
 
     </div>
 
-    <div id="popup-window" class="mod-popup-window" style="width: 130px">
+    <div id="popup-window" class="mod-popup-window" style="width: 140px">
         <div class="mod-popup-label">
             <!-- <p>&nbsp;</p> -->
             <p> // ENTITY INFO  </p>
-            <p> MASS = <span id="popup-mass">0.000</span> kg</p>
+            <!-- <p><span id="popup-name-1">name</span> = <span id="popup-number-1">number</span> <span id="popup-unit-1">unit</span></p> -->
+
+            <p id="popup-entry-1" class="mod-popup-label-data-p"><span id="popup-name-1">name</span> = <span id="popup-number-1">number</span> <span id="popup-unit-1">unit</span></p>
+            <p id="popup-entry-2" class="mod-popup-label-data-p"><span id="popup-name-2">name</span> = <span id="popup-number-2">number</span> <span id="popup-unit-2">unit</span></p>
+            <p id="popup-entry-3" class="mod-popup-label-data-p"><span id="popup-name-3">name</span> = <span id="popup-number-3">number</span> <span id="popup-unit-3">unit</span></p>
+            <p id="popup-entry-4" class="mod-popup-label-data-p"><span id="popup-name-4">name</span> = <span id="popup-number-4">number</span> <span id="popup-unit-4">unit</span></p>
+
+            <!-- <p> MASS = <span id="popup-f">0.000</span> kg</p>
             <p> RADIUS = <span id="popup-radius">0.000</span> m</p>
             <p> DENSITY = <span id="popup-density">0.000</span> kg/m^2</p>
-            <p> VEL = <span id="popup-vel">0.000</span> m/s</p>
+            <p> VEL = <span id="popup-vel">0.000</span> m/s</p> -->
         </div>
     </div>
 

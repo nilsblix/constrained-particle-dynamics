@@ -92,10 +92,10 @@ export const editor = {
         const object_id_offset = physicsState.getDynamicObjectsLength();
         const constraint_id_offset = physicsState.getConstraintLength();
     
-        const self = this;
-        function m_linkConstraint(id1, id2) {
+        // const self = this;
+        const m_linkConstraint = (id1, id2) => {
             physicsState.addLinkConstraint(id1 + object_id_offset, id2 + object_id_offset);
-            self.recent_entities.push({type: "Constraint", id: constraint_id_offset - 1});
+            this.recent_entities.push({type: "Constraint", id: constraint_id_offset - 1});
         }
     
         // objects
