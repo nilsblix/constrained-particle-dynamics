@@ -358,7 +358,7 @@ function handlePopupWindow(canvas, physicsState, mouse) {
         document.getElementById("popup-entry-" + i).style.display = "none";
     }
 
-    if (!state.entity) {
+    if (!state.entity || !document.getElementById("info-show-entity-info").checked) {
         popup.style.display = "none";
         return;
     }
@@ -373,7 +373,7 @@ function handlePopupWindow(canvas, physicsState, mouse) {
     const updateWindowPosition = (type, entity_pos = null) => {
         const window_rect = popup.getBoundingClientRect();
         let pos = type == "DynamicObject" ? Vector2.addVectors(state.entity.pos, new Vector2(-state.entity.radius, 0))
-            : Vector2.addVectors(entity_pos, new Vector2(-0.2, 0));
+            : Vector2.addVectors(entity_pos, new Vector2(0.1, 0));
 
         pos = Units.sim_canv(pos);
         pos = Vector2.addVectors(pos, new Vector2(rect.x, rect.y));
@@ -394,7 +394,7 @@ function handlePopupWindow(canvas, physicsState, mouse) {
         const p2 = physicsState.getObjectPositionById(state.entity.id2);
         const pos = Vector2.scaleVector(Vector2.addVectors(p1, p2), 1 / 2)
         
-        updateFigure(1, "LENGTH", new Number(state.entity.l0).toFixed(3), "m");
+        updateFigure(1, "LENGTH", Number(state.entity.l0).toFixed(3), "m");
         
         updateWindowPosition("LinkConstraint", pos);
 
@@ -406,7 +406,7 @@ function handlePopupWindow(canvas, physicsState, mouse) {
         const p2 = Vector2.addVectors(physicsState.getObjectPositionById(state.entity.state_2.id), state.entity.state_2.offset);
         const pos = Vector2.scaleVector(Vector2.addVectors(p1, p2), 1 / 2)
         
-        updateFigure(1, "LENGTH", new Number(state.entity.l0).toFixed(3), "m");
+        updateFigure(1, "LENGTH", Number(state.entity.l0).toFixed(3), "m");
         
         updateWindowPosition("LinkConstraint", pos);
 
@@ -417,7 +417,7 @@ function handlePopupWindow(canvas, physicsState, mouse) {
         const rad = state.entity.radius;
 
         updateFigure(1, "MASS", state.entity.m, "kg");
-        updateFigure(2, "RADIUS", (new Number(rad)).toFixed(3), "m");
+        updateFigure(2, "RADIUS", Number(rad).toFixed(3), "m");
         updateFigure(3, "DENSITY", (state.entity.m / (Math.PI * rad * rad)).toFixed(1), "k/m^2");
         updateFigure(4, "VEL", state.entity.vel.magnitude().toFixed(3), "m/s");
 

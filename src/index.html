@@ -111,7 +111,7 @@
 
         .mod-label p {
             margin-top: 3px;
-            margin-bottom: 3px; 
+            margin-bottom: 3px;
         }
 
         .mod-graph-canvas {
@@ -128,7 +128,7 @@
             font-size: 14px;
         }
 
-        .mod-graph-toggle-button:hover a{
+        .mod-graph-toggle-button:hover a {
             color: #888;
         }
 
@@ -236,7 +236,7 @@
 
         .mod-popup-window {
             position: absolute;
-            border: 2px solid #ffffff;
+            /* border: 2px solid #ffffff; */
             /* background-color: #ff0707; */
             background-color: rgba(0, 0, 0, 0);
             /* opacity: 0.9; */
@@ -269,7 +269,7 @@
 
         .mod-popup-label p {
             margin-top: 3px;
-            margin-bottom: 3px; 
+            margin-bottom: 3px;
         }
 
         /* .mod-popup-label span {
@@ -300,9 +300,8 @@
 
         .scale-indicator span {
             margin-top: 3px;
-            margin-bottom: 3px; 
+            margin-bottom: 3px;
         }
-
     </style>
 </head>
 
@@ -387,29 +386,36 @@
         </div>
 
         <div class="mod-label">
-            <p> <span id="system-dt-graph-toggle-button" class="mod-graph-toggle-button">+</span> SYSTEM DT = <span id="system-dt">0.000</span> MS </p>
+            <p> <span id="system-dt-graph-toggle-button" class="mod-graph-toggle-button">+</span> SYSTEM DT = <span
+                    id="system-dt">0.000</span> MS </p>
             <canvas id="system-dt-graph-canvas" class="mod-graph-canvas"></canvas>
-            
-            <p> <span id="system-pdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> PDT = <span id="system-pdt">0.000</span> MS </p>
+
+            <p> <span id="system-pdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> PDT = <span
+                    id="system-pdt">0.000</span> MS </p>
             <canvas id="system-pdt-graph-canvas" class="mod-graph-canvas"></canvas>
-            
-            <p> <span id="system-rdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> RDT = <span id="system-rdt">0.000</span> MS </p>
+
+            <p> <span id="system-rdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> RDT = <span
+                    id="system-rdt">0.000</span> MS </p>
             <canvas id="system-rdt-graph-canvas" class="mod-graph-canvas"></canvas>
-            
-            <p> <span id="system-cfsdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> CFS DT = <span id="system-cfsdt">0.000</span> MS </p>
+
+            <p> <span id="system-cfsdt-graph-toggle-button" class="mod-graph-toggle-button">+</span> CFS DT = <span
+                    id="system-cfsdt">0.000</span> MS </p>
             <canvas id="system-cfsdt-graph-canvas" class="mod-graph-canvas"></canvas>
 
             <p> CFS ERR = <span id="system-cfs-err">0.000</span> </p>
-           
-            <p> <span id="system-energy-graph-toggle-button" class="mod-graph-toggle-button">+</span> ENERGY = <span id="system-energy">0.000</span> </p> 
+
+            <p> <span id="system-energy-graph-toggle-button" class="mod-graph-toggle-button">+</span> ENERGY = <span
+                    id="system-energy">0.000</span> </p>
             <canvas id="system-energy-graph-canvas" class="mod-graph-canvas"></canvas>
-            
-            <p> <span id="system-c-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-EVAL = <span id="system-c-eval">0.000</span> </p>
+
+            <p> <span id="system-c-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-EVAL = <span
+                    id="system-c-eval">0.000</span> </p>
             <canvas id="system-c-eval-graph-canvas" class="mod-graph-canvas"></canvas>
-            
-            <p> <span id="system-c-dot-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-DOT-EVAL = <span id="system-c-dot-eval">0.000</span> </p>
+
+            <p> <span id="system-c-dot-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-DOT-EVAL =
+                <span id="system-c-dot-eval">0.000</span> </p>
             <canvas id="system-c-dot-eval-graph-canvas" class="mod-graph-canvas"></canvas>
-            
+
         </div>
     </div>
 
@@ -428,13 +434,14 @@
 
         <div class="mod-label">SUB STEPS</div>
         <div class="mod-slider-container">
-            <input id="info-steps-slider" class="mod-slider" type="range" min="1" max="20" step="1"
-                value="8">
+            <input id="info-steps-slider" class="mod-slider" type="range" min="1" max="20" step="1" value="8">
             <div id="info-steps-value" class="mod-slider-label">8</div>
         </div>
 
-        <!-- <p> STEPS = <span id="system-steps">0.000</span> </p>
-        <p> &nbsp </p> -->
+        <label class="mod-checkbox-label">
+            <input id="info-show-entity-info" type="checkbox" checked>
+                SHOW ENTITY INFO
+        </label>
 
         <div class="mod-label">
             <p>&nbsp;</p>
@@ -444,7 +451,7 @@
             <p> NUM CONSTRAINTS = <span id="physics-constraints">0.000</span> </p>
             <!-- <p> &nbsp </p> -->
         </div>
-        
+
 
         <!-- <div class="mod-label">
             <p> // SAVED PHYSICS STATES <span id="info-reset-saved-states-button" class="mod-reset-button" style="font-size: 15px;">R</span> </p>
@@ -538,8 +545,7 @@
 
         <div class="mod-label">NUM BEZIER OBJECTS</div>
         <div class="mod-slider-container">
-            <input id="editor-num-bezier-slider" class="mod-slider" type="range" min="1" max="30" step="1"
-                value="15">
+            <input id="editor-num-bezier-slider" class="mod-slider" type="range" min="1" max="30" step="1" value="15">
             <div id="editor-num-bezier-value" class="mod-slider-label">15</div>
         </div>
 
@@ -548,13 +554,17 @@
     <div id="popup-window" class="mod-popup-window" style="width: 140px">
         <div class="mod-popup-label">
             <!-- <p>&nbsp;</p> -->
-            <p> // ENTITY INFO  </p>
+            <p> // ENTITY INFO </p>
             <!-- <p><span id="popup-name-1">name</span> = <span id="popup-number-1">number</span> <span id="popup-unit-1">unit</span></p> -->
 
-            <p id="popup-entry-1" class="mod-popup-label-data-p"><span id="popup-name-1">name</span> = <span id="popup-number-1">number</span> <span id="popup-unit-1">unit</span></p>
-            <p id="popup-entry-2" class="mod-popup-label-data-p"><span id="popup-name-2">name</span> = <span id="popup-number-2">number</span> <span id="popup-unit-2">unit</span></p>
-            <p id="popup-entry-3" class="mod-popup-label-data-p"><span id="popup-name-3">name</span> = <span id="popup-number-3">number</span> <span id="popup-unit-3">unit</span></p>
-            <p id="popup-entry-4" class="mod-popup-label-data-p"><span id="popup-name-4">name</span> = <span id="popup-number-4">number</span> <span id="popup-unit-4">unit</span></p>
+            <p id="popup-entry-1" class="mod-popup-label-data-p"><span id="popup-name-1">name</span> = <span
+                    id="popup-number-1">number</span> <span id="popup-unit-1">unit</span></p>
+            <p id="popup-entry-2" class="mod-popup-label-data-p"><span id="popup-name-2">name</span> = <span
+                    id="popup-number-2">number</span> <span id="popup-unit-2">unit</span></p>
+            <p id="popup-entry-3" class="mod-popup-label-data-p"><span id="popup-name-3">name</span> = <span
+                    id="popup-number-3">number</span> <span id="popup-unit-3">unit</span></p>
+            <p id="popup-entry-4" class="mod-popup-label-data-p"><span id="popup-name-4">name</span> = <span
+                    id="popup-number-4">number</span> <span id="popup-unit-4">unit</span></p>
 
             <!-- <p> MASS = <span id="popup-f">0.000</span> kg</p>
             <p> RADIUS = <span id="popup-radius">0.000</span> m</p>
