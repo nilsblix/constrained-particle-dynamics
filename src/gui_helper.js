@@ -418,7 +418,7 @@ function handlePopupWindow(canvas, physicsState, mouse) {
 
         updateFigure(1, "MASS", state.entity.m, "kg");
         updateFigure(2, "RADIUS", Number(rad).toFixed(3), "m");
-        updateFigure(3, "DENSITY", (state.entity.m / (Math.PI * rad * rad)).toFixed(1), "k/m^2");
+        updateFigure(3, "DENS.", (state.entity.m / (Math.PI * rad * rad)).toFixed(1), "k/m^2");
         updateFigure(4, "VEL", state.entity.vel.magnitude().toFixed(3), "m/s");
 
         updateWindowPosition("DynamicObject", state.entity.pos);

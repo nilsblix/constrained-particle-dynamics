@@ -287,6 +287,11 @@ export function update(canvas, c) {
 }
 
 export function handleInputs(window, canvas) {
+
+    const setupDemo = (version) => {
+        setupScene(physicsState, solver, editor, version);
+    }
+
     document.addEventListener("keydown", function (event) {
         if (event.key == "s") {
             solver.simulating = !solver.simulating;
@@ -296,19 +301,22 @@ export function handleInputs(window, canvas) {
             reset(window, canvas);
         }
         if (event.key == "1" && solver.physicsState_is_null && !editor.active) {
-            setupScene(physicsState, solver, "pratt truss");
+            setupDemo("pratt truss");
         }
         if (event.key == "2" && solver.physicsState_is_null && !editor.active) {
-            setupScene(physicsState, solver, "king post truss");
+            setupDemo("king post truss");
         }
         if (event.key == "3" && solver.physicsState_is_null && !editor.active) {
-            setupScene(physicsState, solver, "large bridge structure");
+            setupDemo("large bridge structure");
         }
         if (event.key == "4" && solver.physicsState_is_null && !editor.active) {
-            setupScene(physicsState, solver, "crane structure");
+            setupDemo("crane structure");
         }
         if (event.key == "5" && solver.physicsState_is_null && !editor.active) {
-            setupScene(physicsState, solver, "standard pratt truss");
+            setupDemo("standard pratt truss");
+        }
+        if (event.key == "6" && solver.physicsState_is_null && !editor.active) {
+            setupDemo("rotating crane structure");
         }
         if (event.key == "ArrowRight" && !solver.simulating) {
             let p_st = performance.now();

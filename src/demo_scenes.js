@@ -8,7 +8,7 @@ import { editor } from "./editor.js";
     --> Nothing. Everything gets automatically picked up by the pipeline
 */
 
-export function setupScene(physicsState, solver, version) {
+export function setupScene(physicsState, solver, editor, version) {
     switch (version) {
         case "null":
             break;
@@ -450,6 +450,90 @@ export function setupScene(physicsState, solver, version) {
             // left, weight
 
             break;
+    
+        case "rotating crane structure":
+
+            const o_s = [
+            new DynamicObject(new Vector2(5, 0.5), 1, editor.standard_object_radius), // 0
+            new DynamicObject(new Vector2(5, 1.5), 1, editor.standard_object_radius), // 1
+            new DynamicObject(new Vector2(5, 2.5), 1, editor.standard_object_radius), // 2
+            new DynamicObject(new Vector2(5, 3.5), 1, editor.standard_object_radius), // 3
+            new DynamicObject(new Vector2(5, 4.5), 1, editor.standard_object_radius), // 4
+            new DynamicObject(new Vector2(6, 3.5), 1, editor.standard_object_radius), // 5
+            new DynamicObject(new Vector2(7, 3.5), 1, editor.standard_object_radius), // 6
+            new DynamicObject(new Vector2(8, 3.5), 1, editor.standard_object_radius), // 7
+            new DynamicObject(new Vector2(7, 3.5 + 1/3), 1, editor.standard_object_radius), // 8
+            new DynamicObject(new Vector2(6, 4 + 1/6), 1, editor.standard_object_radius), // 9
+            new DynamicObject(new Vector2(4.5, 1.5), 1, editor.standard_object_radius), // 10
+            new DynamicObject(new Vector2(4, 2.5), 1, editor.standard_object_radius), // 11
+            new DynamicObject(new Vector2(3.5, 3.5), 1, editor.standard_object_radius), // 12
+            new DynamicObject(new Vector2(0.5, 0.5), 1, editor.standard_object_radius), // 13
+            new DynamicObject(new Vector2(1.1, 1.1), 1, editor.standard_object_radius), // 14
+            new DynamicObject(new Vector2(1.7, 1.7), 1, editor.standard_object_radius), // 15
+            new DynamicObject(new Vector2(2.3, 2.3), 1, editor.standard_object_radius), // 16
+            new DynamicObject(new Vector2(8, 3), 1, editor.standard_object_radius), // 17
+            new DynamicObject(new Vector2(8, 2.5), 1, editor.standard_object_radius), // 18
+            new DynamicObject(new Vector2(8, 2), 25, 4.5 * editor.standard_object_radius), // 19
+            new DynamicObject(new Vector2(4.25, 4), 1, editor.standard_object_radius), // 20
+            new DynamicObject(new Vector2(2.9, 2.9), 1, editor.standard_object_radius), // 21
+            ]
+
+            for (let i = 0; i < o_s.length; i++) {
+                physicsState.addObject(o_s[i]);
+            }
+
+            physicsState.addFixedPosConstraint(0);
+            physicsState.addFixedPosConstraint(13);
+            
+            // main vertical line
+            physicsState.addLinkConstraint(0, 1);
+            physicsState.addLinkConstraint(1, 2);
+            physicsState.addLinkConstraint(2, 3);
+            physicsState.addLinkConstraint(3, 4);
+            // outline crane part
+            physicsState.addLinkConstraint(3, 5);
+            physicsState.addLinkConstraint(5, 6);
+            physicsState.addLinkConstraint(6, 7);
+            physicsState.addLinkConstraint(7, 8);
+            physicsState.addLinkConstraint(8, 9);
+            physicsState.addLinkConstraint(9, 4);
+            // diagonals crane part
+            physicsState.addLinkConstraint(3, 9);
+            physicsState.addLinkConstraint(6, 9);
+            physicsState.addLinkConstraint(6, 8);
+            physicsState.addLinkConstraint(5, 9);
+            // left crane body
+            physicsState.addLinkConstraint(0, 10);
+            physicsState.addLinkConstraint(10, 11);
+            physicsState.addLinkConstraint(11, 12);
+            physicsState.addLinkConstraint(12, 20);
+            physicsState.addLinkConstraint(20, 4);
+            // left body diagonals
+            physicsState.addLinkConstraint(1, 10);
+            physicsState.addLinkConstraint(1, 11);
+            physicsState.addLinkConstraint(2, 11);
+            physicsState.addLinkConstraint(2, 12);
+            physicsState.addLinkConstraint(3, 12);
+            physicsState.addLinkConstraint(3, 20);
+            // crane support
+            physicsState.addLinkConstraint(13, 14);
+            physicsState.addLinkConstraint(14, 15);
+            physicsState.addLinkConstraint(15, 16);
+            physicsState.addLinkConstraint(16, 21);
+            physicsState.addLinkConstraint(21, 12);
+            // chain
+            physicsState.addLinkConstraint(7, 17);
+            physicsState.addLinkConstraint(17, 18);
+            physicsState.addLinkConstraint(18, 19);
+
+
+
+
+
+
+
+            break;
+    
     }
 
     solver.physicsState_is_null = false;

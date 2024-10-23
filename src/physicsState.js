@@ -338,6 +338,7 @@ export class PhysicsState {
             const con = this.#m_renderedConstraints[i];
             if (con instanceof FixedPosConstraint)
                 physics_id++;
+            physics_id++;
         }
 
         physics_id = 0; // FIXED POS CONSTRAINT
@@ -347,6 +348,7 @@ export class PhysicsState {
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
                 physics_id++;
             }
+            physics_id++;
         }
 
         physics_id = 0; // FIXED Y CONSTRAINT
@@ -356,6 +358,7 @@ export class PhysicsState {
                 physics_id++;
             else if (con instanceof FixedYConstraint)
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+            physics_id++;
         }
 
         physics_id = 0; // LINKCONSTRAINT
@@ -365,6 +368,7 @@ export class PhysicsState {
                 physics_id++;
             else if (con instanceof LinkConstraint)
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+            physics_id++;
         }
 
         physics_id = 0; // FIXED OMEGA CONSTRAINT
@@ -374,6 +378,7 @@ export class PhysicsState {
                 physics_id++;
             else if (con instanceof FixedOmegaConstraint)
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+            physics_id++;
         }
 
         for (let i = 0; i < this.#m_objects.length; i++) {
@@ -387,6 +392,7 @@ export class PhysicsState {
                 physics_id++;
             else if (con instanceof FixedXConstraint)
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+            physics_id++;
         }
 
         physics_id = 0; // FIXED ROTATION  CONSTRAINT
@@ -396,6 +402,7 @@ export class PhysicsState {
                 physics_id++;
             else if (con instanceof FixedRotationConstraint)
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+            physics_id++;
         }
 
         physics_id = 0; // FIXED OFFSET LINK CONSTRAINT
@@ -405,6 +412,7 @@ export class PhysicsState {
                 physics_id++;
             else if (con instanceof OffsetLinkConstraint)
                 con.render(c, this.#m_objects, this.#CM.lambda.elements[physics_id], this.#lagrange_mult_limit);
+            physics_id++;
         }
 
         // force generators

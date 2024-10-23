@@ -3,7 +3,7 @@ import {Units} from "./units.js";
 import {Colours, LineWidths, Extras} from "./render_settings.js";
 
 export class DynamicObject {
-    constructor(pos, mass, drawing_radius = 0.05) {
+    constructor(pos, mass = 1, drawing_radius = 0.05) {
         // translational dynamics
         this.pos = pos;
         this.vel = new Vector2(0,0);
