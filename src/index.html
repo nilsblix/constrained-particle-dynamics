@@ -24,6 +24,7 @@
 
         body {
             background-color: #0e1012;
+            overflow: hidden;
         }
 
         #engineCanvas {
@@ -224,6 +225,54 @@
             cursor: pointer;
         }
 
+        .mod-label {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2px;
+            color: #ffffff;
+            font-size: 1rem;
+            align-items: flex-start;
+        }
+
+        .keybinds-primary-header {
+            color: #ffef62;
+            font-weight: bold;
+            margin-bottom: 10px;
+            grid-column: span 2;
+            text-align: center;
+        }
+
+        .keybinds-primary-header a {
+            color: #4f79db;
+        }
+
+        .keybinds-primary-header a:hover {
+            color: #95b5ff;
+        }
+
+        .keybinds-secondary-header {
+            color: #8cc972;
+            font-weight: bold;
+            margin-bottom: 10px;
+            grid-column: span 2;
+        }
+
+        .mod-keybind-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            row-gap: 5px;
+            align-self: start;
+        }
+
+        .mod-split-label-left {
+            text-align: left;
+        }
+
+        .mod-split-label-right {
+            text-align: left;
+            color: #ffffff80;
+        }
+
         .top-left-label {
             position: absolute;
             font-family: QuinqueFive;
@@ -271,10 +320,6 @@
             margin-top: 3px;
             margin-bottom: 3px;
         }
-
-        /* .mod-popup-label span {
-            display: none;
-        } */
 
         .scale-indicator {
             position: absolute;
@@ -324,7 +369,7 @@
         </div>
 
         <!-- Gravity Slider -->
-        <div class="mod-label">Gravity</div>
+        <div class="mod-label">GRAVITY</div>
         <div class="mod-slider-container">
             <input id="settings-gravity-slider" class="mod-slider" type="range" min="-10" max="10" step="0.01"
                 value="9.82">
@@ -332,7 +377,7 @@
         </div>
 
         <!-- Linear Damping Slider -->
-        <div class="mod-label">Linear Damping</div>
+        <div class="mod-label">ENERY DAMPING</div>
         <div class="mod-slider-container">
             <input id="settings-linear-damping-slider" class="mod-slider" type="range" min="0" max="5" step="0.005"
                 value="0.4">
@@ -340,7 +385,7 @@
         </div>
 
         <!-- Mouse Spring Slider -->
-        <div class="mod-label">Mouse Spring Stiffness</div>
+        <div class="mod-label">MOUSE SPRING STIFFNESS</div>
         <div class="mod-slider-container">
             <input id="settings-mouse-spring-slider" class="mod-slider" type="range" min="0" max="200" step="0.01"
                 value="100">
@@ -348,7 +393,7 @@
         </div>
 
         <!-- Spring Joint Slider -->
-        <div class="mod-label">Spring Joint Stiffness</div>
+        <div class="mod-label">SPRING JOINT STIFFNESS</div>
         <div class="mod-slider-container">
             <input id="settings-spring-joint-slider" class="mod-slider" type="range" min="0" max="300" step="1"
                 value="100">
@@ -356,7 +401,7 @@
         </div>
 
         <!-- Omega Constraint Slider -->
-        <div class="mod-label">Rotation Velocity Const.</div>
+        <div class="mod-label">MOTOR VEL</div>
         <div class="mod-slider-container">
             <input id="settings-omega-constraint-slider" class="mod-slider" type="range" min="0" max="150" step="0.1"
                 value="90">
@@ -364,7 +409,7 @@
         </div>
 
         <!-- Lagrange Mult (strain) Slider -->
-        <div class="mod-label">Maximum strain (10^)</div>
+        <div class="mod-label">MAXIMUM STRAIN (10^)</div>
         <div class="mod-slider-container">
             <input id="settings-lagrange-limit-slider" class="mod-slider" type="range" min="0" max="10" step="0.01"
                 value="8">
@@ -413,7 +458,8 @@
             <canvas id="system-c-eval-graph-canvas" class="mod-graph-canvas"></canvas>
 
             <p> <span id="system-c-dot-eval-graph-toggle-button" class="mod-graph-toggle-button">+</span> C-DOT-EVAL =
-                <span id="system-c-dot-eval">0.000</span> </p>
+                <span id="system-c-dot-eval">0.000</span>
+            </p>
             <canvas id="system-c-dot-eval-graph-canvas" class="mod-graph-canvas"></canvas>
 
         </div>
@@ -440,7 +486,7 @@
 
         <label class="mod-checkbox-label">
             <input id="info-show-entity-info" type="checkbox" checked>
-                SHOW ENTITY INFO
+            SHOW ENTITY INFO
         </label>
 
         <div class="mod-label">
@@ -476,49 +522,123 @@
 
     </div>
 
-    <div id="keybinds-window" class="mod-debug-window" style="width: 300px">
+    <div id="keybinds-window" class="mod-debug-window" style="width: 100%; max-width: 800px;">
         <div id="mod-keybinds-header" class="mod-debug-header">
-            // KEYBINDS
+            // HELP
             <span id="keybinds-close-button" class="mod-close-button">✕</span>
         </div>
 
-        <div class="mod-label">
-            <p>GENERAL:</p>
-            <p>&nbsp (s) s: TOGGLE SIM</p>
-            <p>&nbsp LArr: STEP ONE-SIM FRAME</p>
-            <p>&nbsp UArr: SLOW MOTION</p>
-            <p>&nbsp (b) R: RESET SCENE</p>
+        <div id="keybinds-window-container" class="mod-label">
 
-            <p>DEMO SCENES: </p>
-            <p>&nbsp 1: PRATT TRUSS</p>
-            <p>&nbsp 2: KING POST TRUSS</p>
-            <p>&nbsp 3: LARGE BRIDGE</p>
-            <p>&nbsp 4: CRANE</p>
+            <div class="mod-keybind-column">
+                <!-- GENERAL -->
+                <p class="keybinds-primary-header">// GENERAL</p>
+                <p class="mod-split-label-left">TOGGLE SIM</p>
+                <p class="mod-split-label-right">press [s]</p>
+                <p class="mod-split-label-left">STEP 1 SIM FRAME</p>
+                <p class="mod-split-label-right">press [Right Arr]</p>
+                <p class="mod-split-label-left">SIM SLOW MOTION</p>
+                <p class="mod-split-label-right">hold [Up Arr]</p>
+                <p class="mod-split-label-left">RESET SCENE</p>
+                <p class="mod-split-label-right">press [R] *capital</p>
 
-            <p>Editor: </p>
-            <p>&nbsp (s) i: TOGGLE</p>
-            <p>&nbsp (b) I: SNAP TO GRID</p>
-            <p>&nbsp (s) backspace: DELETE LATEST ENTITY</p>
-            <p>&nbsp Objects:</p>
-            <p>&nbsp &nbsp 1 --> 4: SPAWN MASS OBJECT</p>
-            <p>&nbsp &nbsp 0: SPAWN CUSTOM MASS OBJECT</p>
-            <p>&nbsp Force Generators: </p>
-            <p>&nbsp &nbsp (s) k: SPRING JOINT</p>
-            <p>&nbsp Constraints:</p>
-            <p>&nbsp &nbsp (s) x: FIXED X</p>
-            <p>&nbsp &nbsp (s) y: FIXED Y</p>
-            <p>&nbsp &nbsp (s) p: FIXED POS</p>
-            <p>&nbsp &nbsp (s) l: LINK</p>
-            <p>&nbsp &nbsp (s) j: OFFSET LINK</p>
-            <p>&nbsp &nbsp (s) t: FIXED ROTATION</p>
-            <p>&nbsp &nbsp (s) m: FIXED OMEGA (motor)</p>
-            <p>&nbsp Bezier Curve:</p>
-            <p>&nbsp &nbsp (b) B: TOGGLE</p>
-            <p>&nbsp &nbsp LEFT MOUSE + MOUSE POS: C-POINT POS</p>
-            <p>&nbsp &nbsp (b) S: SPAWN MASS OBJECTS</p>
+                <!-- DEMO SCENES -->
+                <p class="keybinds-primary-header">// DEMO SCENES, only when current scene is nothing</p>
+                <p class="mod-split-label-left">EXP PRATT TRUSS</p>
+                <p class="mod-split-label-right">press [1]</p>
+                <p class="mod-split-label-left">KING POST TRUSS</p>
+                <p class="mod-split-label-right">press [2]</p>
+                <p class="mod-split-label-left">LARGE BRIDGE STRUCT</p>
+                <p class="mod-split-label-right">press [3]</p>
+                <p class="mod-split-label-left">CRANE</p>
+                <p class="mod-split-label-right">press [4]</p>
+                <p class="mod-split-label-left">FIXED PRATT TRUSS</p>
+                <p class="mod-split-label-right">press [5]</p>
+                <p class="mod-split-label-left">UNFIXED CRANE</p>
+                <p class="mod-split-label-right">press [6]</p>
 
-            <p>AUXILIARY BINDS:</p>
-            <p>&nbsp LEFT MOUSE + MOUSE POS: MOUSE SPRING</p>
+                <!-- OTHERS -->
+                <p class="keybinds-primary-header">// AUXILIARY BINDS</p>
+                <p class="mod-split-label-left">MOUSE SPRING</p>
+                <p class="mod-split-label-right">press [MOUSE 1] on obj and hold</p>
+
+                <p class="keybinds-primary-header">// WEIRD PHENOMENA</p>
+                <p class="keybinds-secondary-header" style="color: #ffffff;">
+                    If the simulation explodes or is unstable, try raising the <i>SUB STEPS</i> value as
+                    with a too low simulation rate (<i>SR</i> in the <i>info</i> panel) the physics engine is
+                    inherently unstable. Although if <i>SUB STEPS</i> is too high the framerate deacreases
+                    to a point where <i>SR</i> also decreases, which is defeats the purpose of raising <i>SUB STEPS</i>.
+                    <br/>
+                    <br/>
+                    Creating an update function in javascript is weird. One has to use <i>requestAnimationFrame</i>
+                    which updates according to some specific integer frequencies (ex. 60, 75, 90 and 120 hz). This means 
+                    that the framerate at which the engine operates become the same for some intervals of solve time,
+                    regardless of the complexity of the scene in that complexity-interval. One can see this in
+                    the <i>profiling</i> panel as the <i>SYSTEM DT</i> variable only increases when the sum
+                    (approximately) of <i>PHYSICS DT</i> and <i>RENDER DT</i> becomes larger than 1 / <i>requestAnimationFrame</i>
+                    framerate. ==> Small and medium complexity scenes share the same <i>SYSTEM DT</i>.
+                    <br/>
+                    <br/>
+                </p>
+            </div>
+
+            <div class="mod-keybind-column">
+                <!-- EDITOR  -->
+                <p class="keybinds-primary-header">// in EDITOR, marked by red square</p>
+                <p class="mod-split-label-left">TOGGLE</p>
+                <p class="mod-split-label-right">press [i]</p>
+                <p class="mod-split-label-left">SNAP TO GRID</p>
+                <p class="mod-split-label-right">press [I] *capital</p>
+                <p class="mod-split-label-left">DELETE LAST ADDED ENTITY</p>
+                <p class="mod-split-label-right">press [backspace]</p>
+
+                <p class="keybinds-secondary-header">MASS OBJECTS</p>
+                <p class="mod-split-label-left">SPAWN PRESIZED</p>
+                <p class="mod-split-label-right">press [1 --> 5]</p>
+                <p class="mod-split-label-left">SPAWN CUSTOM (settings in the <i>editor</i> panel)</p>
+                <p class="mod-split-label-right">press [0]</p>
+
+                <p class="keybinds-secondary-header">FORCE GENERATORS</p>
+                <p class="mod-split-label-left">SPAWN SPRING JOINT</p>
+                <p class="mod-split-label-right">hold & release [k] on objs</p>
+
+                <p class="keybinds-secondary-header">CONSTRAINTS</p>
+                <p class="mod-split-label-left">FIXED X</p>
+                <p class="mod-split-label-right">press [x] on obj</p>
+                <p class="mod-split-label-left">FIXED Y</p>
+                <p class="mod-split-label-right">press [y] on obj</p>
+                <p class="mod-split-label-left">FIXED POS</p>
+                <p class="mod-split-label-right">press [p] on obj</p>
+                <p class="mod-split-label-left">DISTANCE CONSTRAINT</p>
+                <p class="mod-split-label-right">hold & release [l] on objs</p>
+                <p class="mod-split-label-left">OFFSET DIST CONSTRAINT</p>
+                <p class="mod-split-label-right">hold & release [j] on objs</p>
+                <p class="mod-split-label-left">FIXED ROTATION</p>
+                <p class="mod-split-label-right">press [t] on obj</p>
+                <p class="mod-split-label-left">FIXED OMEGA (motor)</p>
+                <p class="mod-split-label-right">press [m] on obj</p>
+
+                <p class="keybinds-secondary-header">BEZIER CURVE</p>
+                <p class="mod-split-label-left">TOGGLE</p>
+                <p class="mod-split-label-right">press [B] *capital</p>
+                <p class="mod-split-label-left">DRAG CONTROL (blue) POINTS</p>
+                <p class="mod-split-label-right">hold [MOUSE 1] on obj</p>
+                <p class="mod-split-label-left">SPAWN MASS OBJECTS w. DIST CONSTRAINTS</p>
+                <p class="mod-split-label-right">press [S] *capital</p>
+
+                <br/>
+                <br/>
+
+                <p class="keybinds-primary-header">
+                    NILS VICTOR BLIX 2024
+                    <br/>
+                    references: <a href="https://www.cs.cmu.edu/~baraff/pbm/constraints.pdf" target="_blank">ref</a>
+                </p>
+
+            </div>
+
+            <!-- Additional keybind groups as needed -->
+
         </div>
     </div>
 
